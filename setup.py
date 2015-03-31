@@ -129,6 +129,7 @@ setup(
     install_requires=[
     ],
     requires=[
+        'kerberos',
     ],
     use_2to3=True,
     classifiers=[
