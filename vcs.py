@@ -19,15 +19,15 @@
 """Git version generator
 """
 
-__author__ = 'Duncan Macleod <duncan.macleod@ligo.org>'
-__credits__ = 'Adam Mercer <adam.mercer@ligo.org>'
-
 import os
 import time
 from distutils.version import (Version, LooseVersion, StrictVersion)
 
 from git import Repo
 from jinja2 import Template
+
+__author__ = 'Duncan Macleod <duncan.macleod@ligo.org>'
+__credits__ = 'Adam Mercer <adam.mercer@ligo.org>'
 
 
 VERSION_PY_TEMPLATE = Template("""# -*- coding: utf-8 -*-
