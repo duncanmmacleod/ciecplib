@@ -18,8 +18,10 @@
 # along with LIGO.ORG.  If not, see <http://www.gnu.org/licenses/>.
 
 import os
+import sys
 
 from distutils import log
+from distutils.dist import Distribution
 from setuptools import (find_packages, setup)
 from setuptools.command import (build_py, egg_info)
 
@@ -107,6 +109,17 @@ cmdclass['egg_info']= LigoDotOrgEggInfo
 
 packagenames = find_packages()
 
+# don't use setup_requires if just checking for information
+# (credit: matplotlib/setup.py)
+setup_requires = []
+if '--help' not in sys.argv and '--help-commands' not in sys.argv:
+    dist_ = Distribution({'cmdclass': cmdclass})
+    dist_.parse_config_files()
+    dist_.parse_command_line()
+    if not (any('--' + opt in sys.argv for opt in
+                Distribution.display_option_names + ['help']) or
+            dist_.commands == ['clean']):
+        setup_requires = ['jinja2', 'gitpython']
 
 setup(
     # distribution metadata
@@ -124,8 +137,7 @@ setup(
     namespace_packages=['ligo'],
     include_package_data=True,
     cmdclass=cmdclass,
-    setup_requires=[
-    ],
+    setup_requires=setup_requires,
     install_requires=[
     ],
     requires=[
