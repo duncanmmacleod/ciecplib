@@ -20,10 +20,10 @@
 import os
 import sys
 
-from distutils import log
-from distutils.dist import Distribution
 from setuptools import (find_packages, setup)
 from setuptools.command import (build_py, egg_info)
+from distutils import log
+from distutils.dist import Distribution
 
 PACKAGENAME = 'ligo-dot-org'
 PROVIDES = 'ligo.org'
@@ -59,9 +59,9 @@ class GitVersionMixin(object):
     def update_metadata(self):
         """Import package base and update distribution metadata
         """
-        import cis
-        self.distribution.metadata.version = cis.__version__
-        desc, longdesc = cis.__doc__.split('\n', 1)
+        import ligo.org
+        self.distribution.metadata.version = ligo.org.__version__
+        desc, longdesc = ligo.org.__doc__.split('\n', 1)
         self.distribution.metadata.description = desc
         self.distribution.metadata.long_description = longdesc.strip('\n')
 
@@ -131,7 +131,7 @@ setup(
     author=AUTHOR,
     author_email=AUTHOR_EMAIL,
     license=LICENSE,
-    url=None,
+    url='https://github.com/duncanmmacleod/ligo.org/',
     # package metadata
     packages=packagenames,
     namespace_packages=['ligo'],
