@@ -112,6 +112,7 @@ def kinit(username=None, password=None, realm=None, exe=None, keytab=None,
     --------
     Example 1: standard user input, with password prompt::
 
+        >>> from ligo.org import kinit
         >>> kinit('albert.einstein')
         Password for albert.einstein@LIGO.ORG:
         Kerberos ticket generated for albert.einstein@LIGO.ORG

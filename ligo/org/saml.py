@@ -137,9 +137,14 @@ def request(url, timeout=None, debug=False):
 
     This requires an active Kerberos ticket for the user, to get one:
 
-    .. code-block:: bash
+        >>> from ligo.org import kinit
+        >>> kinit('albert.einstein')
 
-       kinit albert.einstein@LIGO.ORG
+    Then request as follows
+
+        >>> from ligo.org import request
+        >>> response = request(myurl)
+        >>> print(response.read())
 
     Parameters
     ----------
@@ -152,8 +157,14 @@ def request(url, timeout=None, debug=False):
 
     Returns
     -------
-    response : `str`
+    response : `file`-like
         the raw response from the URL, probably XML/HTML or JSON
+
+    Examples
+    --------
+    >>> from ligo.org import request
+    >>> response = request('https://ldas-jobs.ligo.caltech.edu/')
+    >>> print(response.read())
     """
     # set debug to 1 to see all HTTP(s) traffic
     debug = int(debug)
