@@ -19,6 +19,8 @@
 """This module provides LIGO.ORG authenticated HTML queries
 """
 
+from __future__ import absolute_import
+
 import os
 import stat
 import urllib2
