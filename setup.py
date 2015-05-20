@@ -18,11 +18,14 @@
 # along with LIGO.ORG.  If not, see <http://www.gnu.org/licenses/>.
 
 import os
+import subprocess
+import hashlib
 import sys
 
 from setuptools import (find_packages, setup)
 from setuptools.command import (build_py, egg_info)
 from distutils import log
+from distutils.cmd import Command
 from distutils.dist import Distribution
 
 PACKAGENAME = 'ligo-dot-org'
@@ -102,6 +105,83 @@ class LigoDotOrgEggInfo(egg_info.egg_info, GitVersionMixin):
         egg_info.egg_info.finalize_options(self)
 
 cmdclass['egg_info']= LigoDotOrgEggInfo
+
+
+# -----------------------------------------------------------------------------
+# Generate portfile
+
+class BuildPortfile(Command, GitVersionMixin):
+    """Generate a Macports Portfile for this project from the current build
+    """
+    description = 'Generate Macports Portfile'
+    user_options = [
+        ('version=', None, 'the X.Y.Z package version'),
+        ('portfile=', None, 'target output file, default: \'Portfile\''),
+        ('template=', None,
+         'Portfile template, default: \'Portfile.template\''),
+    ]
+
+    def initialize_options(self):
+        self.version = None
+        self.portfile = 'Portfile'
+        self.template = 'Portfile.template'
+        self._template = None
+
+    def finalize_options(self):
+        from jinja2 import Template
+        with open(self.template, 'r') as t:
+            self._template = Template(t.read())
+
+    def run(self):
+        # get version from distribution
+        if self.version is None:
+            try:
+                self.update_metadata()
+            except ImportError:
+                self.run_command('sdist')
+                self.update_metadata()
+        # find dist file
+        dist = os.path.join(
+            'dist',
+            '%s-%s.tar.gz' % (self.distribution.get_name(),
+                              self.distribution.get_version()))
+        # run sdist if needed
+        if not os.path.isfile(dist):
+            self.run_command('sdist')
+            self.update_metadata()
+        # get checksum digests
+        log.info('reading distribution tarball %r' % dist)
+        with open(dist, 'rb') as fobj:
+            data = fobj.read()
+        log.info('recovered digests:')
+        digest = dict()
+        digest['rmd160'] = self._get_rmd160(dist)
+        for algo in [1, 256]:
+            digest['sha%d' % algo] = self._get_sha(data, algo)
+        for key, val in digest.iteritems():
+            log.info('    %s: %s' % (key, val))
+        # write finished portfile to file
+        with open(self.portfile, 'w') as fport:
+            fport.write(self._template.render(
+                version=self.distribution.get_version(), **digest))
+        log.info('portfile written to %r' % self.portfile)
+
+    @staticmethod
+    def _get_sha(data, algorithm=256):
+        hash_ = getattr(hashlib, 'sha%d' % algorithm)
+        return hash_(data).hexdigest()
+
+    @staticmethod
+    def _get_rmd160(filename):
+        p = subprocess.Popen(['openssl', 'rmd160', filename],
+                             stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        out, err = p.communicate()
+        if p.returncode != 0:
+            raise subprocess.CalledProcessError(err)
+        else:
+            return out.splitlines()[0].rsplit(' ', 1)[-1]
+
+cmdclass['port'] = BuildPortfile
 
 
 # -----------------------------------------------------------------------------
