@@ -140,8 +140,8 @@ def kinit(username=None, password=None, realm=None, exe=None, keytab=None,
             if username is None and len(principals) == 1:
                 username = principals[0][0]
             # or if the given username is in the keytab, find the realm
-            if username in zip(*principals)[0]:
-                idx = zip(*principals)[0].index(username)
+            if username in list(zip(*principals))[0]:
+                idx = list(zip(*principals))[0].index(username)
                 realm = principals[idx][1]
             # otherwise this keytab is useless, so remove it
             else:
@@ -191,7 +191,7 @@ def parse_keytab(keytab):
     principals = []
     for line in out.splitlines():
         try:
-            n, principal, _ = re.split('\s+', line.strip(' '), 2)
+            n, principal, _ = re.split('\s+', line.decode('utf-8').strip(' '), 2)
         except ValueError:
             continue
         else:

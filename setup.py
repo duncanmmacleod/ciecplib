@@ -189,6 +189,8 @@ cmdclass['port'] = BuildPortfile
 
 packagenames = find_packages()
 
+requires = ['kerberos', 'six']
+
 # don't use setup_requires if just checking for information
 # (credit: matplotlib/setup.py)
 setup_requires = []
@@ -217,13 +219,9 @@ setup(
     namespace_packages=['ligo'],
     include_package_data=True,
     cmdclass=cmdclass,
-    setup_requires=setup_requires,
-    install_requires=[
-    ],
-    requires=[
-        'kerberos',
-    ],
-    use_2to3=True,
+    setup_requires=requires + setup_requires,
+    requires=requires,
+    use_2to3=False,
     classifiers=[
         'Intended Audience :: Science/Research',
         'License :: OSI Approved :: GNU General Public License v3 (GPLv3)',

@@ -23,14 +23,14 @@ from __future__ import absolute_import
 
 import os
 import stat
-import urllib2
-import cookielib
 import warnings
 import tempfile
 import getpass
 import socket
-import exceptions
 import re
+
+from six.moves.urllib import request as urllib2
+from six.moves import http_cookiejar
 
 import kerberos
 
@@ -173,7 +173,7 @@ def request(url, timeout=None, debug=False):
     httpshandler = urllib2.HTTPSHandler(debuglevel=debug)
 
     # use a cookie jar to store session cookies
-    jar = cookielib.LWPCookieJar()
+    jar = http_cookiejar.LWPCookieJar()
 
     # if a cookie jar exists open it and read the cookies
     # and make sure it has the right permissions
@@ -182,8 +182,8 @@ def request(url, timeout=None, debug=False):
         # set ignore_discard so that session cookies are preserved
         try:
             jar.load(COOKIE_JAR, ignore_discard=True)
-        except cookielib.LoadError as e:
-            warnings.warn('cookielib.LoadError caught: %s' % str(e))
+        except http_cookiejar.LoadError as e:
+            warnings.warn('http_cookiejar.LoadError caught: %s' % str(e))
 
     # create a cookie handler from the cookie jar
     cookiehandler = urllib2.HTTPCookieProcessor(jar)
