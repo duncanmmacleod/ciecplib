@@ -6,7 +6,13 @@ The core of this package was written by Scott Koranda, while the rest of the pac
 
 This packages uses an existing Kerberos ticket to authenticate against the LIGO.ORG SAML service.
 
-Assuming a Kerberos ticket has been created via
+You can install the package via
+
+```bash
+pip install git+https://github.com/duncanmmacleod/ligo.org.git
+```
+
+Then, assuming a Kerberos ticket has been created via
 
 ```bash
 kinit albert.einstein@LIGO.ORG
