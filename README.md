@@ -21,8 +21,8 @@ kinit albert.einstein@LIGO.ORG
 the basic usage is as follows
 
 ```python
-from ligo.org import request
-response = request('https://somewhere.ligo.org/mywebpage/')
+>>> from ligo.org import request
+>>> response = request('https://somewhere.ligo.org/mywebpage/')
 ```
 
 The `response` is then a file-like object from which data can be read.
