@@ -189,7 +189,7 @@ cmdclass['port'] = BuildPortfile
 
 packagenames = find_packages()
 
-requires = ['kerberos', 'six']
+requires = ['kerberos', 'six', 'lxml']
 
 # don't use setup_requires if just checking for information
 # (credit: matplotlib/setup.py)

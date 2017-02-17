@@ -42,6 +42,10 @@ __version__ = version.version
 
 __all__ = ['kinit']
 
+KLIST_REGEX = re.compile("(?P<start>\d\d/\d\d/\d\d\d\d\s\d\d:\d\d:\d\d)\s+"
+                         "(?P<expiry>\d\d/\d\d/\d\d\d\d\s\d\d:\d\d:\d\d)\s+"
+                         "(?P<principal>(.*)$)")
+
 
 class KerberosError(RuntimeError):
     pass
@@ -174,28 +178,27 @@ def kinit(username=None, password=None, realm=None, exe=None, keytab=None,
         print("Kerberos ticket generated for %s@%s" % (username, realm))
 
 
-def parse_keytab(keytab):
-    """Read the contents of a KRB5 keytab file, returning a list of
-    credentials listed within
+def klist():
+    """Run ``klist`` to get list of kerberos principals
 
     Parameters
     ----------
     keytab : `str`
         path to keytab file
     """
-    cmd = ['klist', '-k', '-K', keytab]
-    klist = Popen(cmd, stdout=PIPE, stderr=PIPE)
+    # run klist to get list of principals
+    klist = Popen(['klist'], stdout=PIPE, stderr=PIPE)
     out, err = klist.communicate()
     if klist.returncode:
-        raise KerberosError("Cannot read keytab '%s'" % keytab)
+        raise KerberosError(err)
+
+    # parse list of principals
     principals = []
     for line in out.splitlines():
         try:
-            n, principal, _ = re.split('\s+', line.decode('utf-8').strip(' '), 2)
-        except ValueError:
+            principals.append(
+                KLIST_REGEX.match(line.decode('utf-8')
+            ).groupdict()['principal'])
+        except AttributeError:
             continue
-        else:
-            if not n.isdigit():
-                continue
-            principals.append(principal.split('@'))
     return principals
