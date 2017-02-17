@@ -1,2 +1,4 @@
 include LICENSE README.md MANIFEST.in
 include vcs.py
+include versioneer.py
+include ligo/org/_version.py

@@ -21,9 +21,12 @@
 
 from . import version
 
-__author__ = 'Duncan Macleod <duncan.macleod@ligo.org>'
-__credits__ = 'Scott Koranda <scott.koranda@ligo.org>'
-__version__ = version.version
-
 from .ecp import *
 from .kerberos import *
+from ._version import get_versions
+
+__author__ = 'Duncan Macleod <duncan.macleod@ligo.org>'
+__credits__ = 'Scott Koranda <scott.koranda@ligo.org>'
+__version__ = get_versions()['version']
+
+del get_versions
