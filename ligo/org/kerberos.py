@@ -27,24 +27,20 @@ See the documentation of the `kinit` function for example usage
 import getpass
 import os
 import sys
+import re
+from subprocess import (PIPE, Popen)
 
 try:
     raw_input
 except NameError:
     raw_input = input
 
-import re
-from subprocess import (PIPE, Popen)
-
-from . import version
 __author__ = "Duncan Macleod <duncan.macleod@ligo.org>"
-__version__ = version.version
+__all__ = ['kinit', 'klist']
 
-__all__ = ['kinit']
-
-KLIST_REGEX = re.compile("(?P<start>\d\d/\d\d/\d\d\d\d\s\d\d:\d\d:\d\d)\s+"
-                         "(?P<expiry>\d\d/\d\d/\d\d\d\d\s\d\d:\d\d:\d\d)\s+"
-                         "(?P<principal>(.*)$)")
+KLIST_REGEX = re.compile(r"(?P<start>\d\d/\d\d/\d\d\d\d\s\d\d:\d\d:\d\d)\s+"
+                         r"(?P<expiry>\d\d/\d\d/\d\d\d\d\s\d\d:\d\d:\d\d)\s+"
+                         r"(?P<principal>(.*)$)")
 
 
 class KerberosError(RuntimeError):
@@ -71,7 +67,7 @@ def which(program):
     """
     def is_exe(fpath):
         return os.path.isfile(fpath) and os.access(fpath, os.X_OK)
-    fpath, fname = os.path.split(program)
+    fpath, _ = os.path.split(program)
     if fpath:
         if is_exe(program):
             return program
@@ -158,9 +154,9 @@ def kinit(username=None, password=None, realm=None, exe=None, keytab=None,
                              "realm: " % realm)
     if not keytab and password is None:
         verbose = True
-        password = getpass.getpass(prompt="Password for %s@%s: "
-                                          % (username, realm),
-                                   stream=sys.stdout)
+        password = getpass.getpass(
+            prompt="Password for %s@%s: " % (username, realm),
+            stream=sys.stdout)
     if keytab:
         cmd = [exe, '-k', '-t', keytab, '%s@%s' % (username, realm)]
     else:
@@ -187,9 +183,9 @@ def klist():
         path to keytab file
     """
     # run klist to get list of principals
-    klist = Popen(['klist'], stdout=PIPE, stderr=PIPE)
-    out, err = klist.communicate()
-    if klist.returncode:
+    klist_ = Popen(['klist'], stdout=PIPE, stderr=PIPE)
+    out, err = klist_.communicate()
+    if klist_.returncode:
         raise KerberosError(err)
 
     # parse list of principals
@@ -198,7 +194,33 @@ def klist():
         try:
             principals.append(
                 KLIST_REGEX.match(line.decode('utf-8')
-            ).groupdict()['principal'])
+                ).groupdict()['principal'])
         except AttributeError:
             continue
+    return principals
+
+
+def parse_keytab(keytab):
+    """Read service principals from a keytab file
+
+    Parameters
+    ----------
+    keytab : `str`
+        path to keytab file
+    """
+    cmd = ['klist', '-k', '-K', keytab]
+    klist_ = Popen(cmd, stdout=PIPE, stderr=PIPE)
+    out, err = klist_.communicate()
+    if klist_.returncode:
+        raise KerberosError(err)
+    principals = []
+    for line in out.splitlines():
+        try:
+            n, principal, _ = line.decode('utf-8').split(None, 2)
+        except ValueError:
+            continue
+        else:
+            if not n.isdigit():
+                continue
+            principals.append(principal.split('@'))
     return principals
