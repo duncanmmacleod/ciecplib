@@ -1,5 +1,7 @@
 # LIGO.ORG for Python
 
+[![Build Status](https://travis-ci.org/duncanmmacleod/ligo.org.svg?branch=master)](https://travis-ci.org/duncanmmacleod/ligo.org)  
+
 This small python package provides a native Python client to access LIGO.ORG-authenticated web content.
 
 The core of this package was written by Scott Koranda, while the rest of the package is maintained by [Duncan Macleod](//github.com/duncanmmacleod).
@@ -25,4 +27,4 @@ the basic usage is as follows
 >>> response = request('https://somewhere.ligo.org/mywebpage/')
 ```
 
-The `response` is then a file-like object from which data can be read.
+The `response` is then a `str` object from which data can be read.
