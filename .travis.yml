@@ -9,9 +9,14 @@ python:
 before_install:
   - pip install --quiet --upgrade pip
   - pip install -r requirements.txt
+  - pip install pytest
 
 install:
   - pip install .
+
+script:
+  # no tests just yet, this is required for the build configuration to run
+  - pytest
 
 cache:
   pip: true
