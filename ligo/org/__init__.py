@@ -19,8 +19,6 @@
 """This module provides LIGO.ORG authenticated HTML queries
 """
 
-from . import version
-
 from .ecp import *
 from .kerberos import *
 from ._version import get_versions
