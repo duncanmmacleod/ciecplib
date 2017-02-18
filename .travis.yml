@@ -16,7 +16,7 @@ install:
 
 script:
   # no tests just yet, this is required for the build configuration to run
-  - pytest
+  - py.test tests.py
 
 cache:
   pip: true
