@@ -19,8 +19,6 @@
 from __future__ import (print_function, absolute_import)
 
 import os
-import urllib2
-import cookielib
 import re
 import getpass
 import base64
@@ -29,7 +27,10 @@ import time
 from tempfile import gettempdir
 from copy import deepcopy
 
+from six.moves import http_cookiejar
+from six.moves.urllib import (request as urllib_request)
 from six.moves.urllib.parse import urlparse
+from six.moves.urllib.error import HTTPError
 
 from lxml import etree
 
@@ -46,12 +47,12 @@ COOKIE_JAR = os.path.join(gettempdir(), 'ecpcookie.u%d' % os.getuid())
 
 # -- authentication -----------------------------------------------------------
 
-class HTTPNegotiateAuthHandler(urllib2.BaseHandler):
+class HTTPNegotiateAuthHandler(urllib_request.BaseHandler):
     """Kerberos-based authentication handler
 
     This class uses an existing Kerberos ticket to authenticate
     via HTTP Negotiate Authentication. An instance of this class
-    can be passed into the build_opener function from the urllib2
+    can be passed into the build_opener function from the urllib.request
     module.
 
     Modified from source found at
@@ -88,7 +89,7 @@ class HTTPNegotiateAuthHandler(urllib2.BaseHandler):
             return None
 
         if self.retried > 5:
-            raise urllib2.HTTPError(
+            raise HTTPError(
                 req.get_full_url(), 401, "negotiate auth failed",
                 headers, None)
         self.retried += 1
@@ -133,7 +134,7 @@ class HTTPNegotiateAuthHandler(urllib2.BaseHandler):
 
 # -- cookie jar ---------------------------------------------------------------
 
-class ECPCookieJar(cookielib.MozillaCookieJar):
+class ECPCookieJar(http_cookiejar.MozillaCookieJar):
     """Custom cookie jar
 
     Adapted from
@@ -157,7 +158,7 @@ class ECPCookieJar(cookielib.MozillaCookieJar):
                     expires = "0"
                 if cookie.value is None:
                     # cookies.txt regards 'Set-Cookie: foo' as a cookie
-                    # with no name, whereas cookielib regards it as a
+                    # with no name, whereas cookiejar regards it as a
                     # cookie with no value.
                     name = ""
                     value = cookie.name
@@ -218,18 +219,18 @@ def request(url, endpoint=IDP_ENDPOINTS['LIGO.ORG'], use_kerberos=None,
     if os.path.exists(COOKIE_JAR):
         try:
             cookie_jar.load(COOKIE_JAR, ignore_discard=True)
-        except cookielib.LoadError as e:
+        except http_cookiejar.LoadError as e:
             warnings.warn('Caught error loading ECP cookie: %s' % str(e))
 
-    cookie_handler = urllib2.HTTPCookieProcessor(cookie_jar)
+    cookie_handler = urllib_request.HTTPCookieProcessor(cookie_jar)
 
     # need an instance of HTTPS handler to do HTTPS
-    httpsHandler = urllib2.HTTPSHandler(debuglevel = 0)
+    httpsHandler = urllib_request.HTTPSHandler(debuglevel = 0)
     if debug:
         httpsHandler.set_http_debuglevel(1)
 
     # create the base opener object
-    opener = urllib2.build_opener(cookie_handler, httpsHandler)
+    opener = urllib_request.build_opener(cookie_handler, httpsHandler)
 
     # get kerberos credentials if available
     if use_kerberos is None:
@@ -253,7 +254,7 @@ def request(url, endpoint=IDP_ENDPOINTS['LIGO.ORG'], use_kerberos=None,
     }
 
     # request target from SP
-    request = urllib2.Request(url=url, headers=headers)
+    request = urllib_request.Request(url=url, headers=headers)
     response = opener.open(request)
 
     # convert the SP resonse from string to etree Element object
@@ -278,7 +279,8 @@ def request(url, endpoint=IDP_ENDPOINTS['LIGO.ORG'], use_kerberos=None,
 
     # -- authenticate with endpoint -------------
 
-    request = urllib2.Request(endpoint, data=etree.tostring(idp_request))
+    request = urllib_request.Request(endpoint,
+                                     data=etree.tostring(idp_request))
     request.get_method = lambda: 'POST'
     request.add_header('Content-Type', 'test/xml; charset=utf-8')
 
@@ -309,7 +311,7 @@ def request(url, endpoint=IDP_ENDPOINTS['LIGO.ORG'], use_kerberos=None,
     headers = {'Content-Type' : 'application/vnd.paos+xml'}
 
     # POST the package to the SP
-    request = urllib2.Request(url=assertion_consumer_service,
+    request = urllib_request.Request(url=assertion_consumer_service,
                               data=etree.tostring(sp_package), headers=headers)
     request.get_method = lambda: 'POST'
     response = opener.open(request)
@@ -320,7 +322,7 @@ def request(url, endpoint=IDP_ENDPOINTS['LIGO.ORG'], use_kerberos=None,
 
     # -- actually send GET ----------------------
 
-    request = urllib2.Request(url=url)
+    request = urllib_request.Request(url=url)
     response = opener.open(request)
     out = response.read()
 
