@@ -60,6 +60,7 @@ setup(
     namespace_packages=['ligo'],
     include_package_data=True,
     cmdclass=cmdclass,
+    install_requires=requires,
     requires=requires,
     classifiers=[
         'Intended Audience :: Science/Research',
