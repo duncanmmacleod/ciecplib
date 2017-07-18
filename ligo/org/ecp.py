@@ -292,7 +292,7 @@ def request(url, endpoint=IDP_ENDPOINTS['LIGO.ORG'], use_kerberos=None,
         # combine the login and password, base64 encode, and send
         # using the Authorization header
         base64string = base64.encodestring(
-            '%s:%s' % (login, password)).replace('\n', '')
+            ('%s:%s' % (login, password)).encode()).decode().replace('\n', '')
         request.add_header('Authorization', 'Basic %s' % base64string)
 
     response = opener.open(request)
