@@ -27,7 +27,7 @@ import time
 from tempfile import gettempdir
 from copy import deepcopy
 
-from six.moves import http_cookiejar
+from six.moves import http_cookiejar, input
 from six.moves.urllib import (request as urllib_request)
 from six.moves.urllib.parse import urlparse
 from six.moves.urllib.error import HTTPError
@@ -287,12 +287,12 @@ def request(url, endpoint=IDP_ENDPOINTS['LIGO.ORG'], use_kerberos=None,
     # get credentials for non-kerberos request
     if not use_kerberos:
         # prompt the user for a password
-        login = raw_input("Enter username for %s: ")
+        login = input("Enter username for %s: " % login_host)
         password = getpass.getpass("Enter password for login '%s': " % login)
         # combine the login and password, base64 encode, and send
         # using the Authorization header
         base64string = base64.encodestring(
-            '%s:%s' % (login, password)).replace('\n', '')
+            ('%s:%s' % (login, password)).encode()).decode().replace('\n', '')
         request.add_header('Authorization', 'Basic %s' % base64string)
 
     response = opener.open(request)
