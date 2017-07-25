@@ -324,8 +324,4 @@ def request(url, endpoint=IDP_ENDPOINTS['LIGO.ORG'], use_kerberos=None,
 
     request = urllib_request.Request(url=url)
     response = opener.open(request)
-    out = response.read()
-
-    if isinstance(out, bytes):
-        return out.decode('utf-8')
-    return out
+    return response.read()
