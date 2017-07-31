@@ -235,11 +235,14 @@ def request(url, endpoint=IDP_ENDPOINTS['LIGO.ORG'], use_kerberos=None,
     # get kerberos credentials if available
     if use_kerberos is None:
         try:
-            klist()
+            creds = klist()
         except KerberosError:
             use_kerberos = False
         else:
-            use_kerberos = True
+            if creds:
+                use_kerberos = True
+            else:
+                use_kerberos = False
     if use_kerberos:
         opener.add_handler(HTTPNegotiateAuthHandler(
             service_principal='HTTP@%s' % login_host))

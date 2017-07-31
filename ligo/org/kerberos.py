@@ -28,6 +28,7 @@ import getpass
 import os
 import sys
 import re
+from datetime import datetime
 from subprocess import (PIPE, Popen)
 
 from six.moves import http_cookiejar, input
@@ -189,11 +190,14 @@ def klist():
     principals = []
     for line in out.splitlines():
         try:
-            principals.append(
-                KLIST_REGEX.match(line.decode('utf-8')
-                ).groupdict()['principal'])
+            cred = KLIST_REGEX.match(line.decode('utf-8')
+                ).groupdict()
         except AttributeError:
             continue
+        else:
+            expiry = datetime.strptime(cred['expiry'], '%d/%m/%Y %H:%M:%S')
+            if expiry > datetime.now():
+                principals.append(cred['principal'])
     return principals
 
 
