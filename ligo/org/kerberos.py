@@ -25,6 +25,7 @@ See the documentation of the `kinit` function for example usage
 """
 
 import getpass
+import locale
 import os
 import sys
 import re
@@ -35,6 +36,9 @@ from six.moves import http_cookiejar, input
 
 __author__ = "Duncan Macleod <duncan.macleod@ligo.org>"
 __all__ = ['kinit', 'klist']
+
+# set locale for parsing datetimes from klist
+locale.setlocale(locale.LC_TIME, '')
 
 KLIST_REGEX = re.compile(r"(?P<start>\d\d/\d\d/\d\d\d\d\s\d\d:\d\d:\d\d)\s+"
                          r"(?P<expiry>\d\d/\d\d/\d\d\d\d\s\d\d:\d\d:\d\d)\s+"
@@ -195,7 +199,7 @@ def klist():
         except AttributeError:
             continue
         else:
-            expiry = datetime.strptime(cred['expiry'], '%d/%m/%Y %H:%M:%S')
+            expiry = datetime.strptime(cred['expiry'], '%x %H:%M:%S')
             if expiry > datetime.now():
                 principals.append(cred['principal'])
     return principals
