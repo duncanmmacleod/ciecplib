@@ -1,0 +1,28 @@
+Source: ligo-dot-org
+Maintainer: Paul Hopkins <paul.hopkins@ligo.org>
+Section: python
+Priority: optional
+Build-Depends: debhelper (>= 9), dh-python, python-all-dev, python3-all-dev, python-setuptools, python3-setuptools
+Standards-Version: 3.9.8
+X-Python-Version: >=2.7
+X-Python3-Version: >=3.4
+
+Package: python-ligo-dot-org
+Architecture: all
+Depends: ${misc:Depends}, ${python:Depends}, python-ligo-common, python-setuptools, python-six, python-lxml, krb5-user
+Provides: ${python:Provides}
+Description: Python client for LIGO.ORG-authenticated HTTPS requests
+ This small python package provides a native Python client to access
+ LIGO.ORG-authenticated web content.
+ .
+ This package provides Python support.
+
+Package: python3-ligo-dot-org
+Architecture: all
+Depends: ${misc:Depends}, ${python3:Depends}, python3-ligo-common, python3-setuptools, python3-six, python3-lxml, krb5-user
+Provides: ${python3:Provides}
+Description: Python client for LIGO.ORG-authenticated HTTPS requests
+ This small python package provides a native Python client to access
+ LIGO.ORG-authenticated web content.
+ .
+ This package provides Python 3 support.

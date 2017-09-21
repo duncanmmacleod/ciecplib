@@ -1,3 +1,5 @@
 include LICENSE README.md MANIFEST.in
 include versioneer.py
 include ligo/org/_version.py
+include ligo-dot-org.spec
+recursive-include debian *
