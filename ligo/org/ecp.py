@@ -325,6 +325,7 @@ def request(url, endpoint=IDP_ENDPOINTS['LIGO.ORG'], use_kerberos=None,
 
     # -- actually send GET ----------------------
 
-    request = urllib_request.Request(url=url)
+    myheaders = {'Accept': 'text/*'}    # allow any text mime not only html
+    request = urllib_request.Request(url=url, headers=myheaders)
     response = opener.open(request)
     return response.read()
