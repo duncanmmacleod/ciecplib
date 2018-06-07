@@ -28,7 +28,7 @@ from distutils import log
 from distutils.cmd import Command
 from distutils.dist import Distribution
 
-PACKAGENAME = 'ligo-dot-org'
+PACKAGENAME = 'ligo.org'
 PROVIDES = 'ligo.org'
 AUTHOR = 'Duncan Macleod'
 AUTHOR_EMAIL = 'duncan.macleod@ligo.org'
