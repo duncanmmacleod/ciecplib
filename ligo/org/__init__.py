@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright (C) Duncan Macleod (2013)
+# Copyright (C) Duncan Macleod (2019)
 #
 # This file is part of LIGO.ORG.
 #
@@ -16,15 +16,12 @@
 # You should have received a copy of the GNU General Public License
 # along with LIGO.ORG.  If not, see <http://www.gnu.org/licenses/>.
 
-"""This module provides LIGO.ORG authenticated HTML queries
+"""A python client for LIGO.ORG SAML ECP authentication
 """
 
 from .ecp import *
 from .kerberos import *
-from ._version import get_versions
 
 __author__ = 'Duncan Macleod <duncan.macleod@ligo.org>'
 __credits__ = 'Scott Koranda <scott.koranda@ligo.org>'
-__version__ = get_versions()['version']
-
-del get_versions
+__version__ = "0.1.0"
