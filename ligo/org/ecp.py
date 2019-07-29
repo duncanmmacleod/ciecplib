@@ -36,7 +36,7 @@ from lxml import etree
 
 import kerberos  # pykerberos module
 
-from .kerberos import (klist, KerberosError)  # local kerberos utils
+from .kerberos import has_credential
 
 IDP_ENDPOINTS = {
     "LIGO.ORG": "https://login.ligo.org/idp/profile/SAML2/SOAP/ECP",
@@ -234,15 +234,7 @@ def request(url, endpoint=IDP_ENDPOINTS['LIGO.ORG'], use_kerberos=None,
 
     # get kerberos credentials if available
     if use_kerberos is None:
-        try:
-            creds = klist()
-        except KerberosError:
-            use_kerberos = False
-        else:
-            if creds:
-                use_kerberos = True
-            else:
-                use_kerberos = False
+        use_kerberos = has_credential()
     if use_kerberos:
         opener.add_handler(HTTPNegotiateAuthHandler(
             service_principal='HTTP@%s' % login_host))
