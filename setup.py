@@ -1,6 +1,5 @@
-#!/usr/bin/env python
 # -*- coding: utf-8 -*-
-# Copyright (C) Duncan Macleod (2015)
+# Copyright (C) Duncan Macleod (2019)
 #
 # This file is part of LIGO.ORG.
 #
@@ -17,16 +16,10 @@
 # You should have received a copy of the GNU General Public License
 # along with LIGO.ORG.  If not, see <http://www.gnu.org/licenses/>.
 
-import os
-import subprocess
-import hashlib
-import sys
+import os.path
+import re
 
 from setuptools import (find_packages, setup)
-from setuptools.command import (build_py, egg_info)
-from distutils import log
-from distutils.cmd import Command
-from distutils.dist import Distribution
 
 PACKAGENAME = 'ligo.org'
 PROVIDES = 'ligo.org'
@@ -34,42 +27,65 @@ AUTHOR = 'Duncan Macleod'
 AUTHOR_EMAIL = 'duncan.macleod@ligo.org'
 LICENSE = 'GPLv3'
 
-# -- versioning ---------------------------------------------------------------
 
-import versioneer
-__version__ = versioneer.get_version()
-cmdclass = versioneer.get_cmdclass()
+def find_version(path, varname="__version__"):
+    """Parse the version metadata in the given file.
+    """
+    with open(path, 'r') as fp:
+        version_file = fp.read()
+    version_match = re.search(
+        r"^{} = ['\"]([^'\"]*)['\"]".format(varname),
+        version_file,
+        re.M,
+    )
+    if version_match:
+        return version_match.group(1)
+    raise RuntimeError("Unable to find version string.")
 
-# -- setup --------------------------------------------------------------------
 
 packagenames = find_packages()
-requires = ['kerberos', 'six', 'lxml']
 
 setup(
     # distribution metadata
-    name=PACKAGENAME,
-    provides=[PROVIDES],
-    version=__version__,
-    description="A python client for LIGO.ORG-authenticated HTTP requests",
-    author=AUTHOR,
-    author_email=AUTHOR_EMAIL,
-    license=LICENSE,
+    name="ligo.org",
+    version=find_version(os.path.join("ligo", "org", "__init__.py")),
+    author="Duncan Macleod <duncan.macleod@ligo.org>",
+    author_email="duncan.macleod@ligo.org",
+    license="GPL-3.0-or-later",
+    description="A python client for LIGO.ORG SAML ECP authentication",
+    long_description=open("README.md", "r").read(),
+    long_description_content_type="text/markdown",
     url='https://github.com/duncanmmacleod/ligo.org/',
-    # package metadata
-    packages=packagenames,
-    namespace_packages=['ligo'],
-    include_package_data=True,
-    cmdclass=cmdclass,
-    install_requires=requires,
-    requires=requires,
     classifiers=[
         'Intended Audience :: Science/Research',
         'License :: OSI Approved :: GNU General Public License v3 (GPLv3)',
         'Operating System :: OS Independent',
-        'Programming Language :: Python :: 2.6',
         'Programming Language :: Python :: 2.7',
         'Programming Language :: Python :: 3',
+        'Programming Language :: Python :: 3.4',
+        'Programming Language :: Python :: 3.5',
+        'Programming Language :: Python :: 3.6',
+        'Programming Language :: Python :: 3.7',
         'Topic :: Scientific/Engineering :: Astronomy',
         'Topic :: Scientific/Engineering :: Physics'
+    ],
+    # contents
+    packages=find_packages(),
+    namespace_packages=['ligo'],
+    entry_points={
+        "console_scripts": [
+            "ligo-proxy-init=ligo.org.tool.ligo_proxy_init:main",
+            "ligo-curl=ligo.org.tool.ligo_curl:main",
+        ],
+    },
+    # dependencies
+    install_requires=[
+        "setuptools",
+    ],
+    requires=[
+        "kerberos",
+        "lxml",
+        "M2Crypto",
+        "pyOpenSSL",
     ],
 )

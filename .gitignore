@@ -31,9 +31,6 @@ pip-delete-this-directory.txt
 /docs/_build
 /docs/_generated
 
-# Version information
-/ligo/org/version.py
-
 # OS/editor files
 *.swp
 .DS_Store

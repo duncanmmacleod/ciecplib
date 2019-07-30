@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright (C) Duncan Macleod (2017)
+# Copyright (C) Duncan Macleod (2019)
 #
 # This file is part of LIGO.ORG.
 #
@@ -18,236 +18,113 @@
 
 from __future__ import (print_function, absolute_import)
 
-import os
-import re
-import getpass
 import base64
-import warnings
-import time
-from tempfile import gettempdir
-from copy import deepcopy
-
-from six.moves import http_cookiejar, input
-from six.moves.urllib import (request as urllib_request)
-from six.moves.urllib.parse import urlparse
-from six.moves.urllib.error import HTTPError
+try:
+    from urllib import (
+        request as urllib_request,
+        parse as urllib_parse,
+    )
+    from urllib.error import URLError
+    from http.cookiejar import CookieJar
+except ImportError:  # python < 3
+    import urllib2 as urllib_request
+    import urlparse as urllib_parse
+    from cookielib import CookieJar
+    URLError = urllib_request.URLError
 
 from lxml import etree
 
-import kerberos  # pykerberos module
-
-from .kerberos import (klist, KerberosError)  # local kerberos utils
-
-IDP_ENDPOINTS = {
-    "LIGO.ORG": "https://login.ligo.org/idp/profile/SAML2/SOAP/ECP",
-}
-
-COOKIE_JAR = os.path.join(gettempdir(), 'ecpcookie.u%d' % os.getuid())
+from .http import build_verified_opener
+from .utils import (
+    DEFAULT_SP_URL,
+    format_endpoint_url,
+    prompt_username_password,
+)
 
 
-# -- authentication -----------------------------------------------------------
-
-class HTTPNegotiateAuthHandler(urllib_request.BaseHandler):
-    """Kerberos-based authentication handler
-
-    This class uses an existing Kerberos ticket to authenticate
-    via HTTP Negotiate Authentication. An instance of this class
-    can be passed into the build_opener function from the urllib.request
-    module.
-
-    Modified from source found at
-
-    http://selenic.com/pipermail/mercurial/2008-June/019776.html
-
-    Parameters
-    ----------
-    service_principal : `str`, optional
-        the Kerberos principal of the authentication host
-    """
-    rx = re.compile('(?:.*,)*\s*Negotiate\s*([^,]*),?', re.I)
-    handler_order = 480  # before Digest auth
-
-    def __init__(self, service_principal='HTTP@login.ligo.org'):
-        """Create a new `HTTPNegotiateAuthHandler`
-        """
-        self.retried = 0
-        self.context = None
-        self.service_principal = service_principal
-
-    def negotiate_value(self, headers):
-        authreq = headers.get('www-authenticate', None)
-        if authreq:
-            mo = HTTPNegotiateAuthHandler.rx.search(authreq)
-            if mo:
-                return mo.group(1)
-        return None
-
-    def generate_request_header(self, req, headers):
-        neg_value = self.negotiate_value(headers)
-        if neg_value is None:
-            self.retried = 0
-            return None
-
-        if self.retried > 5:
-            raise HTTPError(
-                req.get_full_url(), 401, "negotiate auth failed",
-                headers, None)
-        self.retried += 1
-
-        result, self.context = kerberos.authGSSClientInit(
-            self.service_principal)
-        if result < 1:
-            return None
-
-        if kerberos.authGSSClientStep(self.context, neg_value) < 0:
-            return None
-        return 'Negotiate %s' % kerberos.authGSSClientResponse(self.context)
-
-    def authenticate_server(self, headers):
-        neg_value = self.negotiate_value(headers)
-        if neg_value is None:
-            return None
-        elif kerberos.authGSSClientStep(self.context, neg_value) < 1:
-            pass
-
-    def clean_context(self):
-        if self.context is not None:
-            kerberos.authGSSClientClean(self.context)
-
-    def http_error_401(self, req, fp, code, msg, headers):
-        try:
-            neg_hdr = self.generate_request_header(req, headers)
-
-            if neg_hdr is None:
-                return None
-
-            req.add_unredirected_header('Authorization', neg_hdr)
-            resp = self.parent.open(req)
-
-            self.authenticate_server(resp.info())
-
-            return resp
-
-        finally:
-            self.clean_context()
+def get_xml_attribute(xdata, path, namespaces=None):
+    if namespaces is None:
+        namespaces = {
+            'ecp': 'urn:oasis:names:tc:SAML:2.0:profiles:SSO:ecp',
+            'S': 'http://schemas.xmlsoap.org/soap/envelope/',
+            'paos': 'urn:liberty:paos:2003-08'
+        }
+    return xdata.xpath(path, namespaces=namespaces)[0]
 
 
-# -- cookie jar ---------------------------------------------------------------
-
-class ECPCookieJar(http_cookiejar.MozillaCookieJar):
-    """Custom cookie jar
-
-    Adapted from
-    https://wiki.shibboleth.net/confluence/download/attachments/4358416/ecp.py
-    """
-    def save(self, filename=None, ignore_discard=False, ignore_expires=False):
-        with open(filename, 'w') as f:
-            f.write(self.header)
-            for cookie in self:
-                if not ignore_discard and cookie.discard:
-                    continue
-                if not ignore_expires and cookie.is_expired(time.time()):
-                    continue
-                if cookie.expires is not None:
-                    expires = str(cookie.expires)
-                else:
-                    # change so that if a cookie does not have an expiration
-                    # date set it is saved with a '0' in that field instead
-                    # of a blank space so that the curl libraries can
-                    # read in and use the cookie
-                    expires = "0"
-                if cookie.value is None:
-                    # cookies.txt regards 'Set-Cookie: foo' as a cookie
-                    # with no name, whereas cookiejar regards it as a
-                    # cookie with no value.
-                    name = ""
-                    value = cookie.name
-                else:
-                    name = cookie.name
-                    value = cookie.value
-                print('\t'.join([
-                    cookie.domain, str(cookie.domain.startswith('.')).upper(),
-                    cookie.path, str(cookie.secure).upper(), expires, name,
-                    value]), file=f)
+def report_soap_fault(opener, url):
+    soapfault = """
+        <S:Envelope xmlns:S="http://schemas.xmlsoap.org/soap/envelope/">
+           <S:Body>
+             <S:Fault>
+                <faultcode>S:Server</faultcode>
+                <faultstring>responseConsumerURL from SP and assertionConsumerServiceURL from IdP do not match</faultstring>
+             </S:Fault>
+           </S:Body>
+        </S:Envelope>"""  # noqa
+    headers = {'Content-Type': 'application/vnd.paos+xml'}
+    request = urllib_request.Request(url, headers=headers, data=soapfault)
+    return opener.open(request)
 
 
-# -- requester ----------------------------------------------------------------
-
-def request(url, endpoint=IDP_ENDPOINTS['LIGO.ORG'], use_kerberos=None,
-            debug=False):
-    """Request the given URL using ECP shibboleth authentication
-
-    This requires an active Kerberos ticket for the user, to get one:
-
-        >>> from ligo.org import kinit
-        >>> kinit('albert.einstein')
-
-    Then request as follows
-
-        >>> from ligo.org import request
-        >>> response = request(myurl)
-        >>> print(response.read())
-
-    Adapted from
-    https://wiki.shibboleth.net/confluence/download/attachments/4358416/ecp.py
+def authenticate(
+        endpoint,
+        kerberos=False,
+        spurl=DEFAULT_SP_URL,
+        cookiejar=None,
+        username=None,
+        debug=False,
+        **kwargs
+):
+    """Authenticate against an endpoint using ECP
 
     Parameters
     ----------
-    url : `str`
-        URL path for request
-
     endpoint : `str`
-        ECP endpoint URL for request
+        the URL of the ECP endpoint to negotiate with
 
-    use_kerberos : `bool`, optional
-        use existing kerberos credential for login, default is to try, but
-        fall back to username/password prompt
+    kerberos : `bool`, or `str`, optional
+        a `str` denoting the endpoint to use for kerberos negotiation,
+        or `True` to use kerberos negotiation with the standard endpoint,
+        otherwise do not use kerberos
 
-    debug : `bool`, optional, default: `False`
-        query in verbose debugging mode
+    username : `str`, optional
+        the username registered at the endpoint, if not given, and
+        not using kerberos, this will be prompted for
+
+    spurl : `str`, optional
+        the URL of the service provider to authenticate against
+
+    cookiejar : `http.cookiejar.CookieJar`, optional
+        a cookie jar to store cookies in
+
+    **kwargs
+        other keyword arguments are passed to
+        :func:`ligo.org.utils.build_verified_opener`
 
     Returns
     -------
-    response : `str`
-        the raw (decoded) response from the URL, probably XML/HTML or JSON
+    cookie : `http.cookiejar.Cookie`
+        the newly created shibsession cookie
+    cookiejar : `http.cookiejar.CookieJar`
+        the cookiejar that contains the cookie(s)
     """
-    login_host = urlparse(endpoint).netloc
+    endpoint = format_endpoint_url(endpoint)
 
-    # create a cookie jar and cookie handler (and read existing cookies)
-    cookie_jar = ECPCookieJar()
+    if kerberos is True:
+        kerberos = endpoint
 
-    if os.path.exists(COOKIE_JAR):
-        try:
-            cookie_jar.load(COOKIE_JAR, ignore_discard=True)
-        except http_cookiejar.LoadError as e:
-            warnings.warn('Caught error loading ECP cookie: %s' % str(e))
+    # build HTTP request opener (if not given)
+    if cookiejar is None:
+        cookiejar = CookieJar()
+    opener = build_verified_opener(
+        cookiejar=cookiejar,
+        krb_endpoint=kerberos,
+        debug=debug,
+        **kwargs
+    )
 
-    cookie_handler = urllib_request.HTTPCookieProcessor(cookie_jar)
-
-    # need an instance of HTTPS handler to do HTTPS
-    httpsHandler = urllib_request.HTTPSHandler(debuglevel = 0)
-    if debug:
-        httpsHandler.set_http_debuglevel(1)
-
-    # create the base opener object
-    opener = urllib_request.build_opener(cookie_handler, httpsHandler)
-
-    # get kerberos credentials if available
-    if use_kerberos is None:
-        try:
-            creds = klist()
-        except KerberosError:
-            use_kerberos = False
-        else:
-            if creds:
-                use_kerberos = True
-            else:
-                use_kerberos = False
-    if use_kerberos:
-        opener.add_handler(HTTPNegotiateAuthHandler(
-            service_principal='HTTP@%s' % login_host))
-
-    # -- intiate ECP request --------------------
+    # -- step 1: initiate ECP request -----------
 
     # headers needed to indicate to the SP an ECP request
     headers = {
@@ -257,75 +134,104 @@ def request(url, endpoint=IDP_ENDPOINTS['LIGO.ORG'], use_kerberos=None,
     }
 
     # request target from SP
-    request = urllib_request.Request(url=url, headers=headers)
+    request = urllib_request.Request(
+        url=spurl or endpoint,
+        headers=headers,
+    )
     response = opener.open(request)
+    data = response.read()
+    if debug:
+        print("##### begin SP response\n")
+        print(data.decode("utf-8"))
+        print("\n##### end SP response")
 
     # convert the SP resonse from string to etree Element object
-    sp_response = etree.XML(response.read())
+    spetree = etree.XML(data)
 
     # pick out the relay state element from the SP so that it can
     # be included later in the response to the SP
-    namespaces = {
-        'ecp' : 'urn:oasis:names:tc:SAML:2.0:profiles:SSO:ecp',
-        'S'   : 'http://schemas.xmlsoap.org/soap/envelope/',
-        'paos': 'urn:liberty:paos:2003-08'
-        }
+    relaystate = get_xml_attribute(
+        spetree,
+        "//ecp:RelayState",
+    )
+    rcurl = get_xml_attribute(
+        spetree,
+        "/S:Envelope/S:Header/paos:Request/@responseConsumerURL",
+    )
 
-    relay_state = sp_response.xpath("//ecp:RelayState",
-                                    namespaces=namespaces)[0]
+    # remote the SOAP header to create a packge for the IdP
+    idpbody = spetree
+    idpbody.remove(idpbody[0])
 
-    # make a deep copy of the SP response and then remove the header
-    # in order to create the package for the IdP
-    idp_request = deepcopy(sp_response)
-    header = idp_request[0]
-    idp_request.remove(header)
+    # -- step 2: authenticate with endpoint -----
 
-    # -- authenticate with endpoint -------------
-
-    request = urllib_request.Request(endpoint,
-                                     data=etree.tostring(idp_request))
-    request.get_method = lambda: 'POST'
-    request.add_header('Content-Type', 'test/xml; charset=utf-8')
+    request = urllib_request.Request(
+        endpoint,
+        method='POST',
+        data=etree.tostring(idpbody),
+    )
+    request.add_header('Content-Type', 'text/xml; charset=utf-8')
 
     # get credentials for non-kerberos request
-    if not use_kerberos:
+    if not kerberos:
         # prompt the user for a password
-        login = input("Enter username for %s: " % login_host)
-        password = getpass.getpass("Enter password for login '%s': " % login)
-        # combine the login and password, base64 encode, and send
+        username, password = prompt_username_password(
+            urllib_parse.urlparse(endpoint).netloc.split(':')[0],
+            username=username,
+        )
         # using the Authorization header
-        base64string = base64.encodestring(
-            ('%s:%s' % (login, password)).encode()).decode().replace('\n', '')
-        request.add_header('Authorization', 'Basic %s' % base64string)
+        pair = '%s:%s' % (username, password)
+        try:
+            base64string = base64.encodebytes(
+                pair.encode('utf-8')).decode('utf-8')
+        except AttributeError:  # python < 3
+            base64string = base64.encodestring(pair)
+        request.add_header('Authorization', 'Basic {0}'.format(
+            base64string.replace('\n', '')))
 
     response = opener.open(request)
-    idp_response = etree.XML(response.read())
+    data = response.read()
 
-    assertion_consumer_service = idp_response.xpath(
-        "/S:Envelope/S:Header/ecp:Response/@AssertionConsumerServiceURL",
-        namespaces=namespaces)[0]
+    if debug:
+        print("##### begin IdP response")
+        print(data.decode("utf-8"))
+        print("##### end IdPesponse")
+
+    # -- step 3: post back to the SP ------------
+
+    try:
+        idptree = etree.XML(data)
+    except etree.XMLSyntaxError:
+        raise RuntimeError(
+            "Failed to parse response from {}, you most "
+            "likely incorrectly entered your passphrase"
+        )
+    acsurl = get_xml_attribute(
+        idptree,
+        "/S:Envelope/S:Header/ecp:Response/@AssertionConsumerServiceURL")
+
+    # validate URLs between SP and IdP
+    if acsurl != rcurl:
+        try:
+            report_soap_fault(opener, rcurl)
+        except URLError:
+            pass  # don't care, just doing a service
 
     # make a deep copy of the IdP response and replace its
     # header contents with the relay state initially sent by
     # the SP
-    sp_package = deepcopy(idp_response)
-    sp_package[0][0] = relay_state
-
-    headers = {'Content-Type' : 'application/vnd.paos+xml'}
+    actree = idptree
+    actree[0][0] = relaystate
 
     # POST the package to the SP
-    request = urllib_request.Request(url=assertion_consumer_service,
-                              data=etree.tostring(sp_package), headers=headers)
-    request.get_method = lambda: 'POST'
+    headers = {'Content-Type': 'application/vnd.paos+xml'}
+    request = urllib_request.Request(url=acsurl, method='POST',
+                                     headers=headers,
+                                     data=etree.tostring(actree))
     response = opener.open(request)
 
-    # -- cache cookies --------------------------
+    # -- done -----------------------------------
+    # we should now have an ECP cookie in the cookie jar
 
-    cookie_jar.save(COOKIE_JAR, ignore_discard=True)
-
-    # -- actually send GET ----------------------
-
-    myheaders = {'Accept': 'text/*'}    # allow any text mime not only html
-    request = urllib_request.Request(url=url, headers=myheaders)
-    response = opener.open(request)
-    return response.read()
+    cookie = cookiejar.make_cookies(response, request)[0]
+    return cookie, cookiejar

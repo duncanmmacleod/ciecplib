@@ -1,6 +1,5 @@
-#!/usr/bin/env python
 # -*- coding: utf-8 -*-
-# Copyright (C) Duncan Macleod (2013)
+# Copyright (C) Duncan Macleod (2019)
 #
 # This file is part of LIGO.ORG.
 #
@@ -17,11 +16,7 @@
 # You should have received a copy of the GNU General Public License
 # along with LIGO.ORG.  If not, see <http://www.gnu.org/licenses/>.
 
-import unittest
+"""Command-line tools for LIGO.ORG
+"""
 
-from ligo.org import request
-
-
-class LigoDotOrgTests(unittest.TestCase):
-    def test_null(self):
-        pass
+__author__ = 'Duncan Macleod <duncan.macleod@ligo.org>'
