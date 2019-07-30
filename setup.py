@@ -72,13 +72,20 @@ setup(
     # contents
     packages=find_packages(),
     namespace_packages=['ligo'],
+    entry_points={
+        "console_scripts": [
+            "ligo-proxy-init=ligo.org.tool.ligo_proxy_init:main",
+            "ligo-curl=ligo.org.tool.ligo_curl:main",
+        ],
+    },
     # dependencies
     install_requires=[
         "setuptools",
     ],
     requires=[
         "kerberos",
-        "six",
         "lxml",
+        "M2Crypto",
+        "pyOpenSSL",
     ],
 )

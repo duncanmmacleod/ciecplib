@@ -25,16 +25,16 @@ See the documentation of the `kinit` function for example usage
 """
 
 import getpass
-import locale
 import os
 import re
 import subprocess
 import sys
 from collections import OrderedDict
-from datetime import datetime
 from distutils.spawn import find_executable
+from pathlib import Path
 
-from six.moves import input
+if sys.version_info.major < 3:
+    input = raw_input  # noqa: F821
 
 __author__ = "Duncan Macleod <duncan.macleod@ligo.org>"
 
@@ -119,7 +119,7 @@ def kinit(username=None, password=None, realm=None, exe=None, keytab=None,
     # get keytab
     if keytab is None:
         keytab = os.environ.get('KRB5_KTNAME', None)
-        if keytab is None or not os.path.isfile(keytab):
+        if keytab is None or not Path(keytab).is_file():
             keytab = None
     if keytab:
         try:

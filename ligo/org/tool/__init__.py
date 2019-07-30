@@ -16,18 +16,7 @@
 # You should have received a copy of the GNU General Public License
 # along with LIGO.ORG.  If not, see <http://www.gnu.org/licenses/>.
 
-"""A python client for LIGO.ORG SAML ECP authentication
+"""Command-line tools for LIGO.ORG
 """
 
-# get a shibboleth session cookie
-from .ecp import authenticate
-
-# get an X509 certificate
-from .x509 import get_cert
-
-# request the contents of a URL
-from .request import request
-
 __author__ = 'Duncan Macleod <duncan.macleod@ligo.org>'
-__credits__ = 'Scott Koranda <scott.koranda@ligo.org>'
-__version__ = "0.1.0"
