@@ -36,20 +36,19 @@ The Python client for LIGO.ORG SAML ECP authentication.
 Summary: %{summary}
 Requires: ligo-ca-certs
 Requires: m2crypto
-Requires: osg-ca-certificates
 Requires: pyOpenSSL
 Requires: python
-Requires: python-lxml
 Requires: python-kerberos
-Requires: python2-ligo-common
+Requires: python-lxml
 Requires: python-pathlib
+Requires: python2-ligo-common
 %{?python_provide:%python_provide python2-%{pkgname}}
 %description -n python2-%{pkgname}
 The Python %{python_version} client for LIGO.ORG SAML ECP authentication.
 
 %package -n ligo-proxy-utils2
 Summary: Command line utilities for LIGO.ORG SAML ECP authentication
-Requires: python2-%{pkgname}
+Requires: python2-%{pkgname} = %{version}
 Conflicts: ligo-proxy-utils
 %description -n ligo-proxy-utils2
 Command line utilities for LIGO.ORG SAML ECP authentication, including
