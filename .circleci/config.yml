@@ -34,7 +34,7 @@ aliases:
           apt-get -yqq update;
           apt-get -yqq install swig;
 
-  - &build-debian
+  - &debian_build
       run:
         name: Build
         command: |
@@ -60,7 +60,7 @@ aliases:
               dpkg --install python*ligo-org*.deb ligo-proxy-utils2*.deb;
           };
 
-  - &build-centos
+  - &centos_build
       run:
         name: Build
         command: |
@@ -81,6 +81,29 @@ aliases:
           # install
           mv noarch/*.rpm .;
           yum -y -q --nogpgcheck localinstall ./python*ligo-org*.rpm ./ligo-proxy-utils2*.rpm;
+
+  - &debian_install_test_dependencies
+      run:
+        name: Install test dependencies
+        command: |
+          PYM="${PYTHON_VERSION:0:1}"
+          if [[ "${PYM}" -eq 2 ]]; then PYM=""; fi;
+          apt-get -yqq install \
+              python${PYM}-pytest \
+              python${PYM}-pytest-cov \
+              $([[ "${PYM}" == "" ]] && "python-mock") \
+          ;
+
+  - &centos_install_test_dependencies
+      run:
+        name: Install test dependencies
+        command: |
+          if [[ "${PYTHON_VERSION:0:1}" -eq 2 ]]; then PYXY="2"; else PYXY=${PY3XY}; fi;
+          yum -y -q install \
+              python${PYXY}-pytest \
+              python${PYXY}-pytest-cov \
+              $([ "${PYXY}" -eq 2 ] && "python2-mock") \
+          ;
 
   - &test
       run:
@@ -112,7 +135,8 @@ aliases:
   - &debian
       steps:
         - *attach_workspace
-        - *build-debian
+        - *debian_build
+        - *debian_install_test_dependencies
         - *test
         - *codecov
         - *store_test_results
@@ -122,7 +146,8 @@ aliases:
   - &centos
       steps:
         - *attach_workspace
-        - *build-centos
+        - *centos_build
+        - *centos_install_test_dependencies
         - *test
         - *codecov
         - *store_test_results
