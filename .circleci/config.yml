@@ -52,8 +52,9 @@ aliases:
           mk-build-deps --tool "apt-get -y" --install --remove;
           # build binary package
           dpkg-buildpackage -us -uc -b;
-          # mv and install
           popd;
+          dpkg --info *.deb;
+          # mv and install
           rm -rf tmp*;
           dpkg --install python*ligo-org*.deb ligo-proxy-utils2*.deb || { \
               apt-get -y -f install;
@@ -79,7 +80,8 @@ aliases:
           # build binary rpm(s)
           rpmbuild --define "_rpmdir $(pwd)" --rebuild ${SRPM};
           # install
-          mv noarch/*.rpm .;
+          mv */*.rpm .;
+          rpm -qilp *.rpm
           yum -y --nogpgcheck localinstall ./python*ligo-org*.rpm ./ligo-proxy-utils2*.rpm;
 
   - &debian_install_test_dependencies
