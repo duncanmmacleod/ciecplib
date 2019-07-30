@@ -139,6 +139,7 @@ aliases:
 
   - &debian
       steps:
+        - checkout
         - *attach_workspace
         - *debian_build
         - *debian_install_test_dependencies
@@ -150,6 +151,7 @@ aliases:
 
   - &centos
       steps:
+        - checkout
         - *attach_workspace
         - *centos_build
         - *centos_install_test_dependencies
@@ -161,6 +163,7 @@ aliases:
 
   - &python
       steps:
+        - checkout
         - *attach_workspace
         - *install_build_dependencies
         - *install
