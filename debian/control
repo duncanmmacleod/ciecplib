@@ -12,11 +12,7 @@ Build-Depends: debhelper (>= 9),
                dh-python,
                help2man,
                python-all,
-               python-setuptools,
-               python-kerberos,
-               python-ligo-common,
-               python-lxml,
-               python-m2crypto
+               python-setuptools
 
 # -- python-ligo-org ----------------------------------------------------------
 
@@ -28,7 +24,8 @@ Depends: ${misc:Depends},
          python-ligo-common,
          python-lxml,
          python-m2crypto,
-         python-openssl
+         python-openssl,
+         python-pathlib
 Recommends: ligo-ca-certs
 Description: A python client for LIGO.ORG SAML ECP authentication
 
@@ -39,10 +36,6 @@ Architecture: all
 Depends: ${misc:Depends},
          ${python:Depends},
          ligo-ca-certs,
-         python-ligo-common,
-         python-ligo-org,
-         python-lxml,
-         python-m2crypto,
-         python-openssl
+         python-ligo-org
 Conflicts: ligo-proxy-utils
 Description: Command-line utlities for LIGO.ORG SAML ECP authentication

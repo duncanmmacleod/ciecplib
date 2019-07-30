@@ -50,6 +50,7 @@ install_requires = [
     "kerberos",
     "lxml",
     "M2Crypto",
+    "pathlib ; python_version < '3.4'",
     "pyOpenSSL",
 ]
 tests_require = [

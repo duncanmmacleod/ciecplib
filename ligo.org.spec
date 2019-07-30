@@ -42,6 +42,7 @@ Requires: python
 Requires: python-lxml
 Requires: python-kerberos
 Requires: python2-ligo-common
+Requires: python-pathlib
 %{?python_provide:%python_provide python2-%{pkgname}}
 %description -n python2-%{pkgname}
 The Python %{python_version} client for LIGO.ORG SAML ECP authentication.
