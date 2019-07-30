@@ -55,7 +55,10 @@ aliases:
           # mv and install
           popd;
           rm -rf tmp*;
-          dpkg --install python*ligo-org*.deb;
+          dpkg --install python*ligo-org*.deb || { \
+              apt-get -y -f install;
+              dpkg --install python*ligo-org*.deb;
+          };
 
   - &build-centos
       run:
