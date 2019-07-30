@@ -53,7 +53,7 @@ aliases:
           # build binary package
           dpkg-buildpackage -us -uc -b;
           popd;
-          dpkg --info *.deb;
+          ls *.deb | xargs -n1 dpkg --info;
           # mv and install
           rm -rf tmp*;
           dpkg --install python*ligo-org*.deb ligo-proxy-utils2*.deb || { \
@@ -106,7 +106,7 @@ aliases:
               python${PYXY}-pytest-cov \
               $([ "${PYXY}" -eq 2 ] && "python2-mock") \
           ;
-          python${PYTHON_VERSION} -m pip install "pytest~=3.0"
+          python${PYTHON_VERSION} -m pip install "pytest~=3.0" "more-itertools < 6.0a0"
 
   - &test
       run:
