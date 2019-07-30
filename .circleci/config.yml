@@ -47,7 +47,7 @@ aliases:
           # mv and install
           popd;
           rm -rf tmp*;
-          dpkg --install python*ligo.org*.deb;
+          dpkg --install python*ligo-org*.deb;
 
   - &build-centos
       run:
@@ -68,7 +68,7 @@ aliases:
           rpmbuild --define "_rpmdir $(pwd)" --rebuild ${SRPM};
           # install
           mv noarch/*.rpm .;
-          yum -y -q --nogpgcheck localinstall ./python*ligo.org*.rpm;
+          yum -y -q --nogpgcheck localinstall ./python*ligo-org*.rpm;
 
   - &test
       run:
