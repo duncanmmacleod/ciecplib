@@ -62,8 +62,10 @@ ligo-proxy-init and ligo-curl (a LIGO.ORG-aware curl alternative).
 
 %build
 %if 0%{?rhel} && 0%{?rhel} <= 7
-# old setuptools does not support environment markers
+# old setuptools does not support environment markers:
 sed -i "/python_version/s/ ;.*/\"/g" setup.py
+# epel7 provides kerberos (not pykerberos):
+sed -i "s/pykerberos/kerberos/g" setup.py
 %endif
 %py2_build
 
