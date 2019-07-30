@@ -55,9 +55,9 @@ aliases:
           # mv and install
           popd;
           rm -rf tmp*;
-          dpkg --install python*ligo-org*.deb || { \
+          dpkg --install python*ligo-org*.deb ligo-proxy-utils2*.deb || { \
               apt-get -y -f install;
-              dpkg --install python*ligo-org*.deb;
+              dpkg --install python*ligo-org*.deb ligo-proxy-utils2*.deb;
           };
 
   - &build-centos
@@ -79,7 +79,7 @@ aliases:
           rpmbuild --define "_rpmdir $(pwd)" --rebuild ${SRPM};
           # install
           mv noarch/*.rpm .;
-          yum -y -q --nogpgcheck localinstall ./python*ligo-org*.rpm;
+          yum -y -q --nogpgcheck localinstall ./python*ligo-org*.rpm ./ligo-proxy-utils2*.rpm;
 
   - &test
       run:
