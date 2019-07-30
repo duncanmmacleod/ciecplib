@@ -69,7 +69,7 @@ aliases:
           yum -y -q install \
               rpm-build \
               yum-utils \
-              python-srpm-macros
+              python-srpm-macros \
           ;
           # build src rpm
           SRPM=$(rpmbuild --define "_topdir $(pwd)" -ts ./ligo.org-*.tar.* | cut -d\  -f2);
