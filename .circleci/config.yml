@@ -106,6 +106,7 @@ aliases:
               python${PYXY}-pytest-cov \
               $([ "${PYXY}" -eq 2 ] && "python2-mock") \
           ;
+          python${PYTHON_VERSION} -m pip install "pytest~=3.0"
 
   - &test
       run:
