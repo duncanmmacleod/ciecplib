@@ -1,0 +1,48 @@
+# -- ligo.org source package --------------------------------------------------
+
+Source: ligo-org
+Section: python
+Priority: optional
+Maintainer: Duncan Macleod <duncan.macleod@ligo.org>
+Standards-Version: 4.2.1
+X-Python-Version: >= 2.7
+X-Python3-Version: >= 3.4
+Homepage: https://github.com/duncanmmacleod/ligo.org
+Build-Depends: debhelper (>= 9),
+               dh-python,
+               help2man,
+               python-all,
+               python-setuptools,
+               python-kerberos,
+               python-ligo-common,
+               python-lxml,
+               python-m2crypto
+
+# -- python-ligo-org ----------------------------------------------------------
+
+Package: python-ligo-org
+Architecture: all
+Depends: ${misc:Depends},
+         ${python:Depends},
+         python-kerberos,
+         python-ligo-common,
+         python-lxml,
+         python-m2crypto,
+         python-openssl
+Recommends: ligo-ca-certs
+Description: A python client for LIGO.ORG SAML ECP authentication
+
+# -- ligo-proxy-utils2 --------------------------------------------------------
+
+Package: ligo-proxy-utils2
+Architecture: all
+Depends: ${misc:Depends},
+         ${python:Depends},
+         ligo-ca-certs,
+         python-ligo-common,
+         python-ligo-org,
+         python-lxml,
+         python-m2crypto,
+         python-openssl
+Conflicts: ligo-proxy-utils
+Description: Command-line utlities for LIGO.ORG SAML ECP authentication

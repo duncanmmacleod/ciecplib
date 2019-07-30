@@ -1,1 +1,3 @@
 include LICENSE README.md MANIFEST.in
+include ligo.org.spec
+recursive-include debian *

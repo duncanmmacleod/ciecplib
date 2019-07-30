@@ -1,3 +1,4 @@
 kerberos
-six
 lxml
+M2Crypto
+pyOpenSSL
