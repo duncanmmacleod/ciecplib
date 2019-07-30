@@ -76,7 +76,7 @@ aliases:
         command: |
           set -x;
           # install test requirements
-          python${PYTHON_VERSION} -m pip install -r requirements-test.txt;
+          python${PYTHON_VERSION} -m pip install "pytest" "pytest-cov" "mock ; python_version < '3'"
           # run test suite
           mkdir -pv tests;
           pushd tests;
