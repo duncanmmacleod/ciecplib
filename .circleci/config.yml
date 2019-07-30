@@ -75,11 +75,11 @@ aliases:
         name: Test
         command: |
           set -x;
-          mkdir -pv tests;
-          pushd tests;
           # install test requirements
           python${PYTHON_VERSION} -m pip install -r requirements-test.txt;
           # run test suite
+          mkdir -pv tests;
+          pushd tests;
           python${PYTHON_VERSION} -m pytest --pyargs ligo.org --cov=ligo.org --junitxml=junit.xml;
           # test scripts
           python${PYTHON_VERSION} -m coverage run --append $(which ligo-proxy-init) --version
@@ -95,7 +95,7 @@ aliases:
           # install codecov
           python${PYTHON_VERSION} -m pip install codecov
           # upload coverage
-          python${PYTHON_VERSION} -m codecov --file tests/coverage.xml --flags $(uname) python${PYTHON_VERSION/./} ${IMAGE}
+          python${PYTHON_VERSION} -m codecov --file tests/.coverage --flags $(uname) python${PYTHON_VERSION/./} ${IMAGE}
 
   - &debian
       steps:
