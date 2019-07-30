@@ -26,6 +26,14 @@ aliases:
         name: Install tarball
         command: python -m pip install $(echo ligo.org*.tar.*)[test]
 
+  - &install_build_dependencies
+      run:
+        name: Install build dependencies
+        command: |
+          set -x;
+          apt-get -yqq update;
+          apt-get -yqq install swig;
+
   - &build-debian
       run:
         name: Build
@@ -120,6 +128,7 @@ aliases:
   - &python
       steps:
         - *attach_workspace
+        - *install_build_dependencies
         - *install
         - *test
         - *codecov
@@ -182,21 +191,21 @@ jobs:
   python:2.7:
     <<: *python
     docker:
-      - image: python:2.7
+      - image: python:2.7-buster
     environment:
       PYTHON_VERSION: "2.7"
 
   python:3.6:
     <<: *python
     docker:
-      - image: python:3.6
+      - image: python:3.6-buster
     environment:
       PYTHON_VERSION: "3.6"
 
   python:3.7:
     <<: *python
     docker:
-      - image: python:3.7
+      - image: python:3.7-buster
     environment:
       PYTHON_VERSION: "3.7"
 
