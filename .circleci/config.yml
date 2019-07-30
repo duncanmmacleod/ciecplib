@@ -91,6 +91,7 @@ aliases:
           PYM="${PYTHON_VERSION:0:1}"
           if [[ "${PYM}" -eq 2 ]]; then PYM=""; fi;
           apt-get -yqq install \
+              debianutils \
               python${PYM}-pytest \
               python${PYM}-pytest-cov \
               $([[ "${PYM}" == "" ]] && "python-mock") \
@@ -102,6 +103,7 @@ aliases:
         command: |
           if [[ "${PYTHON_VERSION:0:1}" -eq 2 ]]; then PYXY="2"; else PYXY=${PY3XY}; fi;
           yum -y -q install \
+              which \
               python${PYXY}-pytest \
               python${PYXY}-pytest-cov \
               $([ "${PYXY}" -eq 2 ] && "python2-mock") \
