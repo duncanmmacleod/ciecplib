@@ -43,7 +43,24 @@ def find_version(path, varname="__version__"):
     raise RuntimeError("Unable to find version string.")
 
 
-packagenames = find_packages()
+setup_requires = [
+    "setuptools",
+]
+install_requires = [
+    "kerberos",
+    "lxml",
+    "M2Crypto",
+    "pyOpenSSL",
+]
+tests_require = [
+    "mock ; python_version < '3'",
+    "pytest",
+    "pytest-cov",
+]
+extras_require = {
+    'test': tests_require,
+}
+
 
 setup(
     # distribution metadata
@@ -79,13 +96,8 @@ setup(
         ],
     },
     # dependencies
-    install_requires=[
-        "setuptools",
-    ],
-    requires=[
-        "kerberos",
-        "lxml",
-        "M2Crypto",
-        "pyOpenSSL",
-    ],
+    setup_requires=setup_requires,
+    install_requires=install_requires,
+    tests_require=tests_require,
+    extras_require=extras_require,
 )
