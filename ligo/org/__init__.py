@@ -23,10 +23,10 @@
 from .ecp import authenticate
 
 # get an X509 certificate
-from .x509 import get_cert
+from .x509 import get_cert as get_x509_cert
 
 # request the contents of a URL
-from .request import request
+from .requests import request
 
 __author__ = 'Duncan Macleod <duncan.macleod@ligo.org>'
 __credits__ = 'Scott Koranda <scott.koranda@ligo.org>'

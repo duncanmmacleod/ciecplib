@@ -24,7 +24,7 @@ aliases:
   - &install
       run:
         name: Install tarball
-        command: python -m pip install $(echo ligo.org*.tar.*)[test]
+        command: python -m pip install --progress-bar=off $(echo ligo.org*.tar.*)[test]
 
   - &install_build_dependencies
       run:
@@ -214,7 +214,7 @@ jobs:
           name: Lint
           command: |
             set -ex;
-            python -m pip install "flake8>=3.7.0";
+            python -m pip install --progress-bar=off "flake8>=3.7.0";
             mkdir -pv tests;
             python -m flake8 --output-file tests/flake8.txt;
       - run:
@@ -222,7 +222,7 @@ jobs:
           when: always
           command: |
             set -ex;
-            python -m pip install flake8-junit-report;
+            python -m pip install --progress-bar=off flake8-junit-report;
             python -m junit_conversor tests/flake8.txt tests/junit.xml;
       - *store_test_results
       - *store_test_artifacts
@@ -262,17 +262,18 @@ jobs:
     environment:
       PYTHON_VERSION: "3.7"
 
-  #sphinx:
-  #  docker:
-  #    - image: python
-  #  steps:
-  #    - checkout
-  #    - run:
-  #        name: Install
-  #        command: python -m pip install .[docs]
-  #    - run:
-  #        name: Run sphinx-build
-  #        command: python setup.py build_sphinx -W
+  sphinx:
+    docker:
+      - image: python
+    steps:
+      - checkout
+      - *install_build_dependencies
+      - run:
+          name: Install
+          command: python -m pip install --progress-bar=off .[doc]
+      - run:
+          name: Run sphinx-build
+          command: pushd docs && python -m sphinx -M html . _build -E -W
 
 # -- workflow ---------------
 
@@ -297,4 +298,4 @@ workflows:
       - python:3.7:
           requires:
             - sdist
-      #- sphinx
+      - sphinx
