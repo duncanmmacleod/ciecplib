@@ -94,7 +94,7 @@ aliases:
               debianutils \
               python${PYM}-pytest \
               python${PYM}-pytest-cov \
-              $([[ "${PYM}" == "" ]] && "python-mock") \
+              $([[ "${PYM}" == "" ]] && echo "python-mock") \
           ;
 
   - &centos_install_test_dependencies
@@ -106,7 +106,7 @@ aliases:
               which \
               python${PYXY}-pytest \
               python${PYXY}-pytest-cov \
-              $([ "${PYXY}" -eq 2 ] && "python2-mock") \
+              $([ "${PYXY}" -eq 2 ] && echo "python2-mock") \
           ;
           python${PYTHON_VERSION} -m pip install "pytest~=3.0" "more-itertools < 6.0a0"
 
