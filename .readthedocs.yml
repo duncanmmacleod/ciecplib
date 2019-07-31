@@ -13,4 +13,8 @@ conda:
   environment: docs/rtd-environment.yml
 
 python:
-  setup_py_install: true
+  install:
+    - method: pip
+      path: .
+      extra_requirements:
+        - docs

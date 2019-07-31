@@ -61,7 +61,7 @@ tests_require = [
 ]
 extras_require = {
     "test": tests_require,
-    "doc": [
+    "docs": [
         "sphinx",
         "sphinx-argparse",
         "sphinx_automodapi",
