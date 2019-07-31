@@ -1,0 +1,28 @@
+environment:
+  matrix:
+    - MINICONDA: C:\Miniconda37-x64
+      PYTHON_VERSION: 3.7
+    - MINICONDA: C:\Miniconda36-x64
+      PYTHON_VERSION: 3.6
+install:
+  - "set PATH=%MINICONDA%\\condabin;%PATH%"
+  - call "%MINICONDA%\\Scripts\\activate.bat"
+  - conda config --set always_yes yes
+  - conda config --add channels conda-forge
+  - conda install --yes "pip" "setuptools>=27.3"
+  - conda install --yes "lxml" "m2crypto" "winkerberos" "pyopenssl"
+  - conda install --yes "pytest>=3.0.0" "pytest-cov"
+build_script:
+  - python -m pip install .
+test_script:
+  # run automated tests
+  - python -m pytest --pyargs ligo.org.tests --cov ligo.org --cov-report "" --junitxml=junit.xml
+  # run --help on scripts for sanity
+  - python -m coverage run --append -m ligo.org.tool.ligo_curl --help
+  - python -m coverage run --append -m ligo.org.tool.ligo_proxy_init --help
+after_test:
+  - python -m coverage report
+  - python -m pip install codecov
+  - python -m codecov --flags Windows python%PYTHON_VERSION:.=% conda
+on_finish:
+  - ps: (New-Object 'System.Net.WebClient').UploadFile("https://ci.appveyor.com/api/testresults/junit/$($env:APPVEYOR_JOB_ID)", (Resolve-Path .\junit.xml))
