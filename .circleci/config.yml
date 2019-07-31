@@ -56,9 +56,9 @@ aliases:
           ls *.deb | xargs -n1 dpkg --info;
           # mv and install
           rm -rf tmp*;
-          dpkg --install python*ligo-org*.deb ligo-proxy-utils2*.deb || { \
+          dpkg --install python*ligo-dot-org*.deb ligo-proxy-utils2*.deb || { \
               apt-get -y -f install;
-              dpkg --install python*ligo-org*.deb ligo-proxy-utils2*.deb;
+              dpkg --install python*ligo-dot-org*.deb ligo-proxy-utils2*.deb;
           };
 
   - &centos_build
@@ -82,7 +82,7 @@ aliases:
           # install
           mv */*.rpm .;
           rpm -qilp *.rpm
-          yum -y --nogpgcheck localinstall ./python*ligo-org*.rpm ./ligo-proxy-utils2*.rpm;
+          yum -y --nogpgcheck localinstall ./python*ligo-dot-org*.rpm ./ligo-proxy-utils2*.rpm;
 
   - &debian_install_test_dependencies
       run:
