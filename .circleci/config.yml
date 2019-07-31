@@ -120,10 +120,24 @@ aliases:
           # run test suite
           mkdir -pv tests;
           pushd tests;
-          python${PYTHON_VERSION} -m pytest --pyargs ligo.org --cov=ligo.org --junitxml=junit.xml --rootdir=$(pwd);
-          # test scripts
-          python${PYTHON_VERSION} -m coverage run --append $(which ligo-proxy-init) --version
-          python${PYTHON_VERSION} -m coverage run --append $(which ligo-curl) --version
+          python${PYTHON_VERSION} -m pytest \
+              --pyargs ligo.org.tests \
+              --cov ligo.org \
+              --cov-report "" \
+              --junitxml=junit.xml \
+          ;
+          # test --help for scripts
+          for script in \
+                  ligo-proxy-init \
+                  ligo-curl \
+          ; do
+              python${PYTHON_VERSION} -m coverage run --append $(which ${script}) --version;
+          done
+
+  - &coverage_report
+      run:
+        name: Coverage report
+        command: python${PYTHON_VERSION} -m coverage report --show-missing
 
   - &codecov
       run:
@@ -144,6 +158,7 @@ aliases:
         - *debian_build
         - *debian_install_test_dependencies
         - *test
+        - *coverage_report
         - *codecov
         - *store_test_results
         - *store_test_artifacts
@@ -156,6 +171,7 @@ aliases:
         - *centos_build
         - *centos_install_test_dependencies
         - *test
+        - *coverage_report
         - *codecov
         - *store_test_results
         - *store_test_artifacts
@@ -168,6 +184,7 @@ aliases:
         - *install_build_dependencies
         - *install
         - *test
+        - *coverage_report
         - *codecov
         - *store_test_results
         - *store_test_artifacts
