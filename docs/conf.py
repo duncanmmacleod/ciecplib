@@ -23,7 +23,7 @@ from ligo.org import __version__ as ligodotorg_version
 
 # -- Project information -----------------------------------------------------
 
-project = 'ligo-proxy-init'
+project = 'ligo.org'
 copyright = '2019, Duncan Macleod'
 author = 'Duncan Macleod'
 
