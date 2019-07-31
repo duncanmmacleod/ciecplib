@@ -1,5 +1,5 @@
 %define origname ligo.org
-%define pkgname ligo-org
+%define pkgname ligo-dot-org
 %define version 0.1.0
 %define release 1
 

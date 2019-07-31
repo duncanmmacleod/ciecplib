@@ -32,7 +32,7 @@ Installation
 
       .. code-block:: bash
 
-          $ apt-get install python-ligo-org
+          $ apt-get install python-ligo-dot-org
 
       Supported python versions: 2.7,
       `click here for instructions on how to add the required debian repositories
@@ -42,7 +42,7 @@ Installation
 
       .. code-block:: bash
 
-          $ yum install python2-ligo-org
+          $ yum install python2-ligo-dot-org
 
       Supported python versions: 2.7,
       `click here for instructions on how to add the required yum repositories
