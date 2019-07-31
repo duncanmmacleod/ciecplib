@@ -50,8 +50,9 @@ install_requires = [
     "lxml",
     "M2Crypto",
     "pathlib ; python_version < '3.4'",
-    "pykerberos",
+    "pykerberos ; sys_platform != 'win32'",
     "pyOpenSSL",
+    "winkerberos ; sys_platform == 'win32'",
 ]
 tests_require = [
     "mock ; python_version < '3'",
