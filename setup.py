@@ -60,7 +60,14 @@ tests_require = [
     "pytest-cov",
 ]
 extras_require = {
-    'test': tests_require,
+    "test": tests_require,
+    "doc": [
+        "sphinx",
+        "sphinx-argparse",
+        "sphinx_automodapi",
+        "sphinx_rtd_theme",
+        "sphinx_tabs",
+    ],
 }
 
 

@@ -90,7 +90,7 @@ def kinit(username=None, password=None, realm=None, exe=None, keytab=None,
         path to Kerberos credentials cache.
 
     verbose : `bool`, optional
-        print verbose output (if `True`), or not (`False)`; default is `True`
+        print verbose output (if `True`), or not (`False`); default is `True`
         if any user-prompting is needed, otherwise `False`.
 
     Notes
@@ -103,15 +103,15 @@ def kinit(username=None, password=None, realm=None, exe=None, keytab=None,
     --------
     Example 1: standard user input, with password prompt::
 
-    >>> kinit('albert.einstein')
-    Password for albert.einstein@LIGO.ORG:
-    Kerberos ticket generated for albert.einstein@LIGO.ORG
+       >>> kinit('albert.einstein')
+       Password for albert.einstein@LIGO.ORG:
+       Kerberos ticket generated for albert.einstein@LIGO.ORG
 
     Example 2: extract username and realm from keytab, and use that
     in authentication::
 
-    >>> kinit(keytab='~/.kerberos/ligo.org.keytab', verbose=True)
-    Kerberos ticket generated for albert.einstein@LIGO.ORG
+       >>> kinit(keytab='~/.kerberos/ligo.org.keytab', verbose=True)
+       Kerberos ticket generated for albert.einstein@LIGO.ORG
     """
     # get kinit path
     exe = exe or _find_executable('kinit')
