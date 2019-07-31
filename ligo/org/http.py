@@ -35,7 +35,11 @@ except ImportError:  # python < 3
     import urlparse as urllib_parse
     URLError = urllib_request.HTTPError
 
-import kerberos
+try:
+    import kerberos
+except ImportError:  # windows
+    import winkerberos as kerberos
+
 from M2Crypto import (
     SSL,
     m2,
