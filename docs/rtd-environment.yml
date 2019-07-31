@@ -1,0 +1,17 @@
+name: ligodotorg
+channels:
+  - conda-forge
+dependencies:
+  - ca-certificates
+  - lxml
+  - m2crypto
+  - pykerberos
+  - pyopenssl
+  - python>=3
+  - setuptools
+  - sphinx
+  - sphinx-argparse
+  - sphinx-automodapi
+  - sphinx_rtd_theme
+  - pip:
+    - sphinx_tabs
