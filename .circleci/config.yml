@@ -94,7 +94,7 @@ aliases:
               debianutils \
               python${PYM}-pytest \
               python${PYM}-pytest-cov \
-              $([[ "${PYM}" == "" ]] && "python-mock") \
+              $([[ "${PYM}" == "" ]] && echo "python-mock") \
           ;
 
   - &centos_install_test_dependencies
@@ -106,7 +106,7 @@ aliases:
               which \
               python${PYXY}-pytest \
               python${PYXY}-pytest-cov \
-              $([ "${PYXY}" -eq 2 ] && "python2-mock") \
+              $([ "${PYXY}" -eq 2 ] && echo "python2-mock") \
           ;
           python${PYTHON_VERSION} -m pip install "pytest~=3.0" "more-itertools < 6.0a0"
 
@@ -120,10 +120,23 @@ aliases:
           # run test suite
           mkdir -pv tests;
           pushd tests;
-          python${PYTHON_VERSION} -m pytest --pyargs ligo.org --cov=ligo.org --junitxml=junit.xml;
-          # test scripts
-          python${PYTHON_VERSION} -m coverage run --append $(which ligo-proxy-init) --version
-          python${PYTHON_VERSION} -m coverage run --append $(which ligo-curl) --version
+          python${PYTHON_VERSION} -m pytest \
+              --pyargs ligo.org.tests \
+              --cov ligo.org \
+              --junitxml junit.xml \
+          ;
+          # test --help for scripts
+          for script in $(python -c "import pkg_resources as pkgr; [print(x.name) for x in pkgr.iter_entry_points('console_scripts') if x.dist.project_name == 'ligo.org']"); do
+              python${PYTHON_VERSION} -m coverage run \
+                  --append \
+                  --rcfile ../setup.cfg \
+                  $(which ${script}) --version;
+          done
+
+  - &coverage_report
+      run:
+        name: Coverage report
+        command: pushd tests && python${PYTHON_VERSION} -m coverage report --show-missing
 
   - &codecov
       run:
@@ -144,6 +157,7 @@ aliases:
         - *debian_build
         - *debian_install_test_dependencies
         - *test
+        - *coverage_report
         - *codecov
         - *store_test_results
         - *store_test_artifacts
@@ -156,6 +170,7 @@ aliases:
         - *centos_build
         - *centos_install_test_dependencies
         - *test
+        - *coverage_report
         - *codecov
         - *store_test_results
         - *store_test_artifacts
@@ -168,6 +183,7 @@ aliases:
         - *install_build_dependencies
         - *install
         - *test
+        - *coverage_report
         - *codecov
         - *store_test_results
         - *store_test_artifacts
