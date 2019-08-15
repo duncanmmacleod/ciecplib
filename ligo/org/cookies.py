@@ -19,6 +19,8 @@
 """Cookie handling for LIGO.ORG SAML ECP authentication
 """
 
+from __future__ import print_function
+
 import os
 import time
 import warnings
