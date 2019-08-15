@@ -222,7 +222,7 @@ def parse_args(parser):
     ):
         parser.error("one of username or -k/--kerberos is required")
 
-    if getattr(args, "username", None):
+    if hasattr(args, "username"):
         args.username = args.username.split('@')[0]
 
     if args.debug:
