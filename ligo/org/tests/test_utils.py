@@ -44,11 +44,22 @@ RAW_INSTITUTION_LIST = [
     return_value=RAW_INSTITUTION_LIST,
 )
 def test_get_idps(urlopen):
-    assert ligodotorg_utils.get_idps("something") == {
+    assert ligodotorg_utils.get_idps("something", extras=False) == {
         "Institution 1": "https://inst1.test",
         "Institution 2": "https://inst2.test",
     }
     assert urlopen.called_with("something")
+
+
+@mock.patch(
+    "{}.urlopen".format(urlreqmodname),
+    return_value=RAW_INSTITUTION_LIST,
+)
+def test_get_idps_extras(_):
+    idps = ligodotorg_utils.get_idps("something", extras=True)
+    assert idps["Cardiff University"] == (
+        "https://idp.cf.ac.uk/idp/profile/SAML2/SOAP/ECP"
+    )
 
 
 @mock.patch(
