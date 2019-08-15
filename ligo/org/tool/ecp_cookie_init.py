@@ -16,22 +16,22 @@
 # You should have received a copy of the GNU General Public License
 # along with LIGO.ORG.  If not, see <http://www.gnu.org/licenses/>.
 
-r"""Create a LIGO.ORG X.509 certificate.
+r"""Authenticate and store SAML/ECP session cookies.
 
 There are two usages:
 
-1) ``ligo-proxy-init albert.einstein``
+1) ``ecp-cookie-init Campus01 https://campus01.edu/my/secret/page jsmith``
 
 to authenticate with a password prompt, or
 
-2) ``ligo-proxy-init -k``
+2) ``ecp-cookie-init -k https://campus01.edu/my/secret/page``
 
 to reuse an existing kerberos (``kinit``) credential.
-By default the credential file is created and stored in a location
+By default the cookie file is created and stored in a location
 defined by either
 
-- ``${X509_USER_PROXY}`` or ``/tmp/x509up_u{uid}`` (Unix), or
-- ``%X509_USER_PROXY%`` or ``C:\Windows\Temp\x509up_{username}`` (Windows)
+- ``/tmp/ecpcookie.u{uid}`` (Unix), or
+- ``C:\Windows\Temp\ecpcookie.{username}`` (Windows)
 """
 
 from __future__ import print_function
@@ -40,20 +40,15 @@ import argparse
 import sys
 from pathlib import Path
 
-from OpenSSL import crypto
-
 from .. import __version__
-from ..ecp import LIGO_ENDPOINT_DOMAIN
-from ..x509 import (
-    check_cert,
-    get_cert,
-    get_x509_proxy_path,
-    load_cert,
-    print_cert_info,
-    write_cert,
+from ..cookies import (
+    COOKIE_FILE as DEFAULT_COOKIE_FILE,
+    ECPCookieJar,
 )
+from ..ecp import authenticate
 from .utils import (
     ArgumentParser,
+    reuse_cookiefile,
 )
 
 
@@ -65,14 +60,27 @@ def create_parser():
     parser : `argparse.ArgumentParser`
     """
     parser = ArgumentParser(description=__doc__, version=__version__)
-
+    parser.add_argument(
+        "endpoint",
+        metavar="IdP",
+        nargs="?",
+        default=argparse.SUPPRESS,
+        help="IdP name, e.g. 'LIGO.ORG', or the URL of an IdP endpoint, "
+             "required if --kerberos not given, see --list-idps for a list of"
+             "Identity Provider (IdPs) and their IdP endpoint URL"
+    )
+    parser.add_argument(
+        "target_url",
+        metavar="URL",
+        help="service URL for which to generate cookies",
+    )
     authtype = parser.add_mutually_exclusive_group()
     authtype.add_argument(
         "username",
+        metavar="login",
         nargs="?",
         default=argparse.SUPPRESS,
-        help="LIGO.ORG (albert.einstein) username, "
-             "required if --kerberos not given",
+        help="identity username, required if --kerberos not given",
     )
 
     parser.add_argument(
@@ -83,25 +91,18 @@ def create_parser():
         help="write debug output to stdout (implies --verbose)",
     )
     parser.add_argument(
-        "-f",
-        "--file",
-        default=get_x509_proxy_path(),
+        "-c",
+        "--cookiefile",
+        metavar="cookiefile",
+        default=DEFAULT_COOKIE_FILE,
         type=Path,
-        help="certificate file to create/reuse/destroy",
-    )
-    parser.add_argument(
-        "-H",
-        "--hours",
-        type=int,
-        default=277,
-        help="lifetime of the certificate"
+        help="cookie file to create/reuse/destroy",
     )
     parser.add_argument(
         "-i",
         "--hostname",
-        default=LIGO_ENDPOINT_DOMAIN,
-        help="domain name of IdP host, see --list-idps for a list of "
-             "Identity Provider (IdPs) and their IdP endpoint URL",
+        default=argparse.SUPPRESS,
+        help="domain name of IdP host, defaults is default domain for IdP",
     )
     authtype.add_argument(
         "-k",
@@ -111,22 +112,11 @@ def create_parser():
         help="enable kerberos negotiation, required if username not given"
     )
     parser.add_argument(
-        "-p",
-        "--proxy",
-        action="store_true",
-        default=False,
-        help="create RFC 3820 compliant impersonation proxy"
-    )
-    parser.add_argument(
         "-r",
         "--reuse",
         default=False,
-        type=float,
-        const=1.,
-        nargs="?",
-        metavar="HOURS",
-        help="reuse an existing certificate if valid for more than "
-             "%(const)s hours, or pass a number of hours to specify",
+        action="store_true",
+        help="reuse an existing cookies if possible",
     )
     parser.add_argument(
         "-v",
@@ -140,7 +130,7 @@ def create_parser():
         "--destroy",
         action="store_true",
         default=False,
-        help="destroy existing certificate"
+        help="destroy existing cookie file"
     )
     return parser
 
@@ -156,22 +146,15 @@ def parse_args(parser):
 
     # check that username or --kerberos was given if not using --destroy
     if not args.destroy and not (
-            getattr(args, "username", None) or args.kerberos
+            args.kerberos or getattr(args, "username", None) and args.endpoint
     ):
-        parser.error("one of username or -k/--kerberos is required")
+        parser.error("-k/--kerberos is required if IdP_tag and "
+                     "login are not given")
 
     if args.debug:
         args.verbose = True
 
     return args
-
-
-def can_reuse(path, proxy=None):
-    try:
-        check_cert(load_cert(path), proxy=proxy)
-    except (RuntimeError, OSError):
-        return False
-    return True
 
 
 def main():
@@ -181,59 +164,55 @@ def main():
     # if asked to destroy, just do that
     if args.destroy:
         if args.verbose:
-            print("Removing credential file {!s}".format(args.file))
-        args.file.unlink()
+            print("Removing cookie file {!s}".format(args.cookiefile))
+        args.cookiefile.unlink()
         sys.exit()
 
     # if asked to reuse, check that we can
+    cookiejar = None
     if args.reuse:
-        if args.verbose:
-            print("Validating existing certificate...", end=" ")
-        args.reuse = can_reuse(args.file, proxy=args.proxy)
-        if args.verbose and args.reuse:
-            print("OK")
-        elif args.verbose:
-            print("failed, will regenerate")
+        cookiejar, args.reuse = reuse_cookiefile(
+            args.cookiefile,
+            args.target_url,
+            verbose=args.verbose,
+        )
 
     # get new certificate
     if not args.reuse:
+        cookiejar = cookiejar or ECPCookieJar()
         if args.verbose:
-            print("Fetching certificate...")
-        cert = get_cert(
-            args.hostname,
+            print("Authenticating...")
+        authenticate(
+            getattr(args, "hostname", None) or args.endpoint,
+            spurl=args.target_url,
+            cookiejar=cookiejar,
             username=getattr(args, "username", None),
             kerberos=args.kerberos,
-            hours=args.hours,
             debug=args.debug,
         )
 
         # write certificate to a file
         if args.verbose:
-            print("Storing certificate...")
-        write_cert(
-            args.file,
-            cert,
-            use_proxy=args.proxy,
-            minhours=args.hours,
+            print("Storing cookies...")
+        cookiejar.save(
+            args.cookiefile,
+            ignore_discard=True,
+            ignore_expires=True,
         )
         if args.verbose:
-            print("X.509 credential stored")
+            print("Cookies stored in '{!s}'".format(args.cookiefile))
 
     # load the cert from file to print information
     if args.debug or args.verbose:
-        x509 = load_cert(args.file)
-
-    # dump full text of cert
-    if args.debug:
-        certstr = crypto.dump_certificate(
-            crypto.FILETYPE_PEM,
-            x509,
-        )
-        print(certstr.decode("utf-8"), end="")
-
-    # print certificate/proxy info
-    if args.verbose:
-        print_cert_info(x509, path=args.file)
+        info = [(cookie.domain, cookie.path, cookie.secure, cookie.name) for
+                cookie in cookiejar]
+        fmt = "%-{}s %-5s %-7s %s".format(max(len(i[0]) for i in info))
+        print(fmt % ("------", "----", "-------", "----"))
+        print(fmt % ("DOMAIN", "PATH", r"SECURE?", "NAME"))
+        print(fmt % ("------", "----", "-------", "----"))
+        for tup in info:
+            print(fmt % tup)
+        print(fmt % ("------", "----", "-------", "----"))
 
 
 if __name__ == "__main__":

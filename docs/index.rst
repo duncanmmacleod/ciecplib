@@ -72,8 +72,9 @@ Command-line scripts
 .. toctree::
    :maxdepth: 1
 
-   ligo-proxy-init
+   ecp-cookie-init
    ligo-curl
+   ligo-proxy-init
 
 |
 

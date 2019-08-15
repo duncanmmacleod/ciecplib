@@ -16,86 +16,29 @@
 # You should have received a copy of the GNU General Public License
 # along with LIGO.ORG.  If not, see <http://www.gnu.org/licenses/>.
 
-from __future__ import (print_function, absolute_import)
+from __future__ import absolute_import
 
-import os
-import warnings
-import time
-from pathlib import Path
-from tempfile import gettempdir
 try:
-    from http.cookiejar import (LoadError, MozillaCookieJar)
-    from urllib.parse import urlparse
     from urllib.request import Request
 except ImportError:  # python < 3
-    from cookielib import (LoadError, MozillaCookieJar)
     from urllib2 import Request
-    from urlparse import urlparse
 
-from .ecp import authenticate
+from .cookies import (
+    COOKIE_FILE,
+    ECPCookieJar,
+    has_session_cookies,
+    load_cookiejar,
+)
+from .ecp import (LIGO_ENDPOINT_DOMAIN, authenticate)
 from .http import build_verified_opener
 from .kerberos import has_credential
-from .utils import get_idp_urls
-
-LIGO_ECP_ENDPOINT = "login.ligo.org"
-try:
-    COOKIE_FILE = Path(gettempdir()) / 'ecpcookie.u{}'.format(os.getuid())
-except AttributeError:  # no os.getuid means windows
-    COOKIE_FILE = Path(gettempdir()) / 'ecpcookie.{}'.format(os.getlogin())
-
-
-def _get_endpoint_url(institution, kerberos=False):
-    return get_idp_urls(institution)[int(kerberos)]
-
-
-# -- cookie jar ---------------------------------------------------------------
-
-class ECPCookieJar(MozillaCookieJar):
-    """Custom cookie jar
-
-    Adapted from
-    https://wiki.shibboleth.net/confluence/download/attachments/4358416/ecp.py
-    """
-    def save(self, filename=None, ignore_discard=False, ignore_expires=False):
-        with open(filename, 'w') as f:
-            f.write(self.header)
-            for cookie in self:
-                if not ignore_discard and cookie.discard:
-                    continue
-                if not ignore_expires and cookie.is_expired(time.time()):
-                    continue
-                if cookie.expires is not None:
-                    expires = str(cookie.expires)
-                else:
-                    # change so that if a cookie does not have an expiration
-                    # date set it is saved with a '0' in that field instead
-                    # of a blank space so that the curl libraries can
-                    # read in and use the cookie
-                    expires = "0"
-                if cookie.value is None:
-                    # cookies.txt regards 'Set-Cookie: foo' as a cookie
-                    # with no name, whereas cookiejar regards it as a
-                    # cookie with no value.
-                    name = ""
-                    value = cookie.name
-                else:
-                    name = cookie.name
-                    value = cookie.value
-                print('\t'.join([
-                    cookie.domain,
-                    str(cookie.domain.startswith('.')).upper(),
-                    cookie.path,
-                    str(cookie.secure).upper(),
-                    expires,
-                    name,
-                    value,
-                ]), file=f)
+from .utils import format_endpoint_url
 
 
 def request(
         url,
         username=None,
-        endpoint=LIGO_ECP_ENDPOINT,
+        endpoint=LIGO_ENDPOINT_DOMAIN,
         kerberos=None,
         cookiejar=None,
         cookiefile=COOKIE_FILE,
@@ -128,33 +71,12 @@ def request(
     response : `http.client.HTTPResponse`
         the response from the URL
     """
-    if endpoint is None:
-        endpoint = _get_endpoint_url("LIGO.*")
+    endpoint = format_endpoint_url(endpoint, kerberos=kerberos)
 
-    # -- initialise URL opener ------------------
-
-    # create a cookie jar and cookie handler (and read existing cookies)
+    # read existing cookies
     if cookiejar is None:
-        cookiejar = ECPCookieJar()
-        if Path(cookiefile or '').is_file():
-            try:
-                cookiejar.load(
-                    cookiefile,
-                    ignore_discard=True,
-                )
-            except LoadError as e:
-                warnings.warn('Caught error loading ECP cookie: %s' % str(e))
-
-    for cookie in cookiejar:
-        if (
-                cookie.name.startswith("_shibsession_") and
-                cookie.domain == urlparse(url).netloc and
-                cookie.expires is None
-        ):
-            reuse = True
-            break
-    else:
-        reuse = False
+        cookiejar = load_cookiejar(cookiefile, strict=False)
+    reuse = has_session_cookies(cookiejar, url)
 
     # -- authenticate ---------------------------
 
@@ -175,6 +97,7 @@ def request(
             cookiejar.save(
                 cookiefile,
                 ignore_discard=store_session_cookies,
+                ignore_expires=store_session_cookies,
             )
 
     # -- actually send GET ----------------------

@@ -270,7 +270,7 @@ jobs:
       - *install_build_dependencies
       - run:
           name: Install
-          command: python -m pip install --progress-bar=off .[doc]
+          command: python -m pip install --progress-bar=off .[docs]
       - run:
           name: Run sphinx-build
           command: pushd docs && python -m sphinx -M html . _build -E -W

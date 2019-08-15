@@ -21,14 +21,18 @@
 
 from __future__ import print_function
 
-import argparse
 import sys
 
 from .. import (
     __version__,
     request,
 )
-
+from ..cookies import COOKIE_FILE as DEFAULT_COOKIE_FILE
+from ..ecp import LIGO_ENDPOINT_DOMAIN
+from .utils import (
+    ArgumentParser,
+    reuse_cookiefile,
+)
 
 __author__ = 'Duncan Macleod <duncan.macleod@ligo.org>'
 
@@ -40,20 +44,17 @@ def create_parser():
     -------
     parser : `argparse.ArgumentParser`
     """
-    parser = argparse.ArgumentParser(
-        description=__doc__,
-        formatter_class=argparse.ArgumentDefaultsHelpFormatter,
-    )
-
+    parser = ArgumentParser(description=__doc__, version=__version__)
     parser.add_argument(
         "url",
         help="the URL to transfer"
     )
     parser.add_argument(
         "-c",
-        "--cookie-jar",
+        "--cookiefile",
         metavar="FILE",
-        help="write cookies to %(metavar)s after operation",
+        default=DEFAULT_COOKIE_FILE,
+        help="cookie file to use",
     )
     parser.add_argument(
         "-d",
@@ -65,8 +66,9 @@ def create_parser():
     parser.add_argument(
         "-i",
         "--hostname",
-        default="login.ligo.org",
-        help="domain name of IdP host",
+        default=LIGO_ENDPOINT_DOMAIN,
+        help="domain name of IdP host, see --list-idps for a list of"
+             "Identity Provider (IdPs) and their IdP endpoint URL",
     )
     parser.add_argument(
         "-k",
@@ -87,13 +89,6 @@ def create_parser():
         help="username on IdP host, will be prompted for if not given "
              "and not using --kerberos"
     )
-    parser.add_argument(
-        "-V",
-        "--version",
-        action="version",
-        version=__version__,
-        help="show version number and exit",
-    )
     return parser
 
 
@@ -104,11 +99,17 @@ def main(args=None):
         stream = open(args.output, "w")
     else:
         stream = sys.stdout
+    cookiejar = reuse_cookiefile(
+        args.cookiefile,
+        args.url,
+        verbose=False,
+    )[0]
     try:
         print(
             request(
                 args.url,
-                cookiefile=args.cookie_jar,
+                cookiefile=args.cookiefile,
+                cookiejar=cookiejar,
                 endpoint=args.hostname,
                 debug=args.debug,
                 username=args.username,

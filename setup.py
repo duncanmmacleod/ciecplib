@@ -100,8 +100,9 @@ setup(
     namespace_packages=['ligo'],
     entry_points={
         "console_scripts": [
-            "ligo-proxy-init=ligo.org.tool.ligo_proxy_init:main",
+            "ecp-cookie-init=ligo.org.tool.ecp_cookie_init:main",
             "ligo-curl=ligo.org.tool.ligo_curl:main",
+            "ligo-proxy-init=ligo.org.tool.ligo_proxy_init:main",
         ],
     },
     # dependencies
