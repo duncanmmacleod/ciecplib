@@ -31,6 +31,24 @@ except ImportError:  # python < 3
     from urlparse import urlparse
     input = raw_input  # noqa: F821
 
+# extra institutions not known by CILogon
+EXTRA_INSTITUTIONS = {
+    # LIGO IdPs
+    "LIGO.ORG":
+        "https://login.ligo.org/idp/profile/SAML2/SOAP/ECP",
+    "LIGOGuest":
+        "https://login.guest.ligo.org/idp/profile/SAML2/SOAP/ECP",
+    "DEV.LIGO.ORG":
+        "https://login-dev.ligo.org/idp/profile/SAML2/SOAP/ECP",
+    "TEST.LIGO.ORG":
+        "https://login-test.ligo.org/idp/profile/SAML2/SOAP/ECP",
+    # extra institutions
+    "Cardiff University":
+        "https://idp.cf.ac.uk/idp/profile/SAML2/SOAP/ECP",
+    "Syracuse University":
+        "https://sugwg-login.phy.syr.edu/idp/profile/SAML2/SOAP/ECP",
+}
+
 # -- default CA files ---------------------------------------------------------
 
 DEFAULT_VERIFY_PATHS = ssl.get_default_verify_paths()
@@ -73,7 +91,7 @@ KERBEROS_SUFFIX = " (Kerberos)"
 KERBEROS_REGEX = re.compile(r"{}\Z".format(re.escape(KERBEROS_SUFFIX)))
 
 
-def get_idps(url=DEFAULT_IDPLIST_URL):
+def get_idps(url=DEFAULT_IDPLIST_URL, extras=True):
     """Download the list of known ECP IdPs from the given URL
 
     The output is a `dict` where the keys are institution names
@@ -81,8 +99,17 @@ def get_idps(url=DEFAULT_IDPLIST_URL):
     are the URL of their IdP.
 
     Some institutions may have two entries if they also support Kerberos.
+
+    Parameters
+    ----------
+    url : `str`
+        the URL of the IDP list file
+
+    extras : `bool`, optional
+        if `True` (default), include the extra IdP URLs known in this
+        package, otherwise include only those from the remote IdP list
     """
-    idps = {}
+    idps = EXTRA_INSTITUTIONS.copy() if extras else dict()
     for line in urllib_request.urlopen(url):
         url, inst = line.decode('utf-8').strip().split(' ', 1)
         idps[inst] = url
@@ -116,12 +143,49 @@ def get_idp_urls(institution, url=DEFAULT_IDPLIST_URL):
     return url, krburl
 
 
-def format_endpoint_url(url):
+def _endpoint_url(url):
     if "/" not in url:
         url = "https://{}/idp/profile/SAML2/SOAP/ECP".format(url)
     if not urlparse(url).scheme:
         url = "https://{}".format(url)
     return url
+
+
+def format_endpoint_url(url_or_name, kerberos=False):
+    """Format an endpoint reference as a URL
+
+    Parameters
+    ----------
+    url_or_name: `str`
+        the name of an institution, or a URL for the endpoint
+
+    kerberos : `bool`, optional
+        if ``True`` return a Kerberos URL, if available, otherwise return
+        a standard SAML/ECP endpoint URL
+
+    Returns
+    -------
+    url : `str`
+        the formatted URL of the IdP ECP endpoint
+
+    Raises
+    ------
+    ValueError
+        if ``url_or_name`` looks like an institution name, but
+        cilogon.org doesn't know what the corresponding ECP endpoint URL
+        is for that institution.
+
+    Examples
+    --------
+    >>> format_endpoint_url("LIGO")
+    'https://login.ligo.org/idp/profile/SAML2/SOAP/ECP'
+    >>> format_endpoint_url("login.myidp.com")
+    'https://login.myidp.com/idp/profile/SAML2/SOAP/ECP'
+    """
+    if url_or_name.count(".") >= 2:  # url
+        return _endpoint_url(url_or_name)
+    # institution name
+    return get_idp_urls(url_or_name)[int(kerberos)]
 
 
 # -- misc utilities -----------------------------------------------------------

@@ -25,6 +25,7 @@ import string
 import struct
 import tempfile
 import time
+from pathlib import Path
 try:
     from urllib import parse as urllib_parse
     from urllib import request as urllib_request
@@ -60,6 +61,24 @@ def _random_string(length, outof=string.ascii_lowercase+string.digits):
 
 
 # -- X.509 generator ----------------------------------------------------------
+
+def get_x509_proxy_path():
+    """Returns the default path for the X.509 certificate file
+
+    Returns
+    -------
+    path : `pathlib.Path`
+    """
+    if os.getenv("X509_USER_PROXY"):
+        return Path(os.environ["X509_USER_PROXY"])
+    if os.name == "nt":
+        tmpdir = Path(r'%SYSTEMROOT%\Temp')
+        tmpname = "x509up_{}".format(os.getlogin())
+    else:
+        tmpdir = Path("/tmp")
+        tmpname = "x509up_u{}".format(os.getuid())
+    return tmpdir / tmpname
+
 
 def get_cert(
         endpoint,

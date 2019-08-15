@@ -41,6 +41,8 @@ from .utils import (
     prompt_username_password,
 )
 
+LIGO_ENDPOINT_DOMAIN = "login.ligo.org"
+
 
 def get_xml_attribute(xdata, path, namespaces=None):
     if namespaces is None:

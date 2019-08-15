@@ -52,7 +52,8 @@ Requires: python2-%{pkgname} = %{version}
 Conflicts: ligo-proxy-utils
 %description -n ligo-proxy-utils2
 Command line utilities for LIGO.ORG SAML ECP authentication, including
-ligo-proxy-init and ligo-curl (a LIGO.ORG-aware curl alternative).
+ecp-proxy-init, ligo-proxy-init, and ligo-curl
+(a LIGO.ORG-aware curl alternative).
 
 # -- build ------------------
 
@@ -98,8 +99,8 @@ rm -rf $RPM_BUILD_ROOT
 
 %files -n ligo-proxy-utils2
 %license LICENSE
-%{_bindir}/ligo-*
-%{_mandir}/man1/ligo-*.1*
+%{_bindir}/*
+%{_mandir}/man1/*.1*
 
 
 # -- changelog --------------
