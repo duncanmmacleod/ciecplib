@@ -44,7 +44,7 @@ RAW_INSTITUTION_LIST = [
     return_value=RAW_INSTITUTION_LIST,
 )
 def test_get_idps(urlopen):
-    assert ciecplib_utils.get_idps("something", extras=False) == {
+    assert ciecplib_utils.get_idps("something") == {
         "Institution 1": "https://inst1.test",
         "Institution 2": "https://inst2.test",
     }
@@ -79,4 +79,4 @@ def test_get_idp_urls_error(_, inst):
      "https://login.ligo.org/idp/profile/SAML2/SOAP/ECP"),
 ])
 def test_format_endpoint_url(url, result):
-    assert ligodotorg_utils.format_endpoint_url(url) == result
+    assert ciecplib_utils.format_endpoint_url(url) == result
