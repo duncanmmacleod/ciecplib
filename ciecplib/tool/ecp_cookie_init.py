@@ -37,6 +37,7 @@ defined by either
 from __future__ import print_function
 
 import argparse
+import os
 import sys
 
 from .. import __version__

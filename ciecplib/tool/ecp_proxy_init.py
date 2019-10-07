@@ -37,6 +37,7 @@ defined by either
 from __future__ import print_function
 
 import argparse
+import os
 import sys
 
 from OpenSSL import crypto
@@ -179,7 +180,7 @@ def main():
     if args.destroy:
         if args.verbose:
             print("Removing credential file {!s}".format(args.file))
-        os.path.unlink(args.file)
+        os.unlink(args.file)
         sys.exit()
 
     # if asked to reuse, check that we can
