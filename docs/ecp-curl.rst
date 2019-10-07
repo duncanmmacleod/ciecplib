@@ -1,6 +1,6 @@
-ligo-curl
+ecp-curl
 =========
 
 .. argparse::
-   :ref: ligo.org.tool.ligo_curl.create_parser
-   :prog: ligo-curl
+   :ref: ciecplib.tool.ecp_curl.create_parser
+   :prog: ecp-curl
