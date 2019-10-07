@@ -72,11 +72,19 @@ aliases:
       run:
         name: Install
         command: |
-          if [[ "${PYTHON_VERSION:0:1}" -eq 3 ]]; then PYTHON3="3"; fi
-          dpkg --install python${PYTHON3}-ciecplib*.deb ciecp-utils*.deb || { \
-              apt-get -y -f install;
-              dpkg --install python${PYTHON3}-ciecplib*.deb ciecp-utils*.deb;
-          };
+          # for python3, install everything (since ciecp-utils needs py2)
+          if [[ "${PYTHON_VERSION:0:1}" -eq 3 ]]; then
+              dpkg --install python*-ciecplib*.deb ciecp-utils*.deb || { \
+                  apt-get -y -f install;
+                  dpkg --install python*-ciecplib*.deb ciecp-utils*.deb;
+              };
+          # otherwise just install the py2 version, since python3 doesn't work
+          else
+              dpkg --install python-ciecplib*.deb ciecp-utils*.deb || { \
+                  apt-get -y -f install;
+                  dpkg --install python-ciecplib*.deb ciecp-utils*.deb;
+              };
+          fi
 
   - &centos_build
       run:
