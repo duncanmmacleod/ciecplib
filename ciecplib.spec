@@ -61,7 +61,7 @@ ecp-cookit-init, ecp-proxy-init, and ecp-curl
 sed -i "/ ; /s/ ;.*/\",/g" setup.py
 # remove winkerberos requirement
 sed -i "/winkerberos/d" setup.py
-# epel7 provides kerberos (not pykerberos):
+# centos/epel provides kerberos (not pykerberos):
 sed -i "s/pykerberos/kerberos/g" setup.py
 %endif
 %py2_build
