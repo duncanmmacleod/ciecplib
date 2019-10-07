@@ -18,12 +18,12 @@ from sphinx.ext.apidoc import main as apidoc_main
 # import sys
 # sys.path.insert(0, os.path.abspath('.'))
 
-from ligo.org import __version__ as ligodotorg_version
+from ciecplib import __version__ as ligodotorg_version
 
 
 # -- Project information -----------------------------------------------------
 
-project = 'ligo.org'
+project = 'ciecplib'
 copyright = '2019, Duncan Macleod'
 author = 'Duncan Macleod'
 
