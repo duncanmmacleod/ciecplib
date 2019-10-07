@@ -46,7 +46,7 @@ aliases:
         name: Build
         command: |
           set -x;
-          if [[ "${PYTHON_VERSION:0:1}" -eq 3 ]]; then export PYTHON3="3"; fi
+          if [[ "${PYTHON_VERSION:0:1}" -eq 3 ]]; then PYTHON3="3"; fi
           apt-get -yqq update;
           if [[ "${CIRCLE_JOB}" == *"buster*" ]]; then
               echo -e "\ndeb http://deb.debian.org/debian buster-backports main" >> /etc/apt/source.list;
@@ -72,6 +72,7 @@ aliases:
       run:
         name: Install
         command: |
+          if [[ "${PYTHON_VERSION:0:1}" -eq 3 ]]; then PYTHON3="3"; fi
           dpkg --install python${PYTHON3}-ciecplib*.deb ciecp-utils*.deb || { \
               apt-get -y -f install;
               dpkg --install python${PYTHON3}-ciecplib*.deb ciecp-utils*.deb;
