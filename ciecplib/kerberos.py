@@ -160,7 +160,9 @@ def kinit(username=None, password=None, realm=None, exe=None, keytab=None,
     identity = "{0}@{1}".format(username, realm)
     if not keytab and password is None:
         verbose = True
-        password = getpass.getpass(prompt="Password for {0}: ".format(identity))
+        password = getpass.getpass(
+            prompt="Password for {0}: ".format(identity),
+        )
 
     # format kinit command
     if keytab:
