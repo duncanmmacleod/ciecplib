@@ -1,20 +1,20 @@
 # -*- coding: utf-8 -*-
 # Copyright (C) Duncan Macleod (2019)
 #
-# This file is part of LIGO.ORG.
+# This file is part of ciecplib.
 #
-# LIGO.ORG is free software: you can redistribute it and/or modify
+# ciecplib is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
 #
-# LIGO.ORG is distributed in the hope that it will be useful,
+# ciecplib is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with LIGO.ORG.  If not, see <http://www.gnu.org/licenses/>.
+# along with ciecplib.  If not, see <http://www.gnu.org/licenses/>.
 
 r"""Authenticate and store SAML/ECP session cookies.
 
@@ -65,8 +65,8 @@ def create_parser():
         metavar="IdP",
         nargs="?",
         default=argparse.SUPPRESS,
-        help="IdP name, e.g. 'LIGO.ORG', or the URL of an IdP endpoint, "
-             "required if --kerberos not given, see --list-idps for a list of"
+        help="IdP name as known by CILogon, or the URL of an IdP endpoint, "
+             "required if --kerberos not given; see --list-idps for a list of"
              "Identity Provider (IdPs) and their IdP endpoint URL"
     )
     parser.add_argument(

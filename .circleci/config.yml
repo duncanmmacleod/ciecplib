@@ -24,7 +24,7 @@ aliases:
   - &install
       run:
         name: Install tarball
-        command: python -m pip install --progress-bar=off $(echo ligo.org*.tar.*)[test]
+        command: python -m pip install --progress-bar=off $(echo ciecplib-*.tar.*)[test]
 
   - &install_build_dependencies
       run:
@@ -41,13 +41,15 @@ aliases:
           set -x;
           if [[ "${PYTHON_VERSION:0:1}" -eq 3 ]]; then PYTHON3="3"; fi
           apt-get -yqq update;
+          echo -e "\ndeb http://deb.debian.org/debian buster-backports main" >> /etc/apt/source.list;
+          apt-get -yqq update;
           apt-get -yqq install \
               dpkg-dev \
               devscripts \
               python${PYTHON3}-pip \
           ;
           pushd $(mktemp -d -p .);
-          tar -xf ../ligo.org-*.tar.* --strip-components=1;
+          tar -xf ../ciecplib-*.tar.* --strip-components=1;
           # install build dependencies
           mk-build-deps --tool "apt-get -y" --install --remove;
           # build binary package
@@ -56,9 +58,9 @@ aliases:
           ls *.deb | xargs -n1 dpkg --info;
           # mv and install
           rm -rf tmp*;
-          dpkg --install python*ligo-dot-org*.deb ligo-proxy-utils2*.deb || { \
+          dpkg --install python*ciecplib*.deb ciecp-utils*.deb || { \
               apt-get -y -f install;
-              dpkg --install python*ligo-dot-org*.deb ligo-proxy-utils2*.deb;
+              dpkg --install python*ciecplib*.deb ciecp-utils*.deb;
           };
 
   - &centos_build
@@ -74,7 +76,7 @@ aliases:
               python2-pip \
           ;
           # build src rpm
-          SRPM=$(rpmbuild --define "_topdir $(pwd)" -ts ./ligo.org-*.tar.* | cut -d\  -f2);
+          SRPM=$(rpmbuild --define "_topdir $(pwd)" -ts ./ciecplib-*.tar.* | cut -d\  -f2);
           # install build dependencies
           yum-builddep -y -q ${SRPM};
           # build binary rpm(s)
@@ -82,7 +84,7 @@ aliases:
           # install
           mv */*.rpm .;
           rpm -qilp *.rpm
-          yum -y --nogpgcheck localinstall ./python*ligo-dot-org*.rpm ./ligo-proxy-utils2*.rpm;
+          yum -y --nogpgcheck localinstall ./python*ciecplib*.rpm ./ciecp-utils*.rpm;
 
   - &debian_install_test_dependencies
       run:
@@ -121,12 +123,12 @@ aliases:
           mkdir -pv tests;
           pushd tests;
           python${PYTHON_VERSION} -m pytest \
-              --pyargs ligo.org.tests \
-              --cov ligo.org \
+              --pyargs ciecplib.tests \
+              --cov ciecplib \
               --junitxml junit.xml \
           ;
           # test --help for scripts
-          for script in $(python -c "import pkg_resources as pkgr; [print(x.name) for x in pkgr.iter_entry_points('console_scripts') if x.dist.project_name == 'ligo.org']"); do
+          for script in $(python -c "import pkg_resources as pkgr; [print(x.name) for x in pkgr.iter_entry_points('console_scripts') if x.dist.project_name == 'ciecplib']"); do
               python${PYTHON_VERSION} -m coverage run \
                   --append \
                   --rcfile ../setup.cfg \
@@ -203,7 +205,7 @@ jobs:
       - persist_to_workspace:
           root: .
           paths:
-            - "ligo.org-*.tar.gz"
+            - "ciecplib-*.tar.gz"
 
   flake8:
     docker:
@@ -230,14 +232,28 @@ jobs:
   debian:stretch:2.7:
     <<: *debian
     docker:
-      - image: ligo/base:stretch
+      - image: debian:stretch
     environment:
       PYTHON_VERSION: "2.7"
+
+  debian:buster:2.7:
+    <<: *debian
+    docker:
+      - image: debian:buster
+    environment:
+      PYTHON_VERSION: "2.7"
+
+  debian:buster:3.7:
+    <<: *debian
+    docker:
+      - image: debian:buster
+    environment:
+      PYTHON_VERSION: "3.7"
 
   el7:2.7:
     <<: *centos
     docker:
-      - image: ligo/base:el7
+      - image: centos:7
     environment:
       PYTHON_VERSION: "2.7"
 

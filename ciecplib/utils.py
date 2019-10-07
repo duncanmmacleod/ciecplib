@@ -1,20 +1,20 @@
 # -*- coding: utf-8 -*-
 # Copyright (C) Duncan Macleod (2019)
 #
-# This file is part of LIGO.ORG.
+# This file is part of ciecplib.
 #
-# LIGO.ORG is free software: you can redistribute it and/or modify
+# ciecplib is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
 #
-# LIGO.ORG is distributed in the hope that it will be useful,
+# ciecplib is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with LIGO.ORG.  If not, see <http://www.gnu.org/licenses/>.
+# along with ciecplib.  If not, see <http://www.gnu.org/licenses/>.
 
 import platform
 import random
@@ -30,24 +30,6 @@ except ImportError:  # python < 3
     import urllib2 as urllib_request
     from urlparse import urlparse
     input = raw_input  # noqa: F821
-
-# extra institutions not known by CILogon
-EXTRA_INSTITUTIONS = {
-    # LIGO IdPs
-    "LIGO.ORG":
-        "https://login.ligo.org/idp/profile/SAML2/SOAP/ECP",
-    "LIGOGuest":
-        "https://login.guest.ligo.org/idp/profile/SAML2/SOAP/ECP",
-    "DEV.LIGO.ORG":
-        "https://login-dev.ligo.org/idp/profile/SAML2/SOAP/ECP",
-    "TEST.LIGO.ORG":
-        "https://login-test.ligo.org/idp/profile/SAML2/SOAP/ECP",
-    # extra institutions
-    "Cardiff University":
-        "https://idp.cf.ac.uk/idp/profile/SAML2/SOAP/ECP",
-    "Syracuse University":
-        "https://sugwg-login.phy.syr.edu/idp/profile/SAML2/SOAP/ECP",
-}
 
 # -- default CA files ---------------------------------------------------------
 
@@ -91,7 +73,7 @@ KERBEROS_SUFFIX = " (Kerberos)"
 KERBEROS_REGEX = re.compile(r"{}\Z".format(re.escape(KERBEROS_SUFFIX)))
 
 
-def get_idps(url=DEFAULT_IDPLIST_URL, extras=True):
+def get_idps(url=DEFAULT_IDPLIST_URL):
     """Download the list of known ECP IdPs from the given URL
 
     The output is a `dict` where the keys are institution names
@@ -104,12 +86,8 @@ def get_idps(url=DEFAULT_IDPLIST_URL, extras=True):
     ----------
     url : `str`
         the URL of the IDP list file
-
-    extras : `bool`, optional
-        if `True` (default), include the extra IdP URLs known in this
-        package, otherwise include only those from the remote IdP list
     """
-    idps = EXTRA_INSTITUTIONS.copy() if extras else dict()
+    idps = dict()
     for line in urllib_request.urlopen(url):
         url, inst = line.decode('utf-8').strip().split(' ', 1)
         idps[inst] = url
