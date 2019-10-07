@@ -65,6 +65,11 @@ aliases:
           ls *.deb | xargs -n1 dpkg --info;
           # mv and install
           rm -rf tmp*;
+
+  - &debian_install
+      run:
+        name: Install
+        command: |
           dpkg --install python*ciecplib*.deb ciecp-utils*.deb || { \
               apt-get -y -f install;
               dpkg --install python*ciecplib*.deb ciecp-utils*.deb;
@@ -76,11 +81,12 @@ aliases:
         command: |
           set -x;
           yum -y -q update;
+          yum -y -q install epel-release;
           yum -y -q install \
               rpm-build \
               yum-utils \
               python-srpm-macros \
-              python2-pip \
+              python-pip \
           ;
           # build src rpm
           SRPM=$(rpmbuild --define "_topdir $(pwd)" -ts ./ciecplib-*.tar.* | cut -d\  -f2);
@@ -91,6 +97,13 @@ aliases:
           # install
           mv */*.rpm .;
           rpm -qilp *.rpm
+          # remove epel
+          yum -y -q remove epel-release;
+
+  - &centos_install
+      run:
+        name: Install
+        command: |
           yum -y --nogpgcheck localinstall ./python*ciecplib*.rpm ./ciecp-utils*.rpm;
 
   - &debian_install_test_dependencies
@@ -165,6 +178,7 @@ aliases:
         - *debian_configure
         - *attach_workspace
         - *debian_build
+        - *debian_install
         - *debian_install_test_dependencies
         - *test
         - *coverage_report
@@ -178,6 +192,7 @@ aliases:
         - checkout
         - *attach_workspace
         - *centos_build
+        - *centos_install
         - *centos_install_test_dependencies
         - *test
         - *coverage_report
