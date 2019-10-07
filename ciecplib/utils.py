@@ -70,7 +70,7 @@ DEFAULT_CAFILE, DEFAULT_CAPATH = _defaults()
 DEFAULT_IDPLIST_URL = "https://cilogon.org/include/ecpidps.txt"
 DEFAULT_SP_URL = "https://ecp.cilogon.org/secure/getcert"
 KERBEROS_SUFFIX = " (Kerberos)"
-KERBEROS_REGEX = re.compile(r"{}\Z".format(re.escape(KERBEROS_SUFFIX)))
+KERBEROS_REGEX = re.compile(r"{0}\Z".format(re.escape(KERBEROS_SUFFIX)))
 
 
 def get_idps(url=DEFAULT_IDPLIST_URL):
@@ -102,10 +102,10 @@ def _match_institution(value, institutions):
         return matches[0]
     if len(matches) == 0 and not value.endswith(".*"):
         try:
-            return _match_institution("{}.*".format(value), institutions)
+            return _match_institution("{0}.*".format(value), institutions)
         except ValueError:
             pass
-    raise ValueError("failed to identify IdP URLs for {!r}".format(value))
+    raise ValueError("failed to identify IdP URLs for {0!r}".format(value))
 
 
 def get_idp_urls(institution, url=DEFAULT_IDPLIST_URL):
@@ -123,9 +123,9 @@ def get_idp_urls(institution, url=DEFAULT_IDPLIST_URL):
 
 def _endpoint_url(url):
     if "/" not in url:
-        url = "https://{}/idp/profile/SAML2/SOAP/ECP".format(url)
+        url = "https://{0}/idp/profile/SAML2/SOAP/ECP".format(url)
     if not urlparse(url).scheme:
-        url = "https://{}".format(url)
+        url = "https://{0}".format(url)
     return url
 
 
@@ -176,8 +176,8 @@ def random_string(length, outof=string.ascii_lowercase+string.digits):
 
 def prompt_username_password(host, username=None):
     if username is None:
-        username = input("Enter username for {}: ".format(host))
+        username = input("Enter username for {0}: ".format(host))
     password = getpass(
-        "Enter password for {!r} on {}: ".format(username, host),
+        "Enter password for {0!r} on {1}: ".format(username, host),
     )
     return username, password

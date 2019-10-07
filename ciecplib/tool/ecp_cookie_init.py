@@ -163,7 +163,7 @@ def main():
     # if asked to destroy, just do that
     if args.destroy:
         if args.verbose:
-            print("Removing cookie file {!s}".format(args.cookiefile))
+            print("Removing cookie file {0!s}".format(args.cookiefile))
         os.unlink(args.cookiefile)
         sys.exit()
 
@@ -199,13 +199,13 @@ def main():
             ignore_expires=True,
         )
         if args.verbose:
-            print("Cookies stored in '{!s}'".format(args.cookiefile))
+            print("Cookies stored in '{0!s}'".format(args.cookiefile))
 
     # load the cert from file to print information
     if args.debug or args.verbose:
         info = [(cookie.domain, cookie.path, cookie.secure, cookie.name) for
                 cookie in cookiejar]
-        fmt = "%-{}s %-5s %-7s %s".format(max(len(i[0]) for i in info))
+        fmt = "%-{0}s %-5s %-7s %s".format(max(len(i[0]) for i in info))
         print(fmt % ("------", "----", "-------", "----"))
         print(fmt % ("DOMAIN", "PATH", r"SECURE?", "NAME"))
         print(fmt % ("------", "----", "-------", "----"))

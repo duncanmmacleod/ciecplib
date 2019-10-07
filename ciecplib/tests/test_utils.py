@@ -40,7 +40,7 @@ RAW_INSTITUTION_LIST = [
 
 
 @mock.patch(
-    "{}.urlopen".format(urlreqmodname),
+    "{0}.urlopen".format(urlreqmodname),
     return_value=RAW_INSTITUTION_LIST,
 )
 def test_get_idps(urlopen):
@@ -52,7 +52,7 @@ def test_get_idps(urlopen):
 
 
 @mock.patch(
-    "{}.urlopen".format(urlreqmodname),
+    "{0}.urlopen".format(urlreqmodname),
     return_value=RAW_INSTITUTION_LIST,
 )
 def test_get_idp_urls(_):
@@ -63,7 +63,7 @@ def test_get_idp_urls(_):
 
 
 @mock.patch(
-    "{}.urlopen".format(urlreqmodname),
+    "{0}.urlopen".format(urlreqmodname),
     return_value=RAW_INSTITUTION_LIST,
 )
 @pytest.mark.parametrize("inst", ["Institution*", "something else"])

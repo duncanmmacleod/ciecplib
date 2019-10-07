@@ -34,7 +34,7 @@ def find_version(path, varname="__version__"):
     with open(path, 'r') as fp:
         version_file = fp.read()
     version_match = re.search(
-        r"^{} = ['\"]([^'\"]*)['\"]".format(varname),
+        r"^{0} = ['\"]([^'\"]*)['\"]".format(varname),
         version_file,
         re.M,
     )

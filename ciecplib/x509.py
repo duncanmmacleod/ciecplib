@@ -72,10 +72,10 @@ def get_x509_proxy_path():
         return os.environ["X509_USER_PROXY"]
     if os.name == "nt":
         tmpdir = r'%SYSTEMROOT%\Temp'
-        tmpname = "x509up_{}".format(os.getlogin())
+        tmpname = "x509up_{0}".format(os.getlogin())
     else:
         tmpdir = "/tmp"
-        tmpname = "x509up_u{}".format(os.getuid())
+        tmpname = "x509up_u{0}".format(os.getuid())
     return os.path.join(tmpdir, tmpname)
 
 
@@ -244,7 +244,7 @@ def print_cert_info(x509, path=None):
     print("subject  : " + _x509_name_str(x509.get_subject()))
     print("issuer   : " + _x509_name_str(x509.get_issuer()))
     print("type     : " + _cert_type(x509))
-    print("strength : {} bits".format(pkey.bits()))
+    print("strength : {0} bits".format(pkey.bits()))
     if path:
         print("path     : " + str(path))
     print("timeleft : " + str(datetime.timedelta(seconds=_timeleft(x509))))

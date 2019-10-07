@@ -98,7 +98,7 @@ class ListIdpsAction(argparse.Action):
     def __call__(self, parser, namespace, values, option_string=None):
         idps = get_idps(extras=True)
         formatter = parser._get_formatter()
-        fmt = "%-{}s : %s".format(max(map(len, idps)))
+        fmt = "%-{0}s : %s".format(max(map(len, idps)))
         for pair in sorted(idps.items(), key=lambda x: x[0]):
             formatter.add_text(fmt % pair)
         parser._print_message(formatter.format_help(), sys.stdout)

@@ -218,7 +218,7 @@ class HTTPNegotiateAuthHandler(urllib_request.BaseHandler):
 
         if kerberos.authGSSClientStep(self.context, neg_value) < 0:
             return None
-        return 'Negotiate {}'.format(
+        return 'Negotiate {0}'.format(
             kerberos.authGSSClientResponse(self.context),
         )
 

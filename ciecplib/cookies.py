@@ -37,10 +37,10 @@ __author__ = 'Duncan Macleod <duncan.macleod@ligo.org>'
 def get_ecpcookie_path():
     if os.name == "nt":
         tmpdir = r'%SYSTEMROOT%\Temp'
-        tmpname = "ecpcookie.{}".format(os.getlogin())
+        tmpname = "ecpcookie.{0}".format(os.getlogin())
     else:
         tmpdir = "/tmp"
-        tmpname = "ecpcookie.u{}".format(os.getuid())
+        tmpname = "ecpcookie.u{0}".format(os.getuid())
     return os.path.join(tmpdir, tmpname)
 
 

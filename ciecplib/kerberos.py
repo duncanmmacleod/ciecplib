@@ -48,7 +48,7 @@ except NameError:
 def _find_executable(name):
     exe = find_executable(name)
     if exe is None:
-        raise OSError("cannot find {!r}".format(name))
+        raise OSError("cannot find {0!r}".format(name))
     return exe
 
 
@@ -155,12 +155,12 @@ def kinit(username=None, password=None, realm=None, exe=None, keytab=None,
         ).split("@", 1)
     if username is None:
         verbose = True
-        username = input("Please provide username for the {} kerberos "
+        username = input("Please provide username for the {0} kerberos "
                          "realm: ".format(realm))
-    identity = "{}@{}".format(username, realm)
+    identity = "{0}@{1}".format(username, realm)
     if not keytab and password is None:
         verbose = True
-        password = getpass.getpass(prompt="Password for {}: ".format(identity))
+        password = getpass.getpass(prompt="Password for {0}: ".format(identity))
 
     # format kinit command
     if keytab:
@@ -182,7 +182,7 @@ def kinit(username=None, password=None, realm=None, exe=None, keytab=None,
     if retcode:
         raise subprocess.CalledProcessError(kget.returncode, " ".join(cmd))
     if verbose:
-        print("Kerberos ticket generated for {}".format(identity))
+        print("Kerberos ticket generated for {0}".format(identity))
 
 
 def parse_keytab(keytab):
@@ -212,7 +212,7 @@ def parse_keytab(keytab):
     except OSError:
         raise KerberosError("Failed to locate klist, cannot read keytab")
     except subprocess.CalledProcessError:
-        raise KerberosError("Cannot read keytab {!r}".format(keytab))
+        raise KerberosError("Cannot read keytab {0!r}".format(keytab))
     principals = []
     for line in out.splitlines():
         if isinstance(line, bytes):
