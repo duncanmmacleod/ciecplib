@@ -3,7 +3,8 @@
 include /usr/share/dpkg/pkg-info.mk
 
 export PYBUILD_NAME = ciecplib
-export PYBUILD_DISABLE := test
+export PYBUILD_DESTDIR = debian/tmp
+export PYBUILD_DISABLE = test
 
 # build man pages
 export PYBUILD_AFTER_INSTALL := \
