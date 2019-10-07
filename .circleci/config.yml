@@ -273,13 +273,6 @@ jobs:
     environment:
       PYTHON_VERSION: "3.7"
 
-  centos:6:2.6:
-    <<: *centos
-    docker:
-      - image: centos:6
-    environment:
-      PYTHON_VERSION: "2.6"
-
   centos:7:2.7:
     <<: *centos
     docker:
@@ -329,9 +322,6 @@ workflows:
     jobs:
       - sdist
       - flake8
-      - centos:6:2.6:
-          requires:
-            - sdist
       - centos:7:2.7:
           requires:
             - sdist
