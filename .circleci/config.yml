@@ -48,8 +48,10 @@ aliases:
           set -x;
           if [[ "${PYTHON_VERSION:0:1}" -eq 3 ]]; then PYTHON3="3"; fi
           apt-get -yqq update;
-          echo -e "\ndeb http://deb.debian.org/debian buster-backports main" >> /etc/apt/source.list;
-          apt-get -yqq update;
+          if [[ "${CIRCLE_JOB}" == *"buster*" ]]; then
+              echo -e "\ndeb http://deb.debian.org/debian buster-backports main" >> /etc/apt/source.list;
+              apt-get -yqq update;
+          fi
           apt-get -yqq install \
               dpkg-dev \
               devscripts \
@@ -70,9 +72,9 @@ aliases:
       run:
         name: Install
         command: |
-          dpkg --install python*ciecplib*.deb ciecp-utils*.deb || { \
+          dpkg --install python${PYTHON3}-ciecplib*.deb ciecp-utils*.deb || { \
               apt-get -y -f install;
-              dpkg --install python*ciecplib*.deb ciecp-utils*.deb;
+              dpkg --install python${PYTHON3}-ciecplib*.deb ciecp-utils*.deb;
           };
 
   - &centos_build
