@@ -24,7 +24,6 @@ from __future__ import print_function
 import os
 import time
 import warnings
-from pathlib import Path
 try:
     from http.cookiejar import (LoadError, MozillaCookieJar)
     from urllib.parse import urlparse
@@ -37,12 +36,12 @@ __author__ = 'Duncan Macleod <duncan.macleod@ligo.org>'
 
 def get_ecpcookie_path():
     if os.name == "nt":
-        tmpdir = Path(r'%SYSTEMROOT%\Temp')
+        tmpdir = r'%SYSTEMROOT%\Temp'
         tmpname = "ecpcookie.{}".format(os.getlogin())
     else:
-        tmpdir = Path("/tmp")
+        tmpdir = "/tmp"
         tmpname = "ecpcookie.u{}".format(os.getuid())
-    return tmpdir / tmpname
+    return os.path.join(tmpdir, tmpname)
 
 
 COOKIE_FILE = get_ecpcookie_path()

@@ -31,7 +31,6 @@ import subprocess
 import sys
 from collections import OrderedDict
 from distutils.spawn import find_executable
-from pathlib import Path
 
 if sys.version_info.major < 3:
     input = raw_input  # noqa: F821
@@ -118,7 +117,7 @@ def kinit(username=None, password=None, realm=None, exe=None, keytab=None,
     # get keytab
     if keytab is None:
         keytab = os.environ.get('KRB5_KTNAME', None)
-        if keytab is None or not Path(keytab).is_file():
+        if keytab is None or not os.path.isfile(keytab):
             keytab = None
     if keytab:
         try:

@@ -25,7 +25,6 @@ import string
 import struct
 import tempfile
 import time
-from pathlib import Path
 try:
     from urllib import parse as urllib_parse
     from urllib import request as urllib_request
@@ -67,17 +66,17 @@ def get_x509_proxy_path():
 
     Returns
     -------
-    path : `pathlib.Path`
+    path : `str`
     """
     if os.getenv("X509_USER_PROXY"):
-        return Path(os.environ["X509_USER_PROXY"])
+        return os.environ["X509_USER_PROXY"]
     if os.name == "nt":
-        tmpdir = Path(r'%SYSTEMROOT%\Temp')
+        tmpdir = r'%SYSTEMROOT%\Temp'
         tmpname = "x509up_{}".format(os.getlogin())
     else:
-        tmpdir = Path("/tmp")
+        tmpdir = "/tmp"
         tmpname = "x509up_u{}".format(os.getuid())
-    return tmpdir / tmpname
+    return os.path.join(tmpdir, tmpname)
 
 
 def get_cert(

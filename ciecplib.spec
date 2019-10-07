@@ -38,7 +38,6 @@ Requires: pyOpenSSL
 Requires: python
 Requires: python-kerberos
 Requires: python-lxml
-Requires: python-pathlib
 %{?python_provide:%python_provide python2-%{name}}
 %description -n python2-%{name}
 The Python %{python_version} client for SAML ECP authentication.

@@ -38,7 +38,6 @@ from __future__ import print_function
 
 import argparse
 import sys
-from pathlib import Path
 
 from OpenSSL import crypto
 
@@ -85,7 +84,6 @@ def create_parser():
         "-f",
         "--file",
         default=get_x509_proxy_path(),
-        type=Path,
         help="certificate file to create/reuse/destroy",
     )
     parser.add_argument(
@@ -181,7 +179,7 @@ def main():
     if args.destroy:
         if args.verbose:
             print("Removing credential file {!s}".format(args.file))
-        args.file.unlink()
+        os.path.unlink(args.file)
         sys.exit()
 
     # if asked to reuse, check that we can

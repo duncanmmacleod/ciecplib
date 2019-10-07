@@ -25,8 +25,7 @@ Depends: ${misc:Depends},
          python-kerberos,
          python-lxml,
          python-m2crypto,
-         python-openssl,
-         python-pathlib
+         python-openssl
 Description: A python client for SAML ECP authentication
 
 # -- python3-ciecplib ---------------------------------------------------------

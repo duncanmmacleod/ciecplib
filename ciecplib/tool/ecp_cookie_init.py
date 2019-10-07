@@ -38,7 +38,6 @@ from __future__ import print_function
 
 import argparse
 import sys
-from pathlib import Path
 
 from .. import __version__
 from ..cookies import (
@@ -95,7 +94,6 @@ def create_parser():
         "--cookiefile",
         metavar="cookiefile",
         default=DEFAULT_COOKIE_FILE,
-        type=Path,
         help="cookie file to create/reuse/destroy",
     )
     parser.add_argument(
@@ -165,7 +163,7 @@ def main():
     if args.destroy:
         if args.verbose:
             print("Removing cookie file {!s}".format(args.cookiefile))
-        args.cookiefile.unlink()
+        os.unlink(args.cookiefile)
         sys.exit()
 
     # if asked to reuse, check that we can

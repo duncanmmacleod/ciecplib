@@ -22,7 +22,6 @@ import re
 import ssl
 import string
 from getpass import getpass
-from pathlib import Path
 try:
     from urllib import request as urllib_request
     from urllib.parse import urlparse
@@ -48,7 +47,7 @@ def _defaults():
         "/etc/ssl/certs/ca-certificates.crt",  # debian
         "/etc/pki/tls/cert.pem",
     ):
-        if Path(path or "").is_file():
+        if os.path.isfile(path or ""):
             cafile = path
             break
     else:
@@ -56,7 +55,7 @@ def _defaults():
 
     # prefer globus certificates path
     globusdir = "/etc/grid-security/certificates"
-    if Path(globusdir).is_dir():
+    if os.path.isdir(globusdir):
         return cafile, globusdir
 
     return cafile, DEFAULT_VERIFY_PATHS.capath

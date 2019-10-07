@@ -49,7 +49,6 @@ setup_requires = [
 install_requires = [
     "lxml",  # BSD
     "M2Crypto",  # MIT
-    "pathlib ; python_version < '3.4'",  # MIT
     "pykerberos ; sys_platform != 'win32'",  # Apache 2.0
     "pyOpenSSL",  # Apache 2.0
     "winkerberos ; sys_platform == 'win32'",  # Apache 2.0
