@@ -43,7 +43,7 @@ Description: A python client for SAML ECP authentication
 
 # -- ciecp-utils --------------------------------------------------------------
 
-Package: ciecputils
+Package: ciecp-utils
 Architecture: all
 Depends: ${misc:Depends},
          ${python:Depends},
