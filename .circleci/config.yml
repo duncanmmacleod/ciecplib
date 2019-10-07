@@ -34,6 +34,13 @@ aliases:
           apt-get -yqq update;
           apt-get -yqq install swig;
 
+  - &debian_configure
+      run:
+        name: Configure debian
+        command: |
+          apt-get -yqq update;
+          apt-get -yqq install ca-certificates;
+
   - &debian_build
       run:
         name: Build
@@ -155,6 +162,7 @@ aliases:
   - &debian
       steps:
         - checkout
+        - *debian_configure
         - *attach_workspace
         - *debian_build
         - *debian_install_test_dependencies
