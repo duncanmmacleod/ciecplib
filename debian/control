@@ -47,5 +47,5 @@ Package: ciecp-utils
 Architecture: all
 Depends: ${misc:Depends},
          ${python:Depends},
-         python3-ciecplib | python-ciecplib
+         python-ciecplib
 Description: Command-line utlities for SAML ECP authentication
