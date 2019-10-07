@@ -29,7 +29,7 @@ else:
 
 import pytest
 
-from .. import utils as ligodotorg_utils
+from .. import utils as ciecplib_utils
 
 __author__ = 'Duncan Macleod <duncan.macleod@ligo.org>'
 
@@ -44,7 +44,7 @@ RAW_INSTITUTION_LIST = [
     return_value=RAW_INSTITUTION_LIST,
 )
 def test_get_idps(urlopen):
-    assert ligodotorg_utils.get_idps("something", extras=False) == {
+    assert ciecplib_utils.get_idps("something", extras=False) == {
         "Institution 1": "https://inst1.test",
         "Institution 2": "https://inst2.test",
     }
@@ -55,19 +55,8 @@ def test_get_idps(urlopen):
     "{}.urlopen".format(urlreqmodname),
     return_value=RAW_INSTITUTION_LIST,
 )
-def test_get_idps_extras(_):
-    idps = ligodotorg_utils.get_idps("something", extras=True)
-    assert idps["Cardiff University"] == (
-        "https://idp.cf.ac.uk/idp/profile/SAML2/SOAP/ECP"
-    )
-
-
-@mock.patch(
-    "{}.urlopen".format(urlreqmodname),
-    return_value=RAW_INSTITUTION_LIST,
-)
 def test_get_idp_urls(_):
-    assert ligodotorg_utils.get_idp_urls("Institution 1") == (
+    assert ciecplib_utils.get_idp_urls("Institution 1") == (
         "https://inst1.test",
         "https://inst1.test",
     )
@@ -80,7 +69,7 @@ def test_get_idp_urls(_):
 @pytest.mark.parametrize("inst", ["Institution*", "something else"])
 def test_get_idp_urls_error(_, inst):
     with pytest.raises(ValueError):
-        ligodotorg_utils.get_idp_urls(inst)
+        ciecplib_utils.get_idp_urls(inst)
 
 
 @pytest.mark.parametrize("url, result", [
