@@ -49,7 +49,7 @@ aliases:
           if [[ "${PYTHON_VERSION:0:1}" -eq 3 ]]; then PYTHON3="3"; fi
           apt-get -yqq update;
           if [[ "${CIRCLE_JOB}" == *"buster*" ]]; then
-              echo -e "\ndeb http://deb.debian.org/debian buster-backports main" >> /etc/apt/source.list;
+              echo -e "\ndeb http://deb.debian.org/debian buster-backports main" >> /etc/apt/sources.list;
               apt-get -yqq update;
           fi
           apt-get -yqq install \
