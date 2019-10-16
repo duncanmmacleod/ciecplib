@@ -134,15 +134,13 @@ def reuse_cookiefile(cookiefile, url, verbose=False):
         print("Validating existing cookies...", end=" ")
     try:
         cookiejar = load_cookiejar(cookiefile, strict=True)
-    except LoadError:
-        cookiejar = None
-        reuse = False
+    except (LoadError, OSError):
         if verbose:
             print("failed to load cookie file")
-    else:
-        reuse = has_session_cookies(cookiejar, url)
-        if verbose and reuse:
-            print("OK")
-        elif verbose:
-            print("cannot reuse, need new cookies")
+        return None, None
+    reuse = has_session_cookies(cookiejar, url)
+    if verbose and reuse:
+        print("OK")
+    elif verbose:
+        print("cannot reuse, need new cookies")
     return cookiejar, reuse

@@ -43,7 +43,6 @@ import sys
 from OpenSSL import crypto
 
 from .. import __version__
-from ..ecp import LIGO_ENDPOINT_DOMAIN
 from ..x509 import (
     check_cert,
     get_cert,
@@ -97,7 +96,7 @@ def create_parser():
     parser.add_argument(
         "-i",
         "--hostname",
-        default=LIGO_ENDPOINT_DOMAIN,
+        default=None,
         help="domain name of IdP host, see --list-idps for a list of "
              "Identity Provider (IdPs) and their IdP endpoint URL",
     )

@@ -32,7 +32,7 @@ from .cookies import (
     has_session_cookies,
     load_cookiejar,
 )
-from .ecp import (LIGO_ENDPOINT_DOMAIN, authenticate)
+from .ecp import authenticate
 from .http import build_verified_opener
 from .kerberos import has_credential
 from .utils import format_endpoint_url
@@ -41,7 +41,7 @@ from .utils import format_endpoint_url
 def request(
         url,
         username=None,
-        endpoint=LIGO_ENDPOINT_DOMAIN,
+        endpoint=None,
         kerberos=None,
         cookiejar=None,
         cookiefile=COOKIE_FILE,
@@ -74,7 +74,6 @@ def request(
     response : `http.client.HTTPResponse`
         the response from the URL
     """
-    endpoint = format_endpoint_url(endpoint, kerberos=kerberos)
 
     # read existing cookies
     if cookiejar is None:
@@ -86,6 +85,13 @@ def request(
     if not reuse:
         if kerberos is None:  # guess availability of kerberos
             kerberos = has_credential()
+        try:
+            endpoint = format_endpoint_url(endpoint, kerberos=kerberos)
+        except AttributeError:
+            raise ValueError(
+                "a valid endpoint name or URL is required when "
+                "no existing cookie can be used"
+            )
         authenticate(
             endpoint,
             username=username,

@@ -61,15 +61,6 @@ def create_parser():
     """
     parser = ArgumentParser(description=__doc__, version=__version__)
     parser.add_argument(
-        "endpoint",
-        metavar="IdP",
-        nargs="?",
-        default=argparse.SUPPRESS,
-        help="IdP name as known by CILogon, or the URL of an IdP endpoint, "
-             "required if --kerberos not given; see --list-idps for a list of"
-             "Identity Provider (IdPs) and their IdP endpoint URL"
-    )
-    parser.add_argument(
         "target_url",
         metavar="URL",
         help="service URL for which to generate cookies",
@@ -99,9 +90,11 @@ def create_parser():
     )
     parser.add_argument(
         "-i",
-        "--hostname",
+        "--idp",
         default=argparse.SUPPRESS,
-        help="domain name of IdP host, defaults is default domain for IdP",
+        help="IdP name as known by CILogon, or the URL of an IdP endpoint, "
+             "required if --kerberos not given; see --list-idps for a list of"
+             "Identity Provider (IdPs) and their IdP endpoint URL"
     )
     authtype.add_argument(
         "-k",
@@ -145,7 +138,8 @@ def parse_args(parser):
 
     # check that username or --kerberos was given if not using --destroy
     if not args.destroy and not (
-            args.kerberos or getattr(args, "username", None) and args.endpoint
+            args.kerberos or
+            getattr(args, "username", None) and args.idp
     ):
         parser.error("-k/--kerberos is required if IdP_tag and "
                      "login are not given")
@@ -182,7 +176,7 @@ def main():
         if args.verbose:
             print("Authenticating...")
         authenticate(
-            getattr(args, "hostname", None) or args.endpoint,
+            args.idp,
             spurl=args.target_url,
             cookiejar=cookiejar,
             username=getattr(args, "username", None),
