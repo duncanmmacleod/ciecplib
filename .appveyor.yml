@@ -20,7 +20,7 @@ test_script:
   # run --help on scripts for sanity
   - python -m coverage run --append -m ciecplib.tool.ecp_cookie_init --help
   - python -m coverage run --append -m ciecplib.tool.ecp_curl --help
-  - python -m coverage run --append -m ciecplib.tool.ecp_proxy_init --help
+  - python -m coverage run --append -m ciecplib.tool.ecp_get_cert --help
 after_test:
   - python -m coverage report
   - python -m pip install codecov

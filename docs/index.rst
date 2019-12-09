@@ -70,7 +70,7 @@ Command-line scripts
 
    ecp-cookie-init
    ecp-curl
-   ecp-proxy-init
+   ecp-get-cert
 
 |
 

@@ -47,7 +47,7 @@ Summary: Command line utilities for SAML ECP authentication
 Requires: python2-%{name} = %{version}
 %description -n ciecp-utils
 Command line utilities for SAML ECP authentication, including
-ecp-cookit-init, ecp-proxy-init, and ecp-curl
+ecp-cookit-init, ecp-get-cert, and ecp-curl
 (an ECP-aware curl alternative).
 
 # -- build ------------------

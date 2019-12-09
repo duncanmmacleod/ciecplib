@@ -100,7 +100,7 @@ setup(
         "console_scripts": [
             "ecp-cookie-init=ciecplib.tool.ecp_cookie_init:main",
             "ecp-curl=ciecplib.tool.ecp_curl:main",
-            "ecp-proxy-init=ciecplib.tool.ecp_proxy_init:main",
+            "ecp-get-cert=ciecplib.tool.ecp_get_cert:main",
         ],
     },
     # dependencies

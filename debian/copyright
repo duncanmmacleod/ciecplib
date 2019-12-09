@@ -1,11 +1,10 @@
 Format: http://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
+Upstream-Name: ciecplib
 Upstream-Contact: Duncan Macleod <duncan.macleod@ligo.org>
 Source: https://git.ligo.org/duncanmmacleod/ciecplib
 
 Files: *
 Copyright: 2019 Duncan Macleod <duncan.macleod@ligo.org>
-License: GPL-3+
-
 License: GPL-3+
  This program is free software: you can redistribute it and/or modify
  it under the terms of the GNU General Public License as published by
