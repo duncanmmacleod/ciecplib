@@ -1,28 +1,28 @@
 # -*- coding: utf-8 -*-
 # Copyright (C) Duncan Macleod (2019)
 #
-# This file is part of LIGO.ORG.
+# This file is part of ciecplib
 #
-# LIGO.ORG is free software: you can redistribute it and/or modify
+# ciecplib is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
 #
-# LIGO.ORG is distributed in the hope that it will be useful,
+# ciecplib is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with LIGO.ORG.  If not, see <http://www.gnu.org/licenses/>.
+# along with ciecplib.  If not, see <http://www.gnu.org/licenses/>.
 
 import os.path
 import re
 
 from setuptools import (find_packages, setup)
 
-PACKAGENAME = 'ligo.org'
-PROVIDES = 'ligo.org'
+PACKAGENAME = 'ciecplib'
+PROVIDES = 'ciecplib'
 AUTHOR = 'Duncan Macleod'
 AUTHOR_EMAIL = 'duncan.macleod@ligo.org'
 LICENSE = 'GPLv3'
@@ -34,7 +34,7 @@ def find_version(path, varname="__version__"):
     with open(path, 'r') as fp:
         version_file = fp.read()
     version_match = re.search(
-        r"^{} = ['\"]([^'\"]*)['\"]".format(varname),
+        r"^{0} = ['\"]([^'\"]*)['\"]".format(varname),
         version_file,
         re.M,
     )
@@ -44,15 +44,14 @@ def find_version(path, varname="__version__"):
 
 
 setup_requires = [
-    "setuptools",
+    "setuptools",  # MIT
 ]
 install_requires = [
-    "lxml",
-    "M2Crypto",
-    "pathlib ; python_version < '3.4'",
-    "pykerberos ; sys_platform != 'win32'",
-    "pyOpenSSL",
-    "winkerberos ; sys_platform == 'win32'",
+    "lxml",  # BSD
+    "M2Crypto",  # MIT
+    "pykerberos ; sys_platform != 'win32'",  # Apache 2.0
+    "pyOpenSSL",  # Apache 2.0
+    "winkerberos ; sys_platform == 'win32'",  # Apache 2.0
 ]
 tests_require = [
     "mock ; python_version < '3'",
@@ -70,21 +69,22 @@ extras_require = {
     ],
 }
 
-
 setup(
     # distribution metadata
-    name="ligo.org",
-    version=find_version(os.path.join("ligo", "org", "__init__.py")),
+    name="ciecplib",
+    version=find_version(os.path.join("ciecplib", "__init__.py")),
     author="Duncan Macleod <duncan.macleod@ligo.org>",
     author_email="duncan.macleod@ligo.org",
     license="GPL-3.0-or-later",
-    description="A python client for LIGO.ORG SAML ECP authentication",
+    description="A python client for SAML ECP authentication",
     long_description=open("README.md", "r").read(),
     long_description_content_type="text/markdown",
-    url='https://github.com/duncanmmacleod/ligo.org/',
+    url='https://github.com/duncanmmacleod/ciecplib/',
     classifiers=[
+        'Development Status :: 4 - Beta',
         'Intended Audience :: Science/Research',
         'License :: OSI Approved :: GNU General Public License v3 (GPLv3)',
+        'Natural Language :: English',
         'Operating System :: OS Independent',
         'Programming Language :: Python :: 2.7',
         'Programming Language :: Python :: 3',
@@ -92,17 +92,15 @@ setup(
         'Programming Language :: Python :: 3.5',
         'Programming Language :: Python :: 3.6',
         'Programming Language :: Python :: 3.7',
-        'Topic :: Scientific/Engineering :: Astronomy',
-        'Topic :: Scientific/Engineering :: Physics'
+        'Topic :: Scientific/Engineering',
     ],
     # contents
     packages=find_packages(),
-    namespace_packages=['ligo'],
     entry_points={
         "console_scripts": [
-            "ecp-cookie-init=ligo.org.tool.ecp_cookie_init:main",
-            "ligo-curl=ligo.org.tool.ligo_curl:main",
-            "ligo-proxy-init=ligo.org.tool.ligo_proxy_init:main",
+            "ecp-cookie-init=ciecplib.tool.ecp_cookie_init:main",
+            "ecp-curl=ciecplib.tool.ecp_curl:main",
+            "ecp-proxy-init=ciecplib.tool.ecp_proxy_init:main",
         ],
     },
     # dependencies

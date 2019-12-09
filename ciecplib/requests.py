@@ -1,20 +1,23 @@
 # -*- coding: utf-8 -*-
 # Copyright (C) Duncan Macleod (2019)
 #
-# This file is part of LIGO.ORG.
+# This file is part of ciecplib.
 #
-# LIGO.ORG is free software: you can redistribute it and/or modify
+# ciecplib is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
 #
-# LIGO.ORG is distributed in the hope that it will be useful,
+# ciecplib is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with LIGO.ORG.  If not, see <http://www.gnu.org/licenses/>.
+# along with ciecplib.  If not, see <http://www.gnu.org/licenses/>.
+
+"""HTTP request method with end-to-end ECP authentication
+"""
 
 from __future__ import absolute_import
 
@@ -29,7 +32,7 @@ from .cookies import (
     has_session_cookies,
     load_cookiejar,
 )
-from .ecp import (LIGO_ENDPOINT_DOMAIN, authenticate)
+from .ecp import authenticate
 from .http import build_verified_opener
 from .kerberos import has_credential
 from .utils import format_endpoint_url
@@ -38,7 +41,7 @@ from .utils import format_endpoint_url
 def request(
         url,
         username=None,
-        endpoint=LIGO_ENDPOINT_DOMAIN,
+        endpoint=None,
         kerberos=None,
         cookiejar=None,
         cookiefile=COOKIE_FILE,
@@ -71,7 +74,6 @@ def request(
     response : `http.client.HTTPResponse`
         the response from the URL
     """
-    endpoint = format_endpoint_url(endpoint, kerberos=kerberos)
 
     # read existing cookies
     if cookiejar is None:
@@ -83,6 +85,13 @@ def request(
     if not reuse:
         if kerberos is None:  # guess availability of kerberos
             kerberos = has_credential()
+        try:
+            endpoint = format_endpoint_url(endpoint, kerberos=kerberos)
+        except AttributeError:
+            raise ValueError(
+                "a valid endpoint name or URL is required when "
+                "no existing cookie can be used"
+            )
         authenticate(
             endpoint,
             username=username,

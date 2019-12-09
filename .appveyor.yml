@@ -16,10 +16,11 @@ build_script:
   - python -m pip install .
 test_script:
   # run automated tests
-  - python -m pytest --pyargs ligo.org.tests --cov ligo.org --cov-report "" --junitxml=junit.xml
+  - python -m pytest --pyargs ciecplib.tests --cov ciecplib --cov-report "" --junitxml=junit.xml
   # run --help on scripts for sanity
-  - python -m coverage run --append -m ligo.org.tool.ligo_curl --help
-  - python -m coverage run --append -m ligo.org.tool.ligo_proxy_init --help
+  - python -m coverage run --append -m ciecplib.tool.ecp_cookie_init --help
+  - python -m coverage run --append -m ciecplib.tool.ecp_curl --help
+  - python -m coverage run --append -m ciecplib.tool.ecp_proxy_init --help
 after_test:
   - python -m coverage report
   - python -m pip install codecov

@@ -1,20 +1,20 @@
 # -*- coding: utf-8 -*-
 # Copyright (C) Duncan Macleod (2019)
 #
-# This file is part of LIGO.ORG.
+# This file is part of ciecplib.
 #
-# LIGO.ORG is free software: you can redistribute it and/or modify
+# ciecplib is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
 #
-# LIGO.ORG is distributed in the hope that it will be useful,
+# ciecplib is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with LIGO.ORG.  If not, see <http://www.gnu.org/licenses/>.
+# along with ciecplib.  If not, see <http://www.gnu.org/licenses/>.
 
 """Utility module to initialise a kerberos ticket
 
@@ -31,7 +31,6 @@ import subprocess
 import sys
 from collections import OrderedDict
 from distutils.spawn import find_executable
-from pathlib import Path
 
 if sys.version_info.major < 3:
     input = raw_input  # noqa: F821
@@ -49,7 +48,7 @@ except NameError:
 def _find_executable(name):
     exe = find_executable(name)
     if exe is None:
-        raise OSError("cannot find {!r}".format(name))
+        raise OSError("cannot find {0!r}".format(name))
     return exe
 
 
@@ -76,8 +75,7 @@ def kinit(username=None, password=None, realm=None, exe=None, keytab=None,
         if not given.
 
     realm : `str`, optional
-        name of realm to authenticate against, read from keytab if available,
-        defaults to ``'LIGO.ORG'``.
+        name of realm to authenticate against, read from keytab if available
 
     exe : `str`, optional
         path to kinit executable.
@@ -103,7 +101,7 @@ def kinit(username=None, password=None, realm=None, exe=None, keytab=None,
     --------
     Example 1: standard user input, with password prompt::
 
-       >>> kinit('albert.einstein')
+       >>> kinit('albert.einstein', realm="LIGO.ORG")
        Password for albert.einstein@LIGO.ORG:
        Kerberos ticket generated for albert.einstein@LIGO.ORG
 
@@ -119,7 +117,7 @@ def kinit(username=None, password=None, realm=None, exe=None, keytab=None,
     # get keytab
     if keytab is None:
         keytab = os.environ.get('KRB5_KTNAME', None)
-        if keytab is None or not Path(keytab).is_file():
+        if keytab is None or not os.path.isfile(keytab):
             keytab = None
     if keytab:
         try:
@@ -150,16 +148,21 @@ def kinit(username=None, password=None, realm=None, exe=None, keytab=None,
                             "a ticket, or consider using a keytab file")
 
     # get credentials
-    if realm is None:
-        realm = "LIGO.ORG"
+    if username is None and realm is None:
+        verbose = True
+        username, realm = input(
+            "Please provide username, including Kerberos realm: ",
+        ).split("@", 1)
     if username is None:
         verbose = True
-        username = input("Please provide username for the {} kerberos "
+        username = input("Please provide username for the {0} kerberos "
                          "realm: ".format(realm))
-    identity = "{}@{}".format(username, realm)
+    identity = "{0}@{1}".format(username, realm)
     if not keytab and password is None:
         verbose = True
-        password = getpass.getpass(prompt="Password for {}: ".format(identity))
+        password = getpass.getpass(
+            prompt="Password for {0}: ".format(identity),
+        )
 
     # format kinit command
     if keytab:
@@ -181,7 +184,7 @@ def kinit(username=None, password=None, realm=None, exe=None, keytab=None,
     if retcode:
         raise subprocess.CalledProcessError(kget.returncode, " ".join(cmd))
     if verbose:
-        print("Kerberos ticket generated for {}".format(identity))
+        print("Kerberos ticket generated for {0}".format(identity))
 
 
 def parse_keytab(keytab):
@@ -211,7 +214,7 @@ def parse_keytab(keytab):
     except OSError:
         raise KerberosError("Failed to locate klist, cannot read keytab")
     except subprocess.CalledProcessError:
-        raise KerberosError("Cannot read keytab {!r}".format(keytab))
+        raise KerberosError("Cannot read keytab {0!r}".format(keytab))
     principals = []
     for line in out.splitlines():
         if isinstance(line, bytes):

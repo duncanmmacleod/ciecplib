@@ -1,20 +1,20 @@
 # -*- coding: utf-8 -*-
 # Copyright (C) Duncan Macleod (2019)
 #
-# This file is part of LIGO.ORG.
+# This file is part of ciecplib.
 #
-# LIGO.ORG is free software: you can redistribute it and/or modify
+# ciecplib is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
 #
-# LIGO.ORG is distributed in the hope that it will be useful,
+# ciecplib is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with LIGO.ORG.  If not, see <http://www.gnu.org/licenses/>.
+# along with ciecplib.  If not, see <http://www.gnu.org/licenses/>.
 
 """Common utilities for tools
 """
@@ -96,9 +96,9 @@ class ListIdpsAction(argparse.Action):
         )
 
     def __call__(self, parser, namespace, values, option_string=None):
-        idps = get_idps(extras=True)
+        idps = get_idps()
         formatter = parser._get_formatter()
-        fmt = "%-{}s : %s".format(max(map(len, idps)))
+        fmt = "%-{0}s : %s".format(max(map(len, idps)))
         for pair in sorted(idps.items(), key=lambda x: x[0]):
             formatter.add_text(fmt % pair)
         parser._print_message(formatter.format_help(), sys.stdout)
@@ -134,15 +134,13 @@ def reuse_cookiefile(cookiefile, url, verbose=False):
         print("Validating existing cookies...", end=" ")
     try:
         cookiejar = load_cookiejar(cookiefile, strict=True)
-    except LoadError:
-        cookiejar = None
-        reuse = False
+    except (LoadError, OSError):
         if verbose:
             print("failed to load cookie file")
-    else:
-        reuse = has_session_cookies(cookiejar, url)
-        if verbose and reuse:
-            print("OK")
-        elif verbose:
-            print("cannot reuse, need new cookies")
+        return None, None
+    reuse = has_session_cookies(cookiejar, url)
+    if verbose and reuse:
+        print("OK")
+    elif verbose:
+        print("cannot reuse, need new cookies")
     return cookiejar, reuse

@@ -1,30 +1,30 @@
 # -*- coding: utf-8 -*-
 # Copyright (C) Duncan Macleod (2019)
 #
-# This file is part of LIGO.ORG.
+# This file is part of ciecplib.
 #
-# LIGO.ORG is free software: you can redistribute it and/or modify
+# ciecplib is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
 #
-# LIGO.ORG is distributed in the hope that it will be useful,
+# ciecplib is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with LIGO.ORG.  If not, see <http://www.gnu.org/licenses/>.
+# along with ciecplib.  If not, see <http://www.gnu.org/licenses/>.
 
-r"""Create a LIGO.ORG X.509 certificate.
+r"""Create an X.509 certificate using ECP authentication.
 
 There are two usages:
 
-1) ``ligo-proxy-init albert.einstein``
+1) ``ecp-proxy-init albert.einstein``
 
 to authenticate with a password prompt, or
 
-2) ``ligo-proxy-init -k``
+2) ``ecp-proxy-init -k``
 
 to reuse an existing kerberos (``kinit``) credential.
 By default the credential file is created and stored in a location
@@ -37,13 +37,12 @@ defined by either
 from __future__ import print_function
 
 import argparse
+import os
 import sys
-from pathlib import Path
 
 from OpenSSL import crypto
 
 from .. import __version__
-from ..ecp import LIGO_ENDPOINT_DOMAIN
 from ..x509 import (
     check_cert,
     get_cert,
@@ -71,8 +70,7 @@ def create_parser():
         "username",
         nargs="?",
         default=argparse.SUPPRESS,
-        help="LIGO.ORG (albert.einstein) username, "
-             "required if --kerberos not given",
+        help="username, required if --kerberos not given",
     )
 
     parser.add_argument(
@@ -86,7 +84,6 @@ def create_parser():
         "-f",
         "--file",
         default=get_x509_proxy_path(),
-        type=Path,
         help="certificate file to create/reuse/destroy",
     )
     parser.add_argument(
@@ -99,7 +96,7 @@ def create_parser():
     parser.add_argument(
         "-i",
         "--hostname",
-        default=LIGO_ENDPOINT_DOMAIN,
+        default=None,
         help="domain name of IdP host, see --list-idps for a list of "
              "Identity Provider (IdPs) and their IdP endpoint URL",
     )
@@ -182,7 +179,7 @@ def main():
     if args.destroy:
         if args.verbose:
             print("Removing credential file {!s}".format(args.file))
-        args.file.unlink()
+        os.unlink(args.file)
         sys.exit()
 
     # if asked to reuse, check that we can

@@ -18,17 +18,17 @@ from sphinx.ext.apidoc import main as apidoc_main
 # import sys
 # sys.path.insert(0, os.path.abspath('.'))
 
-from ligo.org import __version__ as ligodotorg_version
+from ciecplib import __version__ as ciecplib_version
 
 
 # -- Project information -----------------------------------------------------
 
-project = 'ligo.org'
+project = 'ciecplib'
 copyright = '2019, Duncan Macleod'
 author = 'Duncan Macleod'
 
 # The full version, including alpha/beta/rc tags
-release = ligodotorg_version
+release = ciecplib_version
 
 
 # -- General configuration ---------------------------------------------------
@@ -98,11 +98,11 @@ def run_apidoc(_):
     """
     curdir = Path(__file__).parent
     apidir = curdir / "api"
-    module = curdir.parent / "ligo"
+    module = curdir.parent / "ciecplib"
     apidoc_main([
         str(module),
-        str(module / "org" / "tool"),
-        str(module / "org" / "tests"),
+        str(module / "tool"),
+        str(module / "tests"),
         '--force',
         '--implicit-namespaces',
         '--module-first',
@@ -110,11 +110,6 @@ def run_apidoc(_):
         '--output-dir', str(apidir),
         '--separate',
     ])
-    # remove namespace package document
-    for unused in (
-        apidir / "ligo.rst",
-    ):
-        unused.unlink()
 
 
 # -- setup --------------------------------------------------------------------

@@ -1,20 +1,20 @@
 # -*- coding: utf-8 -*-
 # Copyright (C) Duncan Macleod (2019)
 #
-# This file is part of LIGO.ORG.
+# This file is part of ciecplib.
 #
-# LIGO.ORG is free software: you can redistribute it and/or modify
+# ciecplib is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
 #
-# LIGO.ORG is distributed in the hope that it will be useful,
+# ciecplib is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with LIGO.ORG.  If not, see <http://www.gnu.org/licenses/>.
+# along with ciecplib.  If not, see <http://www.gnu.org/licenses/>.
 
 r"""Authenticate and store SAML/ECP session cookies.
 
@@ -37,8 +37,8 @@ defined by either
 from __future__ import print_function
 
 import argparse
+import os
 import sys
-from pathlib import Path
 
 from .. import __version__
 from ..cookies import (
@@ -60,15 +60,6 @@ def create_parser():
     parser : `argparse.ArgumentParser`
     """
     parser = ArgumentParser(description=__doc__, version=__version__)
-    parser.add_argument(
-        "endpoint",
-        metavar="IdP",
-        nargs="?",
-        default=argparse.SUPPRESS,
-        help="IdP name, e.g. 'LIGO.ORG', or the URL of an IdP endpoint, "
-             "required if --kerberos not given, see --list-idps for a list of"
-             "Identity Provider (IdPs) and their IdP endpoint URL"
-    )
     parser.add_argument(
         "target_url",
         metavar="URL",
@@ -95,14 +86,15 @@ def create_parser():
         "--cookiefile",
         metavar="cookiefile",
         default=DEFAULT_COOKIE_FILE,
-        type=Path,
         help="cookie file to create/reuse/destroy",
     )
     parser.add_argument(
         "-i",
-        "--hostname",
+        "--idp",
         default=argparse.SUPPRESS,
-        help="domain name of IdP host, defaults is default domain for IdP",
+        help="IdP name as known by CILogon, or the URL of an IdP endpoint, "
+             "required if --kerberos not given; see --list-idps for a list of"
+             "Identity Provider (IdPs) and their IdP endpoint URL"
     )
     authtype.add_argument(
         "-k",
@@ -146,7 +138,8 @@ def parse_args(parser):
 
     # check that username or --kerberos was given if not using --destroy
     if not args.destroy and not (
-            args.kerberos or getattr(args, "username", None) and args.endpoint
+            args.kerberos or
+            getattr(args, "username", None) and args.idp
     ):
         parser.error("-k/--kerberos is required if IdP_tag and "
                      "login are not given")
@@ -164,8 +157,8 @@ def main():
     # if asked to destroy, just do that
     if args.destroy:
         if args.verbose:
-            print("Removing cookie file {!s}".format(args.cookiefile))
-        args.cookiefile.unlink()
+            print("Removing cookie file {0!s}".format(args.cookiefile))
+        os.unlink(args.cookiefile)
         sys.exit()
 
     # if asked to reuse, check that we can
@@ -183,7 +176,7 @@ def main():
         if args.verbose:
             print("Authenticating...")
         authenticate(
-            getattr(args, "hostname", None) or args.endpoint,
+            args.idp,
             spurl=args.target_url,
             cookiejar=cookiejar,
             username=getattr(args, "username", None),
@@ -200,13 +193,13 @@ def main():
             ignore_expires=True,
         )
         if args.verbose:
-            print("Cookies stored in '{!s}'".format(args.cookiefile))
+            print("Cookies stored in '{0!s}'".format(args.cookiefile))
 
     # load the cert from file to print information
     if args.debug or args.verbose:
         info = [(cookie.domain, cookie.path, cookie.secure, cookie.name) for
                 cookie in cookiejar]
-        fmt = "%-{}s %-5s %-7s %s".format(max(len(i[0]) for i in info))
+        fmt = "%-{0}s %-5s %-7s %s".format(max(len(i[0]) for i in info))
         print(fmt % ("------", "----", "-------", "----"))
         print(fmt % ("DOMAIN", "PATH", r"SECURE?", "NAME"))
         print(fmt % ("------", "----", "-------", "----"))

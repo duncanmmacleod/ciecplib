@@ -1,22 +1,22 @@
 # -*- coding: utf-8 -*-
 # Copyright (C) Duncan Macleod (2019)
 #
-# This file is part of LIGO.ORG.
+# This file is part of ciecplib.
 #
-# LIGO.ORG is free software: you can redistribute it and/or modify
+# ciecplib is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
 #
-# LIGO.ORG is distributed in the hope that it will be useful,
+# ciecplib is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with LIGO.ORG.  If not, see <http://www.gnu.org/licenses/>.
+# along with ciecplib.  If not, see <http://www.gnu.org/licenses/>.
 
-"""Transfer a URL using LIGO.ORG SAML/ECP authentication
+"""Transfer a URL using SAML/ECP authentication
 """
 
 from __future__ import print_function
@@ -28,7 +28,6 @@ from .. import (
     request,
 )
 from ..cookies import COOKIE_FILE as DEFAULT_COOKIE_FILE
-from ..ecp import LIGO_ENDPOINT_DOMAIN
 from .utils import (
     ArgumentParser,
     reuse_cookiefile,
@@ -65,9 +64,8 @@ def create_parser():
     )
     parser.add_argument(
         "-i",
-        "--hostname",
-        default=LIGO_ENDPOINT_DOMAIN,
-        help="domain name of IdP host, see --list-idps for a list of"
+        "--idp",
+        help="domain name of IdP host, see --list-idps for a list of "
              "Identity Provider (IdPs) and their IdP endpoint URL",
     )
     parser.add_argument(
@@ -110,7 +108,7 @@ def main(args=None):
                 args.url,
                 cookiefile=args.cookiefile,
                 cookiejar=cookiejar,
-                endpoint=args.hostname,
+                endpoint=args.idp,
                 debug=args.debug,
                 username=args.username,
                 kerberos=args.kerberos,

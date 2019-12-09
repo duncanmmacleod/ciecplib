@@ -1,5 +1,4 @@
-%define origname ligo.org
-%define pkgname ligo-dot-org
+%define name ciecplib
 %define version 0.1.0
 %define release 1
 
@@ -8,14 +7,14 @@
 BuildArch: noarch
 Group:     Development/Libraries
 License:   GPL-3.0-or-later
-Name:      %{pkgname}
+Name:      %{name}
 Packager:  Duncan Macleod <duncan.macleod@ligo.org>
 Prefix:    %{_prefix}
 Release:   %{release}%{?dist}
-Source0:   https://pypi.io/packages/source/l/%{origname}/%{origname}-%{version}.tar.gz
-Summary:   A python client for LIGO.ORG SAML ECP authentication
-Url:       https://github.com/duncanmmacleod/ligo.org
-Vendor:    LIGO Scientific Collaboration <auth@ligo.org>
+Source0:   https://pypi.io/packages/source/l/%{name}/%{name}-%{version}.tar.gz
+Summary:   A python client for SAML ECP authentication
+Url:       https://github.com/duncanmmacleod/ciecplib
+Vendor:    Duncan Macleod <duncan.macleod@ligo.org>
 Version:   %{version}
 
 # -- build requirements -----
@@ -30,35 +29,31 @@ BuildRequires: python2-setuptools
 
 # src.rpm
 %description
-The Python client for LIGO.ORG SAML ECP authentication.
+The Python client for SAML ECP authentication.
 
-%package -n python2-%{pkgname}
+%package -n python2-%{name}
 Summary: %{summary}
-Requires: ligo-ca-certs
 Requires: m2crypto
 Requires: pyOpenSSL
 Requires: python
 Requires: python-kerberos
 Requires: python-lxml
-Requires: python-pathlib
-Requires: python2-ligo-common
-%{?python_provide:%python_provide python2-%{pkgname}}
-%description -n python2-%{pkgname}
-The Python %{python_version} client for LIGO.ORG SAML ECP authentication.
+%{?python_provide:%python_provide python2-%{name}}
+%description -n python2-%{name}
+The Python %{python_version} client for SAML ECP authentication.
 
-%package -n ligo-proxy-utils2
-Summary: Command line utilities for LIGO.ORG SAML ECP authentication
-Requires: python2-%{pkgname} = %{version}
-Conflicts: ligo-proxy-utils
-%description -n ligo-proxy-utils2
-Command line utilities for LIGO.ORG SAML ECP authentication, including
-ecp-proxy-init, ligo-proxy-init, and ligo-curl
-(a LIGO.ORG-aware curl alternative).
+%package -n ciecp-utils
+Summary: Command line utilities for SAML ECP authentication
+Requires: python2-%{name} = %{version}
+%description -n ciecp-utils
+Command line utilities for SAML ECP authentication, including
+ecp-cookit-init, ecp-proxy-init, and ecp-curl
+(an ECP-aware curl alternative).
 
 # -- build ------------------
 
 %prep
-%autosetup -n %{origname}-%{version}
+%autosetup -n %{name}-%{version}
 
 %build
 %if 0%{?rhel} && 0%{?rhel} <= 7
@@ -66,7 +61,7 @@ ecp-proxy-init, ligo-proxy-init, and ligo-curl
 sed -i "/ ; /s/ ;.*/\",/g" setup.py
 # remove winkerberos requirement
 sed -i "/winkerberos/d" setup.py
-# epel7 provides kerberos (not pykerberos):
+# centos/epel provides kerberos (not pykerberos):
 sed -i "s/pykerberos/kerberos/g" setup.py
 %endif
 %py2_build
@@ -79,7 +74,7 @@ ls %{buildroot}%{_bindir} | \
 env PYTHONPATH="%{buildroot}%{python2_sitelib}" \
 xargs --verbose -I @ \
 help2man \
-    --source %{origname} \
+    --source %{name} \
     --version-string %{version} \
     --section 1 \
     --no-info \
@@ -92,15 +87,14 @@ rm -rf $RPM_BUILD_ROOT
 
 # -- files ------------------
 
-%files -n python2-%{pkgname}
+%files -n python2-%{name}
 %license LICENSE
 %doc README.md
 %{python2_sitelib}/*
 
-%files -n ligo-proxy-utils2
+%files -n ciecp-utils
 %license LICENSE
 %{_bindir}/*
 %{_mandir}/man1/*.1*
-
 
 # -- changelog --------------

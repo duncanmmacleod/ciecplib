@@ -1,6 +1,6 @@
-# -- ligo.org source package --------------------------------------------------
+# -- ciecplib source package --------------------------------------------------
 
-Source: ligo-dot-org
+Source: ciecplib
 Section: python
 Priority: optional
 Maintainer: Duncan Macleod <duncan.macleod@ligo.org>
@@ -12,30 +12,40 @@ Build-Depends: debhelper (>= 9),
                dh-python,
                help2man,
                python-all,
-               python-setuptools
+               python-setuptools,
+               python3-all,
+               python3-setuptools
 
-# -- python-ligo-dot-org ------------------------------------------------------
+# -- python-ciecplib ----------------------------------------------------------
 
-Package: python-ligo-dot-org
+Package: python-ciecplib
 Architecture: all
 Depends: ${misc:Depends},
          ${python:Depends},
          python-kerberos,
-         python-ligo-common,
          python-lxml,
          python-m2crypto,
-         python-openssl,
-         python-pathlib
-Recommends: ligo-ca-certs
-Description: A python client for LIGO.ORG SAML ECP authentication
+         python-openssl
+Description: A python client for SAML ECP authentication
 
-# -- ligo-proxy-utils2 --------------------------------------------------------
+# -- python3-ciecplib ---------------------------------------------------------
+# requires buster-backports or newer
 
-Package: ligo-proxy-utils2
+Package: python3-ciecplib
 Architecture: all
 Depends: ${misc:Depends},
          ${python:Depends},
-         ligo-ca-certs,
-         python-ligo-dot-org
-Conflicts: ligo-proxy-utils
-Description: Command-line utlities for LIGO.ORG SAML ECP authentication
+         python3-kerberos,
+         python3-lxml,
+         python3-m2crypto,
+         python3-openssl
+Description: A python client for SAML ECP authentication
+
+# -- ciecp-utils --------------------------------------------------------------
+
+Package: ciecp-utils
+Architecture: all
+Depends: ${misc:Depends},
+         ${python:Depends},
+         python-ciecplib
+Description: Command-line utlities for SAML ECP authentication

@@ -1,9 +1,9 @@
 ##########
- LIGO.ORG
+ ciecplib
 ##########
 
-The LIGO.ORG python client provides a functions and command-line utilities to
-authenticate against SAML/ECP endpoints, and retrieve URLs from behind LIGO.ORG
+The `ciecplib` python client provides a functions and command-line utilities to
+authenticate against SAML/ECP endpoints, and retrieve URLs from behind that
 authentication.
 
 ============
@@ -16,7 +16,7 @@ Installation
 
       .. code-block:: bash
 
-          $ python -m pip install ligo.org
+          $ python -m pip install ciecplib
 
       Supported python versions: 2.7, 3.4+.
 
@@ -24,7 +24,7 @@ Installation
 
       .. code-block:: bash
 
-          $ conda install -c conda-forge ligo.org
+          $ conda install -c conda-forge ciecplib
 
       Supported python versions: 2.7, 3.6+.
 
@@ -32,27 +32,23 @@ Installation
 
       .. code-block:: bash
 
-          $ apt-get install python-ligo-dot-org
+          $ apt-get install python3-ciecplib ciecp-utils
 
-      Supported python versions: 2.7,
-      `click here for instructions on how to add the required debian repositories
-      <https://wiki.ligo.org/Computing/Debian>`__.
+      Supported python versions: 2.7, 3.7
 
    .. tab:: Scientific Linux
 
       .. code-block:: bash
 
-          $ yum install python2-ligo-dot-org
+          $ yum install python2-ciecplib ciecp-utils
 
-      Supported python versions: 2.7,
-      `click here for instructions on how to add the required yum repositories
-      <https://wiki.ligo.org/Computing/ScientificLinux7>`__.
+      Supported python versions: 2.7
 
 ==================
 User documentation
 ==================
 
-.. automodapi:: ligo.org
+.. automodapi:: ciecplib
    :no-inheritance-diagram:
    :no-main-docstr:
    :headings: =-
@@ -62,7 +58,7 @@ API
 
 .. toctree::
 
-   api/ligo.org
+   api/ciecplib
 
 |
 
@@ -73,8 +69,8 @@ Command-line scripts
    :maxdepth: 1
 
    ecp-cookie-init
-   ligo-curl
-   ligo-proxy-init
+   ecp-curl
+   ecp-proxy-init
 
 |
 

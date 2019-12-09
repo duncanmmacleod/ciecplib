@@ -1,22 +1,22 @@
 # -*- coding: utf-8 -*-
 # Copyright (C) Duncan Macleod (2019)
 #
-# This file is part of LIGO.ORG.
+# This file is part of ciecplib.
 #
-# LIGO.ORG is free software: you can redistribute it and/or modify
+# ciecplib is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
 #
-# LIGO.ORG is distributed in the hope that it will be useful,
+# ciecplib is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with LIGO.ORG.  If not, see <http://www.gnu.org/licenses/>.
+# along with ciecplib.  If not, see <http://www.gnu.org/licenses/>.
 
-"""Cookie handling for LIGO.ORG SAML ECP authentication
+"""Cookie handling for SAML ECP authentication
 """
 
 from __future__ import print_function
@@ -24,7 +24,6 @@ from __future__ import print_function
 import os
 import time
 import warnings
-from pathlib import Path
 try:
     from http.cookiejar import (LoadError, MozillaCookieJar)
     from urllib.parse import urlparse
@@ -37,12 +36,12 @@ __author__ = 'Duncan Macleod <duncan.macleod@ligo.org>'
 
 def get_ecpcookie_path():
     if os.name == "nt":
-        tmpdir = Path(r'%SYSTEMROOT%\Temp')
-        tmpname = "ecpcookie.{}".format(os.getlogin())
+        tmpdir = r'%SYSTEMROOT%\Temp'
+        tmpname = "ecpcookie.{0}".format(os.getlogin())
     else:
-        tmpdir = Path("/tmp")
-        tmpname = "ecpcookie.u{}".format(os.getuid())
-    return tmpdir / tmpname
+        tmpdir = "/tmp"
+        tmpname = "ecpcookie.u{0}".format(os.getuid())
+    return os.path.join(tmpdir, tmpname)
 
 
 COOKIE_FILE = get_ecpcookie_path()

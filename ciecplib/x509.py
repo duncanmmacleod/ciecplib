@@ -1,20 +1,20 @@
 # -*- coding: utf-8 -*-
 # Copyright (C) Duncan Macleod (2019)
 #
-# This file is part of LIGO.ORG.
+# This file is part of ciecplib.
 #
-# LIGO.ORG is free software: you can redistribute it and/or modify
+# ciecplib is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
 #
-# LIGO.ORG is distributed in the hope that it will be useful,
+# ciecplib is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with LIGO.ORG.  If not, see <http://www.gnu.org/licenses/>.
+# along with ciecplib.  If not, see <http://www.gnu.org/licenses/>.
 
 import calendar
 import datetime
@@ -25,7 +25,6 @@ import string
 import struct
 import tempfile
 import time
-from pathlib import Path
 try:
     from urllib import parse as urllib_parse
     from urllib import request as urllib_request
@@ -67,17 +66,17 @@ def get_x509_proxy_path():
 
     Returns
     -------
-    path : `pathlib.Path`
+    path : `str`
     """
     if os.getenv("X509_USER_PROXY"):
-        return Path(os.environ["X509_USER_PROXY"])
+        return os.environ["X509_USER_PROXY"]
     if os.name == "nt":
-        tmpdir = Path(r'%SYSTEMROOT%\Temp')
-        tmpname = "x509up_{}".format(os.getlogin())
+        tmpdir = r'%SYSTEMROOT%\Temp'
+        tmpname = "x509up_{0}".format(os.getlogin())
     else:
-        tmpdir = Path("/tmp")
-        tmpname = "x509up_u{}".format(os.getuid())
-    return tmpdir / tmpname
+        tmpdir = "/tmp"
+        tmpname = "x509up_u{0}".format(os.getuid())
+    return os.path.join(tmpdir, tmpname)
 
 
 def get_cert(
@@ -245,7 +244,7 @@ def print_cert_info(x509, path=None):
     print("subject  : " + _x509_name_str(x509.get_subject()))
     print("issuer   : " + _x509_name_str(x509.get_issuer()))
     print("type     : " + _cert_type(x509))
-    print("strength : {} bits".format(pkey.bits()))
+    print("strength : {0} bits".format(pkey.bits()))
     if path:
         print("path     : " + str(path))
     print("timeleft : " + str(datetime.timedelta(seconds=_timeleft(x509))))

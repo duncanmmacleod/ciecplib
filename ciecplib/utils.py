@@ -1,28 +1,28 @@
 # -*- coding: utf-8 -*-
 # Copyright (C) Duncan Macleod (2019)
 #
-# This file is part of LIGO.ORG.
+# This file is part of ciecplib.
 #
-# LIGO.ORG is free software: you can redistribute it and/or modify
+# ciecplib is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
 #
-# LIGO.ORG is distributed in the hope that it will be useful,
+# ciecplib is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with LIGO.ORG.  If not, see <http://www.gnu.org/licenses/>.
+# along with ciecplib.  If not, see <http://www.gnu.org/licenses/>.
 
+import os.path
 import platform
 import random
 import re
 import ssl
 import string
 from getpass import getpass
-from pathlib import Path
 try:
     from urllib import request as urllib_request
     from urllib.parse import urlparse
@@ -30,24 +30,6 @@ except ImportError:  # python < 3
     import urllib2 as urllib_request
     from urlparse import urlparse
     input = raw_input  # noqa: F821
-
-# extra institutions not known by CILogon
-EXTRA_INSTITUTIONS = {
-    # LIGO IdPs
-    "LIGO.ORG":
-        "https://login.ligo.org/idp/profile/SAML2/SOAP/ECP",
-    "LIGOGuest":
-        "https://login.guest.ligo.org/idp/profile/SAML2/SOAP/ECP",
-    "DEV.LIGO.ORG":
-        "https://login-dev.ligo.org/idp/profile/SAML2/SOAP/ECP",
-    "TEST.LIGO.ORG":
-        "https://login-test.ligo.org/idp/profile/SAML2/SOAP/ECP",
-    # extra institutions
-    "Cardiff University":
-        "https://idp.cf.ac.uk/idp/profile/SAML2/SOAP/ECP",
-    "Syracuse University":
-        "https://sugwg-login.phy.syr.edu/idp/profile/SAML2/SOAP/ECP",
-}
 
 # -- default CA files ---------------------------------------------------------
 
@@ -66,7 +48,7 @@ def _defaults():
         "/etc/ssl/certs/ca-certificates.crt",  # debian
         "/etc/pki/tls/cert.pem",
     ):
-        if Path(path or "").is_file():
+        if os.path.isfile(path or ""):
             cafile = path
             break
     else:
@@ -74,7 +56,7 @@ def _defaults():
 
     # prefer globus certificates path
     globusdir = "/etc/grid-security/certificates"
-    if Path(globusdir).is_dir():
+    if os.path.isdir(globusdir):
         return cafile, globusdir
 
     return cafile, DEFAULT_VERIFY_PATHS.capath
@@ -88,10 +70,10 @@ DEFAULT_CAFILE, DEFAULT_CAPATH = _defaults()
 DEFAULT_IDPLIST_URL = "https://cilogon.org/include/ecpidps.txt"
 DEFAULT_SP_URL = "https://ecp.cilogon.org/secure/getcert"
 KERBEROS_SUFFIX = " (Kerberos)"
-KERBEROS_REGEX = re.compile(r"{}\Z".format(re.escape(KERBEROS_SUFFIX)))
+KERBEROS_REGEX = re.compile(r"{0}\Z".format(re.escape(KERBEROS_SUFFIX)))
 
 
-def get_idps(url=DEFAULT_IDPLIST_URL, extras=True):
+def get_idps(url=DEFAULT_IDPLIST_URL):
     """Download the list of known ECP IdPs from the given URL
 
     The output is a `dict` where the keys are institution names
@@ -104,12 +86,8 @@ def get_idps(url=DEFAULT_IDPLIST_URL, extras=True):
     ----------
     url : `str`
         the URL of the IDP list file
-
-    extras : `bool`, optional
-        if `True` (default), include the extra IdP URLs known in this
-        package, otherwise include only those from the remote IdP list
     """
-    idps = EXTRA_INSTITUTIONS.copy() if extras else dict()
+    idps = dict()
     for line in urllib_request.urlopen(url):
         url, inst = line.decode('utf-8').strip().split(' ', 1)
         idps[inst] = url
@@ -124,10 +102,10 @@ def _match_institution(value, institutions):
         return matches[0]
     if len(matches) == 0 and not value.endswith(".*"):
         try:
-            return _match_institution("{}.*".format(value), institutions)
+            return _match_institution("{0}.*".format(value), institutions)
         except ValueError:
             pass
-    raise ValueError("failed to identify IdP URLs for {!r}".format(value))
+    raise ValueError("failed to identify IdP URLs for {0!r}".format(value))
 
 
 def get_idp_urls(institution, url=DEFAULT_IDPLIST_URL):
@@ -145,9 +123,9 @@ def get_idp_urls(institution, url=DEFAULT_IDPLIST_URL):
 
 def _endpoint_url(url):
     if "/" not in url:
-        url = "https://{}/idp/profile/SAML2/SOAP/ECP".format(url)
+        url = "https://{0}/idp/profile/SAML2/SOAP/ECP".format(url)
     if not urlparse(url).scheme:
-        url = "https://{}".format(url)
+        url = "https://{0}".format(url)
     return url
 
 
@@ -198,8 +176,8 @@ def random_string(length, outof=string.ascii_lowercase+string.digits):
 
 def prompt_username_password(host, username=None):
     if username is None:
-        username = input("Enter username for {}: ".format(host))
+        username = input("Enter username for {0}: ".format(host))
     password = getpass(
-        "Enter password for {!r} on {}: ".format(username, host),
+        "Enter password for {0!r} on {1}: ".format(username, host),
     )
     return username, password

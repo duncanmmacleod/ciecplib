@@ -1,6 +1,6 @@
 Format: http://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
 Upstream-Contact: Duncan Macleod <duncan.macleod@ligo.org>
-Source: https://git.ligo.org/duncanmmacleod/ligo.org
+Source: https://git.ligo.org/duncanmmacleod/ciecplib
 
 Files: *
 Copyright: 2019 Duncan Macleod <duncan.macleod@ligo.org>
