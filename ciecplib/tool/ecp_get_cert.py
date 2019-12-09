@@ -20,11 +20,11 @@ r"""Create an X.509 certificate using ECP authentication.
 
 There are two usages:
 
-1) ``ecp-proxy-init albert.einstein``
+1) ``ecp-get-cert albert.einstein``
 
 to authenticate with a password prompt, or
 
-2) ``ecp-proxy-init -k``
+2) ``ecp-get-cert -k``
 
 to reuse an existing kerberos (``kinit``) credential.
 By default the credential file is created and stored in a location
