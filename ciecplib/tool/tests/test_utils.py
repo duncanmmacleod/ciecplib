@@ -20,6 +20,7 @@
 """
 
 import argparse
+import sys
 try:
     from urllib.error import URLError
 except ImportError:  # python < 3
@@ -51,7 +52,11 @@ def test_argument_parser(capsys):
     # check that the version gets parsed
     with pytest.raises(SystemExit):
         parser.parse_args(["--version"])
-    assert capsys.readouterr().out.strip() == ciecplib_version
+    if sys.version_info[0] < 3:
+        # for python2 --version goes to stderr
+        assert capsys.readouterr().err.strip() == ciecplib_version
+    else:
+        assert capsys.readouterr().out.strip() == ciecplib_version
 
 
 def test_list_idps_action(capsys):
