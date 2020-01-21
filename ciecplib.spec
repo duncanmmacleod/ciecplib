@@ -19,7 +19,7 @@ Version:   %{version}
 
 # -- build requirements -----
 
-BuildRequires: help2man
+BuildRequires: argparse-manpage
 BuildRequires: python
 BuildRequires: python-rpm-macros
 BuildRequires: python2-rpm-macros
@@ -68,19 +68,14 @@ sed -i "s/pykerberos/kerberos/g" setup.py
 
 %install
 %py2_install
+
 # make man pages
 mkdir -vp %{buildroot}%{_mandir}/man1
-ls %{buildroot}%{_bindir} | \
-env PYTHONPATH="%{buildroot}%{python2_sitelib}" \
-xargs --verbose -I @ \
-help2man \
-    --source %{name} \
-    --version-string %{version} \
-    --section 1 \
-    --no-info \
-    --no-discard-stderr \
-    --output %{buildroot}%{_mandir}/man1/@.1 \
-    %{buildroot}%{_bindir}/@
+export PYTHONPATH="%{buildroot}%{python2_sitelib}"
+export MANARGS="--function create_parser --author 'Duncan Macleod' --author-email 'duncan.macleod@ligo.org' --project-name ciecplib --url %{url}"
+argparse-manpage ${MANARGS} --module ciecplib.tool.ecp_cookie_init > %{buildroot}%{_mandir}/man1/ecp-cookie-init.1
+argparse-manpage ${MANARGS} --module ciecplib.tool.ecp_curl > %{buildroot}%{_mandir}/man1/ecp-curl.1
+argparse-manpage ${MANARGS} --module ciecplib.tool.ecp_get_cert > %{buildroot}%{_mandir}/man1/ecp-cet-cert.1
 
 %clean
 rm -rf $RPM_BUILD_ROOT
@@ -91,10 +86,12 @@ rm -rf $RPM_BUILD_ROOT
 %license LICENSE
 %doc README.md
 %{python2_sitelib}/*
+%exclude %{python2_sitelib}/ciecplib/tool
 
 %files -n ciecp-utils
 %license LICENSE
 %{_bindir}/*
 %{_mandir}/man1/*.1*
+%{python2_sitelib}/ciecplib/tool
 
 # -- changelog --------------
