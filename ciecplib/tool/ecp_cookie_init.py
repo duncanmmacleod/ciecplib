@@ -71,10 +71,9 @@ def create_parser():
     authtype = parser.add_mutually_exclusive_group()
     authtype.add_argument(
         "username",
-        metavar="login",
         nargs="?",
         default=argparse.SUPPRESS,
-        help="identity username, required if --kerberos not given",
+        help="authentication username, required if --kerberos not given",
     )
 
     parser.add_argument(

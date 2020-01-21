@@ -84,7 +84,7 @@ def create_parser():
     parser.add_argument(
         "-u",
         "--username",
-        help="username on IdP host, will be prompted for if not given "
+        help="authentication username, will be prompted for if not given "
              "and not using --kerberos"
     )
     return parser

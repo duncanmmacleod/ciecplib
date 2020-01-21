@@ -93,7 +93,7 @@ def create_parser():
         "username",
         nargs="?",
         default=argparse.SUPPRESS,
-        help="username, required if --kerberos not given",
+        help="authentication username, required if --kerberos not given",
     )
 
     parser.add_argument(
