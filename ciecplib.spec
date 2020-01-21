@@ -53,7 +53,7 @@ The Python %{python_version} client for SAML ECP authentication.
 
 %package -n ciecp-utils
 Summary: Command line utilities for SAML ECP authentication
-Requires: python2-%{name} = %{version}
+Requires: python2-%{name} = %{version}-%{release}
 %description -n ciecp-utils
 Command line utilities for SAML ECP authentication, including
 ecp-cookit-init, ecp-get-cert, and ecp-curl
