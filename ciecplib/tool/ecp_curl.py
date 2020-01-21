@@ -23,10 +23,7 @@ from __future__ import print_function
 
 import sys
 
-from .. import (
-    __version__,
-    request,
-)
+from .. import request
 from ..cookies import COOKIE_FILE as DEFAULT_COOKIE_FILE
 from .utils import (
     ArgumentParser,

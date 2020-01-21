@@ -27,7 +27,6 @@ import sys
 
 from OpenSSL import crypto
 
-from .. import __version__
 from ..x509 import (
     check_cert,
     get_cert,

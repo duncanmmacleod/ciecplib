@@ -33,7 +33,7 @@ defined by either
 
 - ``/tmp/ecpcookie.u{uid}`` (Unix), or
 - ``C:\Windows\Temp\ecpcookie.{username}`` (Windows)
-"""
+"""  # noqa: E501
 
 from __future__ import print_function
 
@@ -41,7 +41,6 @@ import argparse
 import os
 import sys
 
-from .. import __version__
 from ..cookies import (
     COOKIE_FILE as DEFAULT_COOKIE_FILE,
     ECPCookieJar,
