@@ -122,10 +122,11 @@ def get_idp_urls(institution, url=DEFAULT_IDPLIST_URL):
 
 
 def _endpoint_url(url):
-    if "/" not in url:
-        url = "https://{0}/idp/profile/SAML2/SOAP/ECP".format(url)
-    if not urlparse(url).scheme:
+    parsed = urlparse(url)
+    if not parsed.scheme:
         url = "https://{0}".format(url)
+    if not urlparse(url).path:
+        return "{0}/idp/profile/SAML2/SOAP/ECP".format(url)
     return url
 
 
