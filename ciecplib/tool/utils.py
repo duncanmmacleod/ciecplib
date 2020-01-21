@@ -24,6 +24,7 @@ from __future__ import print_function
 import argparse
 import sys
 
+from .. import __version__
 from ..cookies import (
     LoadError,
     has_session_cookies,
@@ -40,20 +41,32 @@ class HelpFormatter(
     argparse.ArgumentDefaultsHelpFormatter,
     argparse.RawDescriptionHelpFormatter,
 ):
-    pass
+    def _format_usage(self, usage, actions, groups, prefix):
+        if prefix is None:
+            prefix = "Usage: "
+        return super(HelpFormatter, self)._format_usage(
+            usage,
+            actions,
+            groups,
+            prefix,
+        )
 
 
 class ArgumentParser(argparse.ArgumentParser):
     def __init__(self, *args, **kwargs):
         add_helpers = kwargs.pop("add_helpers", True)
-        version = kwargs.pop("version", None)
+        version = kwargs.pop("version", __version__)
+        manpage = kwargs.pop("manpage", None)
 
         kwargs.setdefault("formatter_class", HelpFormatter)
         kwargs.setdefault("add_help", not add_helpers)
         super(ArgumentParser, self).__init__(*args, **kwargs)
 
-        self._positionals.title = "Positional arguments"
-        self._optionals.title = "Optional arguments"
+        self._positionals.title = "Required arguments"
+        self._optionals.title = "Options"
+
+        # add manpage options for argparse-manpage
+        self._manpage = manpage
 
         # add helper commands group
         if add_helpers:
@@ -98,9 +111,11 @@ class ListIdpsAction(argparse.Action):
     def __call__(self, parser, namespace, values, option_string=None):
         idps = get_idps()
         formatter = parser._get_formatter()
-        fmt = "%-{0}s : %s".format(max(map(len, idps)))
+        fmt = "%-{0}r : %s".format(max(map(len, idps)) + 2)
+        lines = []
         for pair in sorted(idps.items(), key=lambda x: x[0]):
-            formatter.add_text(fmt % pair)
+            lines.append(fmt % pair)
+        formatter.add_text('\n'.join(lines))
         parser._print_message(formatter.format_help(), sys.stdout)
         parser.exit()
 

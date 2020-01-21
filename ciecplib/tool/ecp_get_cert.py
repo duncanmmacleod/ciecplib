@@ -16,22 +16,7 @@
 # You should have received a copy of the GNU General Public License
 # along with ciecplib.  If not, see <http://www.gnu.org/licenses/>.
 
-r"""Create an X.509 certificate using ECP authentication.
-
-There are two usages:
-
-1) ``ecp-get-cert albert.einstein``
-
-to authenticate with a password prompt, or
-
-2) ``ecp-get-cert -k``
-
-to reuse an existing kerberos (``kinit``) credential.
-By default the credential file is created and stored in a location
-defined by either
-
-- ``${X509_USER_PROXY}`` or ``/tmp/x509up_u{uid}`` (Unix), or
-- ``%X509_USER_PROXY%`` or ``C:\Windows\Temp\x509up_{username}`` (Windows)
+"""Create an X.509 certificate using ECP authentication.
 """
 
 from __future__ import print_function
@@ -42,7 +27,6 @@ import sys
 
 from OpenSSL import crypto
 
-from .. import __version__
 from ..x509 import (
     check_cert,
     get_cert,
@@ -55,6 +39,40 @@ from .utils import (
     ArgumentParser,
 )
 
+EPILOG = r"""
+Examples:
+
+    $ ecp-get-cert 'My Institution' user.name
+
+to authenticate with a password prompt, or
+
+    $ ecp-get-cert 'My Institution' --kerberos
+
+to reuse an existing kerberos (``kinit``) credential.
+
+The identitity provider name can be given in a number of ways, so long as the
+argument uniquely identifies a provider.  For example, the following are all
+equivalent:
+
+    $ ecp-get-cert 'Cardiff University' user.name
+    $ ecp-get-cert Cardiff user.name
+    $ ecp-get-cert idp.cf.ac.uk user.name
+
+Environment:
+
+X509_USER_PROXY:
+    the default path for the credential file
+"""
+
+MANPAGE = [
+    {'heading': 'environment',
+     'content': """
+.TP
+.B "X509_USER_PROXY"
+The default path for the credential file """,
+     },
+]
+
 
 def create_parser():
     """Create a command-line argument parser
@@ -63,7 +81,12 @@ def create_parser():
     -------
     parser : `argparse.ArgumentParser`
     """
-    parser = ArgumentParser(description=__doc__, version=__version__)
+    parser = ArgumentParser(
+        description=__doc__,
+        epilog=EPILOG,
+        prog="ecp-get-cert",
+        manpage=MANPAGE,
+    )
 
     authtype = parser.add_mutually_exclusive_group()
     authtype.add_argument(
@@ -96,9 +119,13 @@ def create_parser():
     parser.add_argument(
         "-i",
         "--hostname",
-        default=None,
-        help="domain name of IdP host, see --list-idps for a list of "
-             "Identity Provider (IdPs) and their IdP endpoint URL",
+        help="name of institution providing the identity (e.g. 'Cardiff "
+             "University'), or domain name of IdP host (e.g. idp.cf.ac.uk), "
+             "see --list-idps for a list of Identity Provider (IdPs) and "
+             "their IdP URL. "
+             "Shortened institution names (e.g. 'Cardiff') can be given as "
+             "long as they uniquely match a full institution name known by "
+             "CILogon",
     )
     authtype.add_argument(
         "-k",

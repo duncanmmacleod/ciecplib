@@ -107,7 +107,15 @@ aliases:
           rpmbuild --define "_rpmdir $(pwd)" --rebuild ${SRPM};
           # install
           mv */*.rpm .;
-          rpm -qilp *.rpm
+          for _rpm in *.rpm; do
+              echo "-- RPM summary for ${_rpm}";
+              echo "- Contents:"
+              rpm -qilp ${_rpm};
+              echo "- Provides:"
+              rpm -qp --provides ${_rpm};
+              echo "- Requires:"
+              rpm -qp --requires ${_rpm};
+          done;
           # remove epel
           yum -y -q remove epel-release;
 

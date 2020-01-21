@@ -20,19 +20,20 @@ r"""Authenticate and store SAML/ECP session cookies.
 
 There are two usages:
 
-1) ``ecp-cookie-init Campus01 https://campus01.edu/my/secret/page jsmith``
+    $ ecp-cookie-init 'My Institution' https://campus01.edu/my/secret/page jsmith
 
 to authenticate with a password prompt, or
 
-2) ``ecp-cookie-init -k https://campus01.edu/my/secret/page``
+    $ ecp-cookie-init 'My Institution' https://campus01.edu/my/secret/page
 
 to reuse an existing kerberos (``kinit``) credential.
+
 By default the cookie file is created and stored in a location
 defined by either
 
 - ``/tmp/ecpcookie.u{uid}`` (Unix), or
 - ``C:\Windows\Temp\ecpcookie.{username}`` (Windows)
-"""
+"""  # noqa: E501
 
 from __future__ import print_function
 
@@ -40,7 +41,6 @@ import argparse
 import os
 import sys
 
-from .. import __version__
 from ..cookies import (
     COOKIE_FILE as DEFAULT_COOKIE_FILE,
     ECPCookieJar,
@@ -59,7 +59,10 @@ def create_parser():
     -------
     parser : `argparse.ArgumentParser`
     """
-    parser = ArgumentParser(description=__doc__, version=__version__)
+    parser = ArgumentParser(
+        description=__doc__,
+        prog="ecp-cookie-init",
+    )
     parser.add_argument(
         "target_url",
         metavar="URL",

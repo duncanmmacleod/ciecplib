@@ -23,10 +23,7 @@ from __future__ import print_function
 
 import sys
 
-from .. import (
-    __version__,
-    request,
-)
+from .. import request
 from ..cookies import COOKIE_FILE as DEFAULT_COOKIE_FILE
 from .utils import (
     ArgumentParser,
@@ -43,7 +40,10 @@ def create_parser():
     -------
     parser : `argparse.ArgumentParser`
     """
-    parser = ArgumentParser(description=__doc__, version=__version__)
+    parser = ArgumentParser(
+        description=__doc__,
+        prog="ecp-curl",
+    )
     parser.add_argument(
         "url",
         help="the URL to transfer"

@@ -1,6 +1,8 @@
 %define name ciecplib
 %define version 0.1.0
 %define release 1
+%define author Duncan Macleod
+%define email duncan.macleod@ligo.org
 
 # -- metadata ---------------
 
@@ -8,7 +10,7 @@ BuildArch: noarch
 Group:     Development/Libraries
 License:   GPL-3.0-or-later
 Name:      %{name}
-Packager:  Duncan Macleod <duncan.macleod@ligo.org>
+Packager:  %{author} <%{email}>
 Prefix:    %{_prefix}
 Release:   %{release}%{?dist}
 Source0:   https://pypi.io/packages/source/l/%{name}/%{name}-%{version}.tar.gz
@@ -19,11 +21,18 @@ Version:   %{version}
 
 # -- build requirements -----
 
-BuildRequires: help2man
+BuildRequires: argparse-manpage
 BuildRequires: python
 BuildRequires: python-rpm-macros
 BuildRequires: python2-rpm-macros
 BuildRequires: python2-setuptools
+
+# build requires all runtime dependencies for argparse-manpage
+BuildRequires: m2crypto
+BuildRequires: pyOpenSSL
+BuildRequires: python
+BuildRequires: python-kerberos
+BuildRequires: python-lxml
 
 # -- packages ---------------
 
@@ -44,7 +53,7 @@ The Python %{python_version} client for SAML ECP authentication.
 
 %package -n ciecp-utils
 Summary: Command line utilities for SAML ECP authentication
-Requires: python2-%{name} = %{version}
+Requires: python2-%{name} = %{version}-%{release}
 %description -n ciecp-utils
 Command line utilities for SAML ECP authentication, including
 ecp-cookit-init, ecp-get-cert, and ecp-curl
@@ -68,19 +77,22 @@ sed -i "s/pykerberos/kerberos/g" setup.py
 
 %install
 %py2_install
+
 # make man pages
 mkdir -vp %{buildroot}%{_mandir}/man1
-ls %{buildroot}%{_bindir} | \
-env PYTHONPATH="%{buildroot}%{python2_sitelib}" \
-xargs --verbose -I @ \
-help2man \
-    --source %{name} \
-    --version-string %{version} \
-    --section 1 \
-    --no-info \
-    --no-discard-stderr \
-    --output %{buildroot}%{_mandir}/man1/@.1 \
-    %{buildroot}%{_bindir}/@
+export PYTHONPATH="%{buildroot}%{python2_sitelib}"
+argparse-manpage \
+    --author "%{author}" --author-email "%{email}" \
+    --function create_parser --project-name %{name} --url %{url} \
+    --module ciecplib.tool.ecp_cookie_init > %{buildroot}%{_mandir}/man1/ecp-cookie-init.1
+argparse-manpage \
+    --author "%{author}" --author-email "%{email}" \
+    --function create_parser --project-name %{name} --url %{url} \
+    --module ciecplib.tool.ecp_curl > %{buildroot}%{_mandir}/man1/ecp-curl.1
+argparse-manpage \
+    --author "%{author}" --author-email "%{email}" \
+    --function create_parser --project-name %{name} --url %{url} \
+    --module ciecplib.tool.ecp_get_cert > %{buildroot}%{_mandir}/man1/ecp-cet-cert.1
 
 %clean
 rm -rf $RPM_BUILD_ROOT
@@ -91,10 +103,12 @@ rm -rf $RPM_BUILD_ROOT
 %license LICENSE
 %doc README.md
 %{python2_sitelib}/*
+%exclude %{python2_sitelib}/ciecplib/tool
 
 %files -n ciecp-utils
 %license LICENSE
 %{_bindir}/*
 %{_mandir}/man1/*.1*
+%{python2_sitelib}/ciecplib/tool
 
 # -- changelog --------------
