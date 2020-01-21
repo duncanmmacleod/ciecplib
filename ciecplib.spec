@@ -72,7 +72,7 @@ sed -i "s/pykerberos/kerberos/g" setup.py
 # make man pages
 mkdir -vp %{buildroot}%{_mandir}/man1
 export PYTHONPATH="%{buildroot}%{python2_sitelib}"
-export MANARGS="--function create_parser --author 'Duncan Macleod' --author-email 'duncan.macleod@ligo.org' --project-name ciecplib --url %{url}"
+export MANARGS="--function create_parser --author \"Duncan Macleod\" --author-email \"duncan.macleod@ligo.org\" --project-name ciecplib --url %{url}"
 argparse-manpage ${MANARGS} --module ciecplib.tool.ecp_cookie_init > %{buildroot}%{_mandir}/man1/ecp-cookie-init.1
 argparse-manpage ${MANARGS} --module ciecplib.tool.ecp_curl > %{buildroot}%{_mandir}/man1/ecp-curl.1
 argparse-manpage ${MANARGS} --module ciecplib.tool.ecp_get_cert > %{buildroot}%{_mandir}/man1/ecp-cet-cert.1
