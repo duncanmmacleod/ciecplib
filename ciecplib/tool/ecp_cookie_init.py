@@ -103,7 +103,7 @@ def create_parser():
         "--reuse",
         default=False,
         action="store_true",
-        help="reuse an existing cookies if possible",
+        help="reuse existing cookies if possible",
     )
     parser.add_argument(
         "-v",

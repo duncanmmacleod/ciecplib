@@ -16,7 +16,13 @@
 # You should have received a copy of the GNU General Public License
 # along with ciecplib.  If not, see <http://www.gnu.org/licenses/>.
 
-"""Transfer a URL using SAML/ECP authentication
+"""Transfer a URL using SAML/ECP authentication.
+
+This script attemps to use existing cookies for the target domain
+and prompts for authorisation information if required.
+Persistent cookies acquired during transactions are automatically
+recorded in the cookie file, but session cookies are discarded (unless
+--store-session-cookies is given).
 """
 
 from __future__ import print_function
@@ -60,7 +66,7 @@ def create_parser():
         "--debug",
         action="store_true",
         default=False,
-        help="write debug output to stdout (implies --verbose)",
+        help="write debug output to stdout",
     )
     parser.add_identity_provider_argument()
     parser.add_argument(
@@ -95,15 +101,15 @@ def create_parser():
 def main(args=None):
     parser = create_parser()
     args = parser.parse_args(args=args)
-    if args.output:
-        stream = open(args.output, "w")
-    else:
-        stream = sys.stdout
     cookiejar = reuse_cookiefile(
         args.cookiefile,
         args.url,
         verbose=False,
     )[0]
+    if args.output:
+        stream = open(args.output, "w")
+    else:
+        stream = sys.stdout
     try:
         print(
             request(
