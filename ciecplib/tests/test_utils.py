@@ -73,9 +73,12 @@ def test_get_idp_urls_error(_, inst):
 
 
 @pytest.mark.parametrize("url, result", [
-    ("login.ligo.org", "https://login.ligo.org/idp/profile/SAML2/SOAP/ECP"),
-    ("https://login.ligo.org", "https://login.ligo.org/idp/profile/SAML2/SOAP/ECP"),
-    ("login.ligo.org/test", "https://login.ligo.org/test"),
+    ("login.ligo.org",
+     "https://login.ligo.org/idp/profile/SAML2/SOAP/ECP"),
+    ("https://login.ligo.org",
+     "https://login.ligo.org/idp/profile/SAML2/SOAP/ECP"),
+    ("login.ligo.org/test",
+     "https://login.ligo.org/test"),
     ("https://login.ligo.org/idp/profile/SAML2/SOAP/ECP",
      "https://login.ligo.org/idp/profile/SAML2/SOAP/ECP"),
 ])
