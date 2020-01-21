@@ -27,6 +27,13 @@ BuildRequires: python-rpm-macros
 BuildRequires: python2-rpm-macros
 BuildRequires: python2-setuptools
 
+# build requires all runtime dependencies for argparse-manpage
+BuildRequires: m2crypto
+BuildRequires: pyOpenSSL
+BuildRequires: python
+BuildRequires: python-kerberos
+BuildRequires: python-lxml
+
 # -- packages ---------------
 
 # src.rpm
