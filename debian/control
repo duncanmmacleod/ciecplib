@@ -7,7 +7,7 @@ Maintainer: Duncan Macleod <duncan.macleod@ligo.org>
 Standards-Version: 4.2.1
 X-Python-Version: >= 2.7
 X-Python3-Version: >= 3.4
-Homepage: https://github.com/duncanmmacleod/ligo.org
+Homepage: https://github.com/duncanmmacleod/ciecplib
 Build-Depends: debhelper (>= 9),
                dh-python,
                help2man,
