@@ -77,6 +77,13 @@ def create_parser():
         help="write to %(metavar)s instead of stdout",
     )
     parser.add_argument(
+        "-s",
+        "--store-session-cookies",
+        action="store_true",
+        default=False,
+        help="store session cookies in the cookie file"
+    )
+    parser.add_argument(
         "-u",
         "--username",
         help="authentication username, will be prompted for if not given "
@@ -107,6 +114,7 @@ def main(args=None):
                 debug=args.debug,
                 username=args.username,
                 kerberos=args.kerberos,
+                store_session_cookies=args.store_session_cookies,
             ).read().decode("utf-8"),
             file=stream,
             end="",
