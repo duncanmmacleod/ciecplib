@@ -162,7 +162,7 @@ aliases:
           mkdir -pv tests;
           pushd tests;
           python${PYTHON_VERSION} -m pytest \
-              --pyargs ciecplib.tests \
+              --pyargs ciecplib \
               --cov ciecplib \
               --junitxml junit.xml \
           ;

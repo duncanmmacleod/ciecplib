@@ -16,7 +16,7 @@ build_script:
   - python -m pip install .
 test_script:
   # run automated tests
-  - python -m pytest --pyargs ciecplib.tests --cov ciecplib --cov-report "" --junitxml=junit.xml
+  - python -m pytest --pyargs ciecplib --cov ciecplib --cov-report "" --junitxml=junit.xml
   # run --help on scripts for sanity
   - python -m coverage run --append -m ciecplib.tool.ecp_cookie_init --help
   - python -m coverage run --append -m ciecplib.tool.ecp_curl --help
