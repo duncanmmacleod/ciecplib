@@ -98,6 +98,7 @@ setup(
     packages=find_packages(),
     entry_points={
         "console_scripts": [
+            "ecp-cert-info=ciecplib.tool.ecp_cert_info:main",
             "ecp-cookie-init=ciecplib.tool.ecp_cookie_init:main",
             "ecp-curl=ciecplib.tool.ecp_curl:main",
             "ecp-get-cert=ciecplib.tool.ecp_get_cert:main",
