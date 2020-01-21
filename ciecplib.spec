@@ -1,6 +1,8 @@
 %define name ciecplib
 %define version 0.1.0
 %define release 1
+%define author Duncan Macleod
+%define email duncan.macleod@ligo.org
 
 # -- metadata ---------------
 
@@ -8,7 +10,7 @@ BuildArch: noarch
 Group:     Development/Libraries
 License:   GPL-3.0-or-later
 Name:      %{name}
-Packager:  Duncan Macleod <duncan.macleod@ligo.org>
+Packager:  %{author} <%{email}>
 Prefix:    %{_prefix}
 Release:   %{release}%{?dist}
 Source0:   https://pypi.io/packages/source/l/%{name}/%{name}-%{version}.tar.gz
@@ -72,10 +74,18 @@ sed -i "s/pykerberos/kerberos/g" setup.py
 # make man pages
 mkdir -vp %{buildroot}%{_mandir}/man1
 export PYTHONPATH="%{buildroot}%{python2_sitelib}"
-export MANARGS="--function create_parser --author \"Duncan Macleod\" --author-email \"duncan.macleod@ligo.org\" --project-name ciecplib --url %{url}"
-argparse-manpage ${MANARGS} --module ciecplib.tool.ecp_cookie_init > %{buildroot}%{_mandir}/man1/ecp-cookie-init.1
-argparse-manpage ${MANARGS} --module ciecplib.tool.ecp_curl > %{buildroot}%{_mandir}/man1/ecp-curl.1
-argparse-manpage ${MANARGS} --module ciecplib.tool.ecp_get_cert > %{buildroot}%{_mandir}/man1/ecp-cet-cert.1
+argparse-manpage \
+    --author "%{author}" --author-email "%{email}" \
+    --function create_parser --project-name %{name} --url %{url} \
+    --module ciecplib.tool.ecp_cookie_init > %{buildroot}%{_mandir}/man1/ecp-cookie-init.1
+argparse-manpage \
+    --author "%{author}" --author-email "%{email}" \
+    --function create_parser --project-name %{name} --url %{url} \
+    --module ciecplib.tool.ecp_curl > %{buildroot}%{_mandir}/man1/ecp-curl.1
+argparse-manpage \
+    --author "%{author}" --author-email "%{email}" \
+    --function create_parser --project-name %{name} --url %{url} \
+    --module ciecplib.tool.ecp_get_cert > %{buildroot}%{_mandir}/man1/ecp-cet-cert.1
 
 %clean
 rm -rf $RPM_BUILD_ROOT
