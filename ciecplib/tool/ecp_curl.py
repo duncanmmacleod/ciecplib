@@ -43,7 +43,10 @@ def create_parser():
     -------
     parser : `argparse.ArgumentParser`
     """
-    parser = ArgumentParser(description=__doc__, version=__version__)
+    parser = ArgumentParser(
+        description=__doc__,
+        prog="ecp-curl",
+    )
     parser.add_argument(
         "url",
         help="the URL to transfer"
