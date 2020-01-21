@@ -30,6 +30,7 @@ from ..cookies import (
     has_session_cookies,
     load_cookiejar,
 )
+from ..env import _get_default_idp
 from ..utils import get_idps
 
 __author__ = 'Duncan Macleod <duncan.macleod@ligo.org>'
@@ -90,6 +91,29 @@ class ArgumentParser(argparse.ArgumentParser):
                     action="version",
                     version=version,
                 )
+
+    def add_identity_provider_argument(
+            self,
+            *args,
+            **kwargs
+    ):
+        if not args:
+            args = ("-i", "--identity-provider")
+        kwargs.setdefault("default", _get_default_idp())
+        kwargs.setdefault(
+            "help",
+            "name of institution providing the identity (e.g. 'Cardiff "
+            "University'), or domain name of IdP host (e.g. idp.cf.ac.uk), "
+            "see --list-idps for a list of Identity Provider (IdPs) and "
+            "their IdP URL. "
+            "Shortened institution names (e.g. 'Cardiff') can be given as "
+            "long as they uniquely match a full institution name known by "
+            "CILogon",
+        )
+        return super(ArgumentParser, self).add_argument(
+            *args,
+            **kwargs
+        )
 
 
 class ListIdpsAction(argparse.Action):

@@ -62,12 +62,7 @@ def create_parser():
         default=False,
         help="write debug output to stdout (implies --verbose)",
     )
-    parser.add_argument(
-        "-i",
-        "--idp",
-        help="domain name of IdP host, see --list-idps for a list of "
-             "Identity Provider (IdPs) and their IdP endpoint URL",
-    )
+    parser.add_identity_provider_argument()
     parser.add_argument(
         "-k",
         "--kerberos",
@@ -108,7 +103,7 @@ def main(args=None):
                 args.url,
                 cookiefile=args.cookiefile,
                 cookiejar=cookiejar,
-                endpoint=args.idp,
+                endpoint=args.identity_provider,
                 debug=args.debug,
                 username=args.username,
                 kerberos=args.kerberos,

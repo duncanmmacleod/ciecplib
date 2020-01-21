@@ -90,14 +90,7 @@ def create_parser():
         default=DEFAULT_COOKIE_FILE,
         help="cookie file to create/reuse/destroy",
     )
-    parser.add_argument(
-        "-i",
-        "--idp",
-        default=argparse.SUPPRESS,
-        help="IdP name as known by CILogon, or the URL of an IdP endpoint, "
-             "required if --kerberos not given; see --list-idps for a list of"
-             "Identity Provider (IdPs) and their IdP endpoint URL"
-    )
+    parser.add_identity_provider_argument()
     authtype.add_argument(
         "-k",
         "--kerberos",
@@ -178,7 +171,7 @@ def main():
         if args.verbose:
             print("Authenticating...")
         authenticate(
-            args.idp,
+            args.identity_provider,
             spurl=args.target_url,
             cookiejar=cookiejar,
             username=getattr(args, "username", None),
