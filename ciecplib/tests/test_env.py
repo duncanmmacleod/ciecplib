@@ -26,6 +26,8 @@ import pytest
 
 from .. import env as ciecplib_env
 
+__author__ = "Duncan Macleod <duncan.macleod@ligo.org>"
+
 
 @pytest.mark.parametrize("env, result", [
     ({}, None),

@@ -31,6 +31,8 @@ variable to support legacy users of ``cigetcert``.
 import argparse
 import os
 
+__author__ = "Duncan Macleod <duncan.macleod@ligo.org>"
+
 
 def _parse_cigetcertops():
     """Parse the ``CIGETCERTOPTS`` variable for known options

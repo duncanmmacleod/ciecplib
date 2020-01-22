@@ -51,6 +51,8 @@ from .utils import (
     reuse_cookiefile,
 )
 
+__author__ = "Duncan Macleod <duncan.macleod@ligo.org>"
+
 
 def create_parser():
     """Create a command-line argument parser

@@ -31,6 +31,8 @@ except ImportError:  # python < 3
     from urlparse import urlparse
     input = raw_input  # noqa: F821
 
+__author__ = "Duncan Macleod <duncan.macleod@ligo.org>"
+
 # -- default CA files ---------------------------------------------------------
 
 DEFAULT_VERIFY_PATHS = ssl.get_default_verify_paths()

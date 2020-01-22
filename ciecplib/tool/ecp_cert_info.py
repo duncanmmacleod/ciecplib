@@ -31,6 +31,8 @@ from .utils import (
     ArgumentParser,
 )
 
+__author__ = "Duncan Macleod <duncan.macleod@ligo.org>"
+
 EPILOG = r"""
 Environment:
 

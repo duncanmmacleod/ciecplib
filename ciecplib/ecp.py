@@ -44,6 +44,8 @@ from .utils import (
     prompt_username_password,
 )
 
+__author__ = "Duncan Macleod <duncan.macleod@ligo.org>"
+
 
 def get_xml_attribute(xdata, path, namespaces=None):
     if namespaces is None:

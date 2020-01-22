@@ -50,6 +50,8 @@ from .utils import (
     DEFAULT_CAPATH,
 )
 
+__author__ = "Dave Dykstra, Duncan Macleod"
+
 
 class _SslSocketWrapper(object):
     """Make a wrapper so a SSL Connection object can be opened as a file

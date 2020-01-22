@@ -46,6 +46,8 @@ from .utils import (
     format_endpoint_url,
 )
 
+__author__ = "Duncan Macleod <duncan.macleod@ligo.org>"
+
 
 # -- utilities ----------------------------------------------------------------
 
