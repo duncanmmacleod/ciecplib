@@ -18,7 +18,7 @@ Installation
 
           $ python -m pip install ciecplib
 
-      Supported python versions: 2.7, 3.4+.
+      Supported python versions: 2.7, 3.5+.
 
    .. tab:: Conda
 

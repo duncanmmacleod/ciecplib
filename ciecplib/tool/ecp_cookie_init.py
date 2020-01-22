@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright (C) Duncan Macleod (2019)
+# Copyright (C) Cardiff University (2019-2020)
 #
 # This file is part of ciecplib.
 #
@@ -50,6 +50,8 @@ from .utils import (
     ArgumentParser,
     reuse_cookiefile,
 )
+
+__author__ = "Duncan Macleod <duncan.macleod@ligo.org>"
 
 
 def create_parser():

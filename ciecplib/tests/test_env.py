@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright (C) Duncan Macleod (2020)
+# Copyright (C) Cardiff University (2020)
 #
 # This file is part of ciecplib.
 #
@@ -25,6 +25,8 @@ except ImportError:  # python < 3
 import pytest
 
 from .. import env as ciecplib_env
+
+__author__ = "Duncan Macleod <duncan.macleod@ligo.org>"
 
 
 @pytest.mark.parametrize("env, result", [

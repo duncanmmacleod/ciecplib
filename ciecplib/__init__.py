@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright (C) Duncan Macleod (2019)
+# Copyright (C) Cardiff University (2019-2020)
 #
 # This file is part of ciecplib.
 #
@@ -28,6 +28,6 @@ from .x509 import get_cert as get_x509_cert
 # request the contents of a URL
 from .requests import request
 
-__author__ = 'Duncan Macleod <duncan.macleod@ligo.org>'
-__credits__ = 'Scott Koranda, Dave Dykstra'
+__author__ = "Duncan Macleod <duncan.macleod@ligo.org>"
+__credits__ = "Scott Koranda, Dave Dykstra"
 __version__ = "0.1.0"

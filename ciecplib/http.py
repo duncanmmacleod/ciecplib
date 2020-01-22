@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright (C) FNAL (2015-2016), Duncan Macleod (2019)
+# Copyright (C) FNAL (2015-2016), Cardiff University (2019-2020)
 #
 # This file is part of ciecplib.
 #
@@ -49,6 +49,8 @@ from .utils import (
     DEFAULT_CAFILE,
     DEFAULT_CAPATH,
 )
+
+__author__ = "Dave Dykstra, Duncan Macleod"
 
 
 class _SslSocketWrapper(object):

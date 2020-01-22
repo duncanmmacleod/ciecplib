@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright (C) Duncan Macleod (2020)
+# Copyright (C) Cardiff University (2020)
 #
 # This file is part of ciecplib.
 #
@@ -30,6 +30,8 @@ variable to support legacy users of ``cigetcert``.
 
 import argparse
 import os
+
+__author__ = "Duncan Macleod <duncan.macleod@ligo.org>"
 
 
 def _parse_cigetcertops():
