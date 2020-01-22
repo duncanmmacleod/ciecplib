@@ -93,7 +93,7 @@ def create_parser():
         "username",
         nargs="?",
         default=argparse.SUPPRESS,
-        help="username, required if --kerberos not given",
+        help="authentication username, required if --kerberos not given",
     )
 
     parser.add_argument(
@@ -116,17 +116,7 @@ def create_parser():
         default=277,
         help="lifetime of the certificate"
     )
-    parser.add_argument(
-        "-i",
-        "--hostname",
-        help="name of institution providing the identity (e.g. 'Cardiff "
-             "University'), or domain name of IdP host (e.g. idp.cf.ac.uk), "
-             "see --list-idps for a list of Identity Provider (IdPs) and "
-             "their IdP URL. "
-             "Shortened institution names (e.g. 'Cardiff') can be given as "
-             "long as they uniquely match a full institution name known by "
-             "CILogon",
-    )
+    parser.add_identity_provider_argument()
     authtype.add_argument(
         "-k",
         "--kerberos",
@@ -224,7 +214,7 @@ def main():
         if args.verbose:
             print("Fetching certificate...")
         cert = get_cert(
-            args.hostname,
+            args.identity_provider,
             username=getattr(args, "username", None),
             kerberos=args.kerberos,
             hours=args.hours,

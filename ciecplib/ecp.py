@@ -207,7 +207,9 @@ def authenticate(
     except etree.XMLSyntaxError:
         raise RuntimeError(
             "Failed to parse response from {}, you most "
-            "likely incorrectly entered your passphrase"
+            "likely incorrectly entered your passphrase".format(
+                endpoint,
+            ),
         )
     acsurl = get_xml_attribute(
         idptree,

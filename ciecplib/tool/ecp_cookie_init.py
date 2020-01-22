@@ -71,19 +71,11 @@ def create_parser():
     authtype = parser.add_mutually_exclusive_group()
     authtype.add_argument(
         "username",
-        metavar="login",
         nargs="?",
         default=argparse.SUPPRESS,
-        help="identity username, required if --kerberos not given",
+        help="authentication username, required if --kerberos not given",
     )
 
-    parser.add_argument(
-        "-d",
-        "--debug",
-        action="store_true",
-        default=False,
-        help="write debug output to stdout (implies --verbose)",
-    )
     parser.add_argument(
         "-c",
         "--cookiefile",
@@ -92,13 +84,13 @@ def create_parser():
         help="cookie file to create/reuse/destroy",
     )
     parser.add_argument(
-        "-i",
-        "--idp",
-        default=argparse.SUPPRESS,
-        help="IdP name as known by CILogon, or the URL of an IdP endpoint, "
-             "required if --kerberos not given; see --list-idps for a list of"
-             "Identity Provider (IdPs) and their IdP endpoint URL"
+        "-d",
+        "--debug",
+        action="store_true",
+        default=False,
+        help="write debug output to stdout (implies --verbose)",
     )
+    parser.add_identity_provider_argument()
     authtype.add_argument(
         "-k",
         "--kerberos",
@@ -111,7 +103,7 @@ def create_parser():
         "--reuse",
         default=False,
         action="store_true",
-        help="reuse an existing cookies if possible",
+        help="reuse existing cookies if possible",
     )
     parser.add_argument(
         "-v",
@@ -179,7 +171,7 @@ def main():
         if args.verbose:
             print("Authenticating...")
         authenticate(
-            args.idp,
+            args.identity_provider,
             spurl=args.target_url,
             cookiejar=cookiejar,
             username=getattr(args, "username", None),

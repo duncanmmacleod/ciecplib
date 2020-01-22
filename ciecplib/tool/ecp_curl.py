@@ -16,7 +16,13 @@
 # You should have received a copy of the GNU General Public License
 # along with ciecplib.  If not, see <http://www.gnu.org/licenses/>.
 
-"""Transfer a URL using SAML/ECP authentication
+"""Transfer a URL using SAML/ECP authentication.
+
+This script attemps to use existing cookies for the target domain
+and prompts for authorisation information if required.
+Persistent cookies acquired during transactions are automatically
+recorded in the cookie file, but session cookies are discarded (unless
+--store-session-cookies is given).
 """
 
 from __future__ import print_function
@@ -60,14 +66,9 @@ def create_parser():
         "--debug",
         action="store_true",
         default=False,
-        help="write debug output to stdout (implies --verbose)",
+        help="write debug output to stdout",
     )
-    parser.add_argument(
-        "-i",
-        "--idp",
-        help="domain name of IdP host, see --list-idps for a list of "
-             "Identity Provider (IdPs) and their IdP endpoint URL",
-    )
+    parser.add_identity_provider_argument()
     parser.add_argument(
         "-k",
         "--kerberos",
@@ -82,9 +83,16 @@ def create_parser():
         help="write to %(metavar)s instead of stdout",
     )
     parser.add_argument(
+        "-s",
+        "--store-session-cookies",
+        action="store_true",
+        default=False,
+        help="store session cookies in the cookie file"
+    )
+    parser.add_argument(
         "-u",
         "--username",
-        help="username on IdP host, will be prompted for if not given "
+        help="authentication username, will be prompted for if not given "
              "and not using --kerberos"
     )
     return parser
@@ -93,25 +101,26 @@ def create_parser():
 def main(args=None):
     parser = create_parser()
     args = parser.parse_args(args=args)
-    if args.output:
-        stream = open(args.output, "w")
-    else:
-        stream = sys.stdout
     cookiejar = reuse_cookiefile(
         args.cookiefile,
         args.url,
         verbose=False,
     )[0]
+    if args.output:
+        stream = open(args.output, "w")
+    else:
+        stream = sys.stdout
     try:
         print(
             request(
                 args.url,
                 cookiefile=args.cookiefile,
                 cookiejar=cookiejar,
-                endpoint=args.idp,
+                endpoint=args.identity_provider,
                 debug=args.debug,
                 username=args.username,
                 kerberos=args.kerberos,
+                store_session_cookies=args.store_session_cookies,
             ).read().decode("utf-8"),
             file=stream,
             end="",
