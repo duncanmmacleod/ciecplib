@@ -54,9 +54,9 @@ def test_argument_parser(capsys):
         parser.parse_args(["--version"])
     if sys.version_info[0] < 3:
         # for python2 --version goes to stderr
-        assert capsys.readouterr().err.strip() == ciecplib_version
+        assert capsys.readouterr()[1].strip() == ciecplib_version
     else:
-        assert capsys.readouterr().out.strip() == ciecplib_version
+        assert capsys.readouterr()[0].strip() == ciecplib_version
 
 
 def test_list_idps_action(capsys):
@@ -66,5 +66,5 @@ def test_list_idps_action(capsys):
             parser.parse_args(["--list-idps"])
         except URLError as exc:
             pytest.skip(str(exc))
-    stdout = capsys.readouterr().out
+    stdout = capsys.readouterr()[0]
     assert "'Cardiff University'" in stdout
