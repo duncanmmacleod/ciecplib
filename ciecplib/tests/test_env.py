@@ -26,6 +26,7 @@ import pytest
 
 from .. import env as ciecplib_env
 
+
 @pytest.mark.parametrize("env, result", [
     ({}, None),
     ({"ECP_IDP": "TEST"}, "TEST"),
