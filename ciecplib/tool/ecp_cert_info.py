@@ -22,8 +22,6 @@ r"""Print information about an existing X.509 credential.
 
 from __future__ import print_function
 
-import argparse
-
 from ..x509 import (
     get_x509_proxy_path,
     load_cert,
