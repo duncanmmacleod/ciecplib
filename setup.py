@@ -16,23 +16,22 @@
 # You should have received a copy of the GNU General Public License
 # along with ciecplib.  If not, see <http://www.gnu.org/licenses/>.
 
+"""Build configuration for ciecplib
+"""
+
 import os.path
 import re
 
 from setuptools import (find_packages, setup)
 
-PACKAGENAME = 'ciecplib'
-PROVIDES = 'ciecplib'
-AUTHOR = 'Duncan Macleod'
-AUTHOR_EMAIL = 'duncan.macleod@ligo.org'
-LICENSE = 'GPLv3'
+__author__ = "Duncan Macleod <duncan.macleod@ligo.org>"
 
 
 def find_version(path, varname="__version__"):
     """Parse the version metadata in the given file.
     """
-    with open(path, 'r') as fp:
-        version_file = fp.read()
+    with open(path, 'r') as fobj:
+        version_file = fobj.read()
     version_match = re.search(
         r"^{0} = ['\"]([^'\"]*)['\"]".format(varname),
         version_file,
@@ -73,13 +72,18 @@ setup(
     # distribution metadata
     name="ciecplib",
     version=find_version(os.path.join("ciecplib", "__init__.py")),
-    author="Duncan Macleod <duncan.macleod@ligo.org>",
+    author="Duncan Macleod",
     author_email="duncan.macleod@ligo.org",
     license="GPL-3.0-or-later",
     description="A python client for SAML ECP authentication",
     long_description=open("README.md", "r").read(),
     long_description_content_type="text/markdown",
     url='https://github.com/duncanmmacleod/ciecplib/',
+    project_urls={
+        "Bug Tracker": "https://github.com/duncanmmacleod/ciecplib/issues",
+        "Documentation": "https://ciecplib.readthedocs.io/",
+        "Source Code": "https://github.com/gwpy/gwpy",
+    },
     classifiers=[
         'Development Status :: 4 - Beta',
         'Intended Audience :: Science/Research',
@@ -88,7 +92,6 @@ setup(
         'Operating System :: OS Independent',
         'Programming Language :: Python :: 2.7',
         'Programming Language :: Python :: 3',
-        'Programming Language :: Python :: 3.4',
         'Programming Language :: Python :: 3.5',
         'Programming Language :: Python :: 3.6',
         'Programming Language :: Python :: 3.7',
