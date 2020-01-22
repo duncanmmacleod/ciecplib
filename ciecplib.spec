@@ -116,3 +116,7 @@ rm -rf $RPM_BUILD_ROOT
 %{python2_sitelib}/ciecplib/tool
 
 # -- changelog --------------
+
+%changelog
+* Wed Jan 22 2020 Duncan Macleod <duncan.macleod@ligo.org> - 0.1.0-1
+- first release
