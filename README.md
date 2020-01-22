@@ -4,6 +4,14 @@ This python package provides a native Python client to access
 SAML/ECP-authenticated content over HTTP with
 [CILogon](https://cilogon.org).
 
+## Release status
+
+[![PyPI version](https://badge.fury.io/py/ciecplib.svg)](http://badge.fury.io/py/ciecplib)
+[![Conda version](https://img.shields.io/conda/vn/conda-forge/ciecplib.svg)](https://anaconda.org/conda-forge/ciecplib/)
+
+[![License](https://img.shields.io/pypi/l/ciecplib.svg)](https://choosealicense.com/licenses/gpl-3.0/)
+![Supported Python versions](https://img.shields.io/pypi/pyversions/ciecplib.svg)
+
 ## Development status
 
 [![Linux](https://img.shields.io/circleci/project/github/duncanmmacleod/ciecplib/master.svg?label=Linux)](https://circleci.com/gh/duncanmmacleod/ciecplib)
