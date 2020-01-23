@@ -23,6 +23,26 @@ import os.path
 import re
 
 from setuptools import (find_packages, setup)
+from setuptools.command.build_py import build_py
+from setuptools.command.install import install
+
+try:
+    from build_manpages.build_manpages import (
+        build_manpages,
+        get_build_py_cmd,
+        get_install_cmd,
+    )
+except ImportError:  # can't build manpages, that's ok
+    cmdclass = {
+        "build_py": build_py,
+        "install": install,
+    }
+else:
+    cmdclass = {
+        "build_manpages": build_manpages,
+        "build_py": get_build_py_cmd(build_py),
+        "install": get_install_cmd(install),
+    }
 
 __author__ = "Duncan Macleod <duncan.macleod@ligo.org>"
 
@@ -82,7 +102,7 @@ setup(
     project_urls={
         "Bug Tracker": "https://github.com/duncanmmacleod/ciecplib/issues",
         "Documentation": "https://ciecplib.readthedocs.io/",
-        "Source Code": "https://github.com/gwpy/gwpy",
+        "Source Code": "https://github.com/duncanmmacleod/ciecplib/",
     },
     classifiers=[
         'Development Status :: 4 - Beta',
@@ -108,6 +128,7 @@ setup(
         ],
     },
     # dependencies
+    cmdclass=cmdclass,
     setup_requires=setup_requires,
     install_requires=install_requires,
     tests_require=tests_require,

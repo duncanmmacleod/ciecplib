@@ -72,17 +72,17 @@ aliases:
       run:
         name: Install
         command: |
-          # for python3, install everything (since ciecp-utils needs py2)
-          if [[ "${PYTHON_VERSION:0:1}" -eq 3 ]]; then
+          # for python2, install everything (since ciecp-utils needs py3)
+          if [[ "${PYTHON_VERSION:0:1}" -eq 2 ]]; then
               dpkg --install python*-ciecplib*.deb ciecp-utils*.deb || { \
                   apt-get -y -f install;
                   dpkg --install python*-ciecplib*.deb ciecp-utils*.deb;
               };
-          # otherwise just install the py2 version, since python3 doesn't work
+          # otherwise just install the py3 version
           else
-              dpkg --install python-ciecplib*.deb ciecp-utils*.deb || { \
+              dpkg --install python3-ciecplib*.deb ciecp-utils*.deb || { \
                   apt-get -y -f install;
-                  dpkg --install python-ciecplib*.deb ciecp-utils*.deb;
+                  dpkg --install python3-ciecplib*.deb ciecp-utils*.deb;
               };
           fi
 
@@ -149,7 +149,7 @@ aliases:
               python${PYXY}-pytest-cov \
               $([ "${PYXY}" -eq 2 ] && echo "python2-mock") \
           ;
-          python${PYTHON_VERSION} -m pip install "pytest~=3.0" "more-itertools < 6.0a0" "zipp!=2.0.0"
+          python${PYTHON_VERSION} -m pip install "pytest~=3.0" "more-itertools < 6.0a0"
 
   - &test
       run:
@@ -157,7 +157,7 @@ aliases:
         command: |
           set -x;
           # install test requirements
-          python${PYTHON_VERSION} -m pip install "pytest" "pytest-cov" "mock ; python_version < '3'"
+          python${PYTHON_VERSION} -m pip install "pytest" "pytest-cov" "mock ; python_version < '3'" "zipp<2.0.0"
           # run test suite
           mkdir -pv tests;
           pushd tests;
@@ -271,13 +271,6 @@ jobs:
       - *store_test_results
       - *store_test_artifacts
 
-  debian:stretch:2.7:
-    <<: *debian
-    docker:
-      - image: debian:stretch
-    environment:
-      PYTHON_VERSION: "2.7"
-
   debian:buster:2.7:
     <<: *debian
     docker:
@@ -342,9 +335,6 @@ workflows:
       - sdist
       - flake8
       - centos:7:2.7:
-          requires:
-            - sdist
-      - debian:stretch:2.7:
           requires:
             - sdist
       - debian:buster:2.7:

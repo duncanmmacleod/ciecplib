@@ -4,23 +4,9 @@ include /usr/share/dpkg/pkg-info.mk
 
 export PYBUILD_DISABLE = test
 
-# build man pages
-export PYBUILD_AFTER_INSTALL := \
-	echo 'Automatically generating man pages with help2man' && \
-	mkdir -p {destdir}/usr/share/man/man1 && \
-	ls {destdir}/usr/bin | env PYTHONPATH={destdir}{install_dir} \
-	xargs --verbose -I @ \
-	help2man \
-		--source $(DEB_SOURCE) \
-		--version-string $(DEB_VERSION_UPSTREAM) \
-		--no-info \
-		--no-discard-stderr \
-		{destdir}/usr/bin/@ \
-		-o {destdir}/usr/share/man/man1/@.1
-
-# redirect Python 3 entry points to bogus path
-export PYBUILD_INSTALL_ARGS_python3 = --install-scripts=/ignore
-export PYBUILD_AFTER_INSTALL_python3 = rm -rf {destdir}/ignore
+# redirect Python 2 entry points to bogus path
+export PYBUILD_INSTALL_ARGS_python2 = --install-scripts=/ignore
+export PYBUILD_AFTER_INSTALL_python2 = rm -rf {destdir}/ignore
 
 %:
 	dh $@ --with python2,python3 --buildsystem=pybuild

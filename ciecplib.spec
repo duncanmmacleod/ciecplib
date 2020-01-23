@@ -78,26 +78,6 @@ sed -i "s/pykerberos/kerberos/g" setup.py
 %install
 %py2_install
 
-# make man pages
-mkdir -vp %{buildroot}%{_mandir}/man1
-export PYTHONPATH="%{buildroot}%{python2_sitelib}"
-argparse-manpage \
-    --author "%{author}" --author-email "%{email}" \
-    --function create_parser --project-name %{name} --url %{url} \
-    --module ciecplib.tool.ecp_cert_info > %{buildroot}%{_mandir}/man1/ecp-cert-info.1
-argparse-manpage \
-    --author "%{author}" --author-email "%{email}" \
-    --function create_parser --project-name %{name} --url %{url} \
-    --module ciecplib.tool.ecp_cookie_init > %{buildroot}%{_mandir}/man1/ecp-cookie-init.1
-argparse-manpage \
-    --author "%{author}" --author-email "%{email}" \
-    --function create_parser --project-name %{name} --url %{url} \
-    --module ciecplib.tool.ecp_curl > %{buildroot}%{_mandir}/man1/ecp-curl.1
-argparse-manpage \
-    --author "%{author}" --author-email "%{email}" \
-    --function create_parser --project-name %{name} --url %{url} \
-    --module ciecplib.tool.ecp_get_cert > %{buildroot}%{_mandir}/man1/ecp-cet-cert.1
-
 %clean
 rm -rf $RPM_BUILD_ROOT
 

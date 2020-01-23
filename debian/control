@@ -8,24 +8,31 @@ Standards-Version: 4.2.1
 X-Python-Version: >= 2.7
 X-Python3-Version: >= 3.4
 Homepage: https://github.com/duncanmmacleod/ciecplib
-Build-Depends: debhelper (>= 9),
-               dh-python,
-               help2man,
-               python-all,
-               python-setuptools,
-               python3-all,
-               python3-setuptools
+Build-Depends:
+ debhelper (>= 9),
+ dh-python,
+ help2man,
+ python-all,
+ python-setuptools,
+ python3-all,
+ python3-argparse-manpage,
+ python3-kerberos,
+ python3-lxml,
+ python3-m2crypto,
+ python3-openssl,
+ python3-setuptools,
 
 # -- python-ciecplib ----------------------------------------------------------
 
 Package: python-ciecplib
 Architecture: all
-Depends: ${misc:Depends},
-         ${python:Depends},
-         python-kerberos,
-         python-lxml,
-         python-m2crypto,
-         python-openssl
+Depends:
+ ${misc:Depends},
+ ${python:Depends},
+ python-kerberos,
+ python-lxml,
+ python-m2crypto,
+ python-openssl,
 Description: A python client for SAML ECP authentication
 
 # -- python3-ciecplib ---------------------------------------------------------
@@ -33,19 +40,21 @@ Description: A python client for SAML ECP authentication
 
 Package: python3-ciecplib
 Architecture: all
-Depends: ${misc:Depends},
-         ${python:Depends},
-         python3-kerberos,
-         python3-lxml,
-         python3-m2crypto,
-         python3-openssl
+Depends:
+ ${misc:Depends},
+ ${python3:Depends},
+ python3-kerberos,
+ python3-lxml,
+ python3-m2crypto,
+ python3-openssl,
 Description: A python client for SAML ECP authentication
 
 # -- ciecp-utils --------------------------------------------------------------
 
 Package: ciecp-utils
 Architecture: all
-Depends: ${misc:Depends},
-         ${python:Depends},
-         python-ciecplib
+Depends:
+ ${misc:Depends},
+ ${python3:Depends},
+ python3-ciecplib,
 Description: Command-line utlities for SAML ECP authentication
