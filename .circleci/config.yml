@@ -328,6 +328,13 @@ jobs:
     environment:
       PYTHON_VERSION: "3.7"
 
+  python:3.8:
+    <<: *python
+    docker:
+      - image: python:3.8-buster
+    environment:
+      PYTHON_VERSION: "3.8"
+
   sphinx:
     docker:
       - image: python:3.7
@@ -368,6 +375,9 @@ workflows:
           requires:
             - sdist
       - python:3.7:
+          requires:
+            - sdist
+      - python:3.8:
           requires:
             - sdist
       - sphinx
