@@ -72,17 +72,17 @@ aliases:
       run:
         name: Install
         command: |
-          # for python3, install everything (since ciecp-utils needs py2)
-          if [[ "${PYTHON_VERSION:0:1}" -eq 3 ]]; then
+          # for python2, install everything (since ciecp-utils needs py3)
+          if [[ "${PYTHON_VERSION:0:1}" -eq 2 ]]; then
               dpkg --install python*-ciecplib*.deb ciecp-utils*.deb || { \
                   apt-get -y -f install;
                   dpkg --install python*-ciecplib*.deb ciecp-utils*.deb;
               };
-          # otherwise just install the py2 version, since python3 doesn't work
+          # otherwise just install the py3 version
           else
-              dpkg --install python-ciecplib*.deb ciecp-utils*.deb || { \
+              dpkg --install python3-ciecplib*.deb ciecp-utils*.deb || { \
                   apt-get -y -f install;
-                  dpkg --install python-ciecplib*.deb ciecp-utils*.deb;
+                  dpkg --install python3-ciecplib*.deb ciecp-utils*.deb;
               };
           fi
 
