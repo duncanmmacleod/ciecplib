@@ -271,13 +271,6 @@ jobs:
       - *store_test_results
       - *store_test_artifacts
 
-  debian:stretch:2.7:
-    <<: *debian
-    docker:
-      - image: debian:stretch
-    environment:
-      PYTHON_VERSION: "2.7"
-
   debian:buster:2.7:
     <<: *debian
     docker:

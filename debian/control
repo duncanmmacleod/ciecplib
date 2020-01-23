@@ -14,6 +14,7 @@ Build-Depends: debhelper (>= 9),
                python-all,
                python-setuptools,
                python3-all,
+               python3-argparse-manpage,
                python3-setuptools
 
 # -- python-ciecplib ----------------------------------------------------------
@@ -34,7 +35,7 @@ Description: A python client for SAML ECP authentication
 Package: python3-ciecplib
 Architecture: all
 Depends: ${misc:Depends},
-         ${python:Depends},
+         ${python3:Depends},
          python3-kerberos,
          python3-lxml,
          python3-m2crypto,
@@ -46,6 +47,6 @@ Description: A python client for SAML ECP authentication
 Package: ciecp-utils
 Architecture: all
 Depends: ${misc:Depends},
-         ${python:Depends},
-         python-ciecplib
+         ${python3:Depends},
+         python3-ciecplib
 Description: Command-line utlities for SAML ECP authentication
