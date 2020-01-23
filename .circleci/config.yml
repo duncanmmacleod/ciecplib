@@ -337,9 +337,6 @@ workflows:
       - centos:7:2.7:
           requires:
             - sdist
-      - debian:stretch:2.7:
-          requires:
-            - sdist
       - debian:buster:2.7:
           requires:
             - sdist
