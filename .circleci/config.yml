@@ -97,7 +97,10 @@ aliases:
               rpm-build \
               yum-utils \
               python-srpm-macros \
+              python2-rpm-macros \
+              python3-rpm-macros \
               python-pip \
+              python3-pip \
           ;
           # build src rpm
           SRPM=$(rpmbuild --define "_topdir $(pwd)" -ts ./ciecplib-*.tar.* | cut -d\  -f2);
@@ -292,6 +295,13 @@ jobs:
     environment:
       PYTHON_VERSION: "2.7"
 
+  centos:8:3.6:
+    <<: *centos
+    docker:
+      - image: centos:7
+    environment:
+      PYTHON_VERSION: "3.6"
+
   python:2.7:
     <<: *python
     docker:
@@ -335,6 +345,9 @@ workflows:
       - sdist
       - flake8
       - centos:7:2.7:
+          requires:
+            - sdist
+      - centos:8:3.6:
           requires:
             - sdist
       - debian:buster:2.7:
