@@ -97,7 +97,10 @@ aliases:
               rpm-build \
               yum-utils \
               python-srpm-macros \
-              python-pip \
+              python2-rpm-macros \
+              python3-rpm-macros \
+              python2-pip \
+              python3-pip \
           ;
           # build src rpm
           SRPM=$(rpmbuild --define "_topdir $(pwd)" -ts ./ciecplib-*.tar.* | cut -d\  -f2);
@@ -142,7 +145,12 @@ aliases:
       run:
         name: Install test dependencies
         command: |
-          if [[ "${PYTHON_VERSION:0:1}" -eq 2 ]]; then PYXY="2"; else PYXY=${PY3XY}; fi;
+          if [[ "${PYTHON_VERSION:0:1}" -eq 3 ]]; then
+              PYXY=$(rpm --eval "%{?python3_pkgversion}");
+          else
+              PYXY="${PYTHON_VERSION:0:1}";
+          fi;
+          yum -y -q install epel-release;
           yum -y -q install \
               which \
               python${PYXY}-pytest \
@@ -292,6 +300,13 @@ jobs:
     environment:
       PYTHON_VERSION: "2.7"
 
+  centos:8:3.6:
+    <<: *centos
+    docker:
+      - image: centos:8
+    environment:
+      PYTHON_VERSION: "3.6"
+
   python:2.7:
     <<: *python
     docker:
@@ -335,6 +350,9 @@ workflows:
       - sdist
       - flake8
       - centos:7:2.7:
+          requires:
+            - sdist
+      - centos:8:3.6:
           requires:
             - sdist
       - debian:buster:2.7:
