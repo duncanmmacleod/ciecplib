@@ -146,7 +146,7 @@ aliases:
         name: Install test dependencies
         command: |
           if [[ "${PYTHON_VERSION:0:1}" -eq 3 ]]; then
-              PYXY=$(rpm --eval "${?python3_pkgversion}");
+              PYXY=$(rpm --eval "%{?python3_pkgversion}");
           else
               PYXY="${PYTHON_VERSION:0:1}";
           fi;
