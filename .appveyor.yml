@@ -18,9 +18,10 @@ test_script:
   # run automated tests
   - python -m pytest --pyargs ciecplib --cov ciecplib --cov-report "" --junitxml=junit.xml
   # run --help on scripts for sanity
-  - python -m coverage run --append -m ciecplib.tool.ecp_cookie_init --help
+  - python -m coverage run --append -m ciecplib.tool.ecp_cert_info --help
   - python -m coverage run --append -m ciecplib.tool.ecp_curl --help
   - python -m coverage run --append -m ciecplib.tool.ecp_get_cert --help
+  - python -m coverage run --append -m ciecplib.tool.ecp_get_cookie --help
 after_test:
   - python -m coverage report
   - python -m pip install codecov
