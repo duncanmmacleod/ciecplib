@@ -20,11 +20,11 @@ r"""Authenticate and store SAML/ECP session cookies.
 
 There are two usages:
 
-    $ ecp-get-cookie 'My Institution' https://campus01.edu/my/secret/page jsmith
+    $ ecp-get-cookie -i 'My Institution' -u jsmith https://campus01.edu/my/secret/page
 
 to authenticate with a password prompt, or
 
-    $ ecp-get-cookie 'My Institution' https://campus01.edu/my/secret/page
+    $ ecp-get-cookie -i 'My Institution' -k https://campus01.edu/my/secret/page
 
 to reuse an existing kerberos (``kinit``) credential.
 
