@@ -69,9 +69,9 @@ Command-line scripts
    :maxdepth: 1
 
    ecp-cert-info
-   ecp-cookie-init
    ecp-curl
    ecp-get-cert
+   ecp-get-cookie
 
 |
 
