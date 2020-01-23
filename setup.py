@@ -98,7 +98,7 @@ setup(
     description="A python client for SAML ECP authentication",
     long_description=open("README.md", "r").read(),
     long_description_content_type="text/markdown",
-    url='https://github.com/duncanmmacleod/ciecplib/',
+    url="https://pypi.org/project/ciecplib/",
     project_urls={
         "Bug Tracker": "https://github.com/duncanmmacleod/ciecplib/issues",
         "Documentation": "https://ciecplib.readthedocs.io/",
