@@ -149,7 +149,7 @@ aliases:
               python${PYXY}-pytest-cov \
               $([ "${PYXY}" -eq 2 ] && echo "python2-mock") \
           ;
-          python${PYTHON_VERSION} -m pip install "pytest~=3.0" "more-itertools < 6.0a0" "zipp!=2.0.0"
+          python${PYTHON_VERSION} -m pip install "pytest~=3.0" "more-itertools < 6.0a0"
 
   - &test
       run:
@@ -157,7 +157,7 @@ aliases:
         command: |
           set -x;
           # install test requirements
-          python${PYTHON_VERSION} -m pip install "pytest" "pytest-cov" "mock ; python_version < '3'"
+          python${PYTHON_VERSION} -m pip install "pytest" "pytest-cov" "mock ; python_version < '3'" "zipp<2.0.0"
           # run test suite
           mkdir -pv tests;
           pushd tests;
