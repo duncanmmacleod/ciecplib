@@ -153,7 +153,6 @@ aliases:
           yum -y -q install \
               which \
               python${PYXY}-pytest \
-              python${PYXY}-pytest-cov \
               $([ "${PYXY}" -eq 2 ] && echo "python2-mock") \
           ;
           python${PYTHON_VERSION} -m pip install "pytest~=3.0" "more-itertools < 6.0a0"
