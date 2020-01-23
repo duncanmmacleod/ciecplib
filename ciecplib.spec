@@ -22,6 +22,7 @@ Version:   %{version}
 # -- build requirements -----
 
 BuildRequires: python-srpm-macros
+BuildRequires: python-rpm-macros
 BuildRequires: argparse-manpage
 
 # python2 build
