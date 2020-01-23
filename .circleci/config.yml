@@ -99,7 +99,7 @@ aliases:
               python-srpm-macros \
               python2-rpm-macros \
               python3-rpm-macros \
-              python-pip \
+              python2-pip \
               python3-pip \
           ;
           # build src rpm
@@ -145,7 +145,11 @@ aliases:
       run:
         name: Install test dependencies
         command: |
-          if [[ "${PYTHON_VERSION:0:1}" -eq 2 ]]; then PYXY="2"; else PYXY=${PY3XY}; fi;
+          if [[ "${PYTHON_VERSION:0:1}" -eq 3 ]]; then
+              PYXY=$(rpm --eval "${?python3_pkgversion}");
+          else
+              PYXY="${PYTHON_VERSION:0:1}";
+          fi;
           yum -y -q install \
               which \
               python${PYXY}-pytest \
