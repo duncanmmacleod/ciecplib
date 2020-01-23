@@ -298,7 +298,7 @@ jobs:
   centos:8:3.6:
     <<: *centos
     docker:
-      - image: centos:7
+      - image: centos:8
     environment:
       PYTHON_VERSION: "3.6"
 
