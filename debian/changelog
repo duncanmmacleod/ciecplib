@@ -1,3 +1,9 @@
+ciecplib (0.1.1-1) unstable; urgency=low
+
+  * Bug-fix release
+
+ -- Duncan Macleod <duncan.macleod@ligo.org>  Thu, 23 Jan 2020 22:00:00 +0000
+
 ciecplib (0.1.0-1) unstable; urgency=low
 
   * first release
