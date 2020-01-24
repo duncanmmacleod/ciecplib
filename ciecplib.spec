@@ -13,7 +13,7 @@ Name:      %{name}
 Packager:  %{author} <%{email}>
 Prefix:    %{_prefix}
 Release:   %{release}%{?dist}
-Source0:   https://pypi.io/packages/source/l/%{name}/%{name}-%{version}.tar.gz
+Source0:   %pypi_source
 Summary:   A python client for SAML ECP authentication
 Url:       https://github.com/duncanmmacleod/ciecplib
 Vendor:    Duncan Macleod <duncan.macleod@ligo.org>
