@@ -1,5 +1,5 @@
 %define name ciecplib
-%define version 0.1.0
+%define version 0.1.1
 %define release 1
 %define author Duncan Macleod
 %define email duncan.macleod@ligo.org
@@ -161,5 +161,8 @@ rm -rf $RPM_BUILD_ROOT
 # -- changelog --------------
 
 %changelog
+* Wed Jan 22 2020 Duncan Macleod <duncan.macleod@ligo.org> - 0.1.1-1
+- add python3 package for rhel/centos/epel8
+
 * Wed Jan 22 2020 Duncan Macleod <duncan.macleod@ligo.org> - 0.1.0-1
 - first release

@@ -30,4 +30,4 @@ from .requests import request
 
 __author__ = "Duncan Macleod <duncan.macleod@ligo.org>"
 __credits__ = "Scott Koranda, Dave Dykstra"
-__version__ = "0.1.0"
+__version__ = "0.1.1"
