@@ -22,9 +22,12 @@ r"""Print information about an existing X.509 credential.
 
 from __future__ import print_function
 
+from datetime import timedelta
+
 from ..x509 import (
     load_cert,
     print_cert_info,
+    time_left,
 )
 from ..utils import DEFAULT_X509_USER_FILE
 from .utils import (
@@ -50,6 +53,19 @@ The default path for the credential file """,
 ]
 
 
+def _hours_minutes(argstring):
+    """Parse the --valid argument as hours:minutes
+
+    Returns the argument as a float in seconds
+    """
+    try:
+        hrs, minutes = argstring.split(":")
+    except TypeError as exc:
+        exc.args = ("--valid argument must be in the format H:M",)
+        raise
+    return float(hrs) * 3600. + float(minutes) * 60.
+
+
 def create_parser():
     """Create a command-line argument parser
 
@@ -71,6 +87,11 @@ def create_parser():
     )
     parser.add_argument(
         "-v",
+        "--valid",
+        type=_hours_minutes,
+        help="time requirement for proxy to be valid",
+    )
+    parser.add_argument(
         "--verbose",
         action="store_true",
         default=False,
@@ -79,24 +100,37 @@ def create_parser():
     return parser
 
 
-def parse_args(parser):
+def parse_args(parser, args=None):
     """Parse and validate the command-line arguments
 
     Returns
     -------
     args : `argparse.Namespace`
     """
-    return parser.parse_args()
+    return parser.parse_args(args=args)
 
 
-def main():
+def main(args=None):
     parser = create_parser()
-    args = parse_args(parser)
+    args = parse_args(parser, args=args)
+
+    # load certificate
+    cert = load_cert(args.file)
+
+    # print certificate information
     print_cert_info(
-        load_cert(args.file),
+        cert,
         path=args.file,
         verbose=args.verbose,
     )
+
+    # assert --valid if given
+    if args.valid:
+        assert time_left(cert) >= args.valid, (
+            "timeleft is less than required {}".format(
+                timedelta(seconds=args.valid),
+            )
+        )
 
 
 if __name__ == "__main__":
