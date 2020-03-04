@@ -14,14 +14,14 @@ install:
   - conda create --name ciecplib
         "python=%PYTHON_VERSION%"
         "coverage"
-        "lxml"
         "m2crypto"
         "pip"
         "pyopenssl"
         "pytest>=3.0.0"
         "pytest-cov"
+        "requests"
+        "requests-ecp"
         "setuptools>=27.3"
-        "winkerberos"
   - conda activate ciecplib
   - conda info
   - conda list
