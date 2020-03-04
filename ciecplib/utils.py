@@ -20,14 +20,12 @@ import os.path
 import random
 import re
 import string
-from getpass import getpass
 try:
-    from urllib import request as urllib_request
     from urllib.parse import urlparse
 except ImportError:  # python < 3
-    import urllib2 as urllib_request
     from urlparse import urlparse
-    input = raw_input  # noqa: F821
+
+import requests
 
 __author__ = "Duncan Macleod <duncan.macleod@ligo.org>"
 
@@ -88,7 +86,7 @@ def get_idps(url=DEFAULT_IDPLIST_URL):
         the URL of the IDP list file
     """
     idps = dict()
-    for line in urllib_request.urlopen(url):
+    for line in requests.get(url, stream=True).iter_lines():
         url, inst = line.decode('utf-8').strip().split(' ', 1)
         idps[inst] = url
     return idps
@@ -173,22 +171,3 @@ def random_string(length, outof=string.ascii_lowercase+string.digits):
     # http://stackoverflow.com/a/23728630/2213647 says SystemRandom()
     # is most secure
     return ''.join(random.SystemRandom().choice(outof) for _ in range(length))
-
-
-def prompt_username_password(host, username=None):
-    if username is None:
-        username = input("Enter username for {0}: ".format(host))
-    password = getpass(
-        "Enter password for {0!r} on {1}: ".format(username, host),
-    )
-    return username, password
-
-
-def get_xml_attribute(xdata, path, namespaces=None):
-    if namespaces is None:
-        namespaces = {
-            'ecp': 'urn:oasis:names:tc:SAML:2.0:profiles:SSO:ecp',
-            'S': 'http://schemas.xmlsoap.org/soap/envelope/',
-            'paos': 'urn:liberty:paos:2003-08'
-        }
-    return xdata.xpath(path, namespaces=namespaces)[0]

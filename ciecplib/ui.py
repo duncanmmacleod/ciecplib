@@ -20,7 +20,6 @@
 """
 
 import math
-import random
 import string
 try:
     from urllib import parse as urllib_parse
@@ -32,15 +31,12 @@ from OpenSSL import crypto
 from .env import DEFAULT_IDP
 from .cookies import extract_session_cookie
 from .requests import _ecp_session
-from .utils import DEFAULT_SP_URL
+from .utils import (
+    DEFAULT_SP_URL,
+    random_string,
+)
 
 __author__ = "Duncan Macleod <duncan.macleod@ligo.org>"
-
-
-def _random_string(length, outof=string.ascii_lowercase+string.digits):
-    # http://stackoverflow.com/a/23728630/2213647 says SystemRandom()
-    # is most secure
-    return ''.join(random.SystemRandom().choice(outof) for _ in range(length))
 
 
 @_ecp_session
@@ -86,15 +82,15 @@ def get_cert(
             print("Requesting certificate from {0}".format(spurl))
 
         # request PKCS12 certificate from SP
-        csrfstr = _random_string(10)
+        csrfstr = random_string(10)
         headers = {
             'Content-Type': 'application/x-www-form-urlencoded',
             'Cookie': 'CSRF={0}; {1.name}={1.value}'.format(csrfstr, cookie),
         }
         p12password = (
-            _random_string(16, string.ascii_letters) +
-            _random_string(2, string.digits) +
-            _random_string(2, '!@#$%^&*()')
+            random_string(16, string.ascii_letters) +
+            random_string(2, string.digits) +
+            random_string(2, '!@#$%^&*()')
         )
         certdata = urllib_parse.urlencode({
             'submit': 'pkcs12',
