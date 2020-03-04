@@ -18,7 +18,7 @@ SAML/ECP-authenticated content over HTTP with
 [![Circle](https://img.shields.io/circleci/project/github/duncanmmacleod/ciecplib/master.svg?label=Linux%20%28other%29&logo=circleci)](https://circleci.com/gh/duncanmmacleod/ciecplib)
 [![Appveyor](https://img.shields.io/appveyor/ci/duncanmmacleod/ciecplib/master.svg?label=Windows%20%28conda%29&logo=appveyor)](https://ci.appveyor.com/project/duncanmmacleod/ciecplib/branch/master)  
 [![Codecov](https://img.shields.io/codecov/c/gh/duncanmmacleod/ciecplib?logo=codecov)](https://codecov.io/gh/duncanmmacleod/ciecplib)
-[![Maintainability](https://api.codeclimate.com/v1/badges/2cf14445b3e070133745/maintainability)](https://codeclimate.com/github/duncanmmacleod/ciecplib/maintainability)
+[![Maintainability](https://api.codeclimate.com/v1/badges/9e777f5fe160d1e3e7b6/maintainability)](https://codeclimate.com/github/duncanmmacleod/ciecplib/maintainability)
 [![Documentation](https://readthedocs.org/projects/ciecplib/badge/?version=latest)](https://ciecplib.readthedocs.io/en/latest/?badge=latest)
 
 ## Installation
