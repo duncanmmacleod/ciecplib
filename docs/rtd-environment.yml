@@ -2,10 +2,10 @@ name: ciecplib
 channels:
   - conda-forge
 dependencies:
-  - m2crypto
   - pip
   - python=3.7
   - pip:
+    - m2crypto
     - pyopenssl
     - requests
     - requests-ecp
