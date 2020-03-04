@@ -4,14 +4,14 @@ channels:
 dependencies:
   - m2crypto
   - pip
-  - pyopenssl
   - python=3.7
-  - requests
-  - requests-ecp
-  - setuptools
-  - sphinx
-  - sphinx-argparse
-  - sphinx-automodapi
-  - sphinx_rtd_theme
   - pip:
+    - pyopenssl
+    - requests
+    - requests-ecp
+    - setuptools
+    - sphinx
+    - sphinx-argparse
+    - sphinx-automodapi
+    - sphinx_rtd_theme
     - sphinx_tabs
