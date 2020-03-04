@@ -19,127 +19,22 @@
 import calendar
 import datetime
 import os
-import math
-import random
-import string
 import struct
 import tempfile
 import time
-try:
-    from urllib import parse as urllib_parse
-    from urllib import request as urllib_request
-except ImportError:  # python < 3
-    import urlparse as urllib_parse
-    import urllib2 as urllib_request
 
 from OpenSSL import crypto
 
 from M2Crypto import (X509, RSA, EVP, ASN1, m2)
 
-from .ecp import (
-    authenticate,
-)
-from .http import build_verified_opener
-
-from .utils import (
-    DEFAULT_SP_URL,
-    format_endpoint_url,
-)
-
 __author__ = "Duncan Macleod <duncan.macleod@ligo.org>"
 
 
-# -- utilities ----------------------------------------------------------------
-
 def _parse_unix_time(asn1time):
+    """Parse an ASN1 unix time into a python `time` tuple
+    """
     return calendar.timegm(asn1time.get_datetime().timetuple())
 
-
-def _random_string(length, outof=string.ascii_lowercase+string.digits):
-    # http://stackoverflow.com/a/23728630/2213647 says SystemRandom()
-    # is most secure
-    return ''.join(random.SystemRandom().choice(outof) for _ in range(length))
-
-
-# -- X.509 generator ----------------------------------------------------------
-
-def get_x509_proxy_path():
-    """Returns the default path for the X.509 certificate file
-
-    Returns
-    -------
-    path : `str`
-    """
-    if os.getenv("X509_USER_PROXY"):
-        return os.environ["X509_USER_PROXY"]
-    if os.name == "nt":
-        tmpdir = r'%SYSTEMROOT%\Temp'
-        tmpname = "x509up_{0}".format(os.getlogin())
-    else:
-        tmpdir = "/tmp"
-        tmpname = "x509up_u{0}".format(os.getuid())
-    return os.path.join(tmpdir, tmpname)
-
-
-def get_cert(
-        endpoint,
-        username=None,
-        kerberos=False,
-        hours=168,
-        spurl=DEFAULT_SP_URL,
-        debug=False,
-):
-    endpoint = format_endpoint_url(endpoint)
-
-    # handle kerberos endpoint
-    if kerberos is True:
-        kerberos = endpoint
-
-    # authenticate with IdP
-    cookie, _ = authenticate(
-        endpoint,
-        username=username,
-        kerberos=kerberos,
-        debug=debug,
-    )
-    if debug:
-        print("Authenticated against IdP with ECP")
-        print("Requesting certificate from {0}".format(spurl))
-
-    # request PKCS12 certificate from SP
-    csrfstr = _random_string(10)
-    headers = {
-        'Content-Type': 'application/x-www-form-urlencoded',
-        'Cookie': 'CSRF={0}; {1.name}={1.value}'.format(csrfstr, cookie),
-    }
-    p12password = (
-        _random_string(16, string.ascii_letters) +
-        _random_string(2, string.digits) +
-        _random_string(2, '!@#$%^&*()')
-    )
-    certdata = urllib_parse.urlencode({
-        'submit': 'pkcs12',
-        'CSRF': csrfstr,
-        'p12password': p12password,
-        'p12lifetime': math.ceil(hours),
-    }).encode('utf-8')
-    request = urllib_request.Request(
-        url=spurl,
-        headers=headers,
-        data=certdata,
-    )
-    opener = build_verified_opener(debug=debug, krb_endpoint=kerberos)
-    response = opener.open(request)
-
-    if debug:
-        print("Certificate received.")
-    return crypto.load_pkcs12(
-        response.read(),
-        p12password.encode('utf-8'),
-    )
-
-
-# -- X.509 handling -----------------------------------------------------------
 
 def load_cert(path, format=crypto.FILETYPE_PEM):
     """Load certificate from file
@@ -178,6 +73,8 @@ def _timeleft(cert):
 
 
 def _x509_name_str(obj):
+    """Return the name of the x509 object as a string
+    """
     return "/" + "/".join([
         b"=".join(x).decode("utf-8") for x in obj.get_components()
     ])
@@ -221,6 +118,8 @@ def check_cert(cert, hours=1, proxy=None, rfc3820=True):
 
 
 def _cert_type(x509):
+    """Returns the type of the given x509 certificate object
+    """
     # parse name entry as common name
     sub = x509.get_subject().get_components()
     if sub[-1][0] != b"CN":
@@ -239,9 +138,15 @@ def _cert_type(x509):
     return "end entity credential"
 
 
-def print_cert_info(x509, path=None):
+def print_cert_info(x509, path=None, verbose=True):
     """Print info about an X.509 certificate
     """
+    if verbose:
+        certstr = crypto.dump_certificate(
+            crypto.FILETYPE_PEM,
+            x509,
+        )
+        print(certstr.decode("utf-8"), end="")
     pkey = x509.get_pubkey()
     print("subject  : " + _x509_name_str(x509.get_subject()))
     print("issuer   : " + _x509_name_str(x509.get_issuer()))
@@ -262,6 +167,14 @@ def write_cert(path, pkcs12, use_proxy=False, minhours=168):
 
     pkcs12 : `OpenSSL.crypto.PKCS12`
         a PKCS12 archive
+
+    use_proxy : `bool`, optional
+        if `True`, generate an impersonation proxy, otherwise generate
+        a standard end entity credential certificate
+
+    minhours : `int`, optional
+        the minimum duration of the proxy certificate, only used if
+        `proxy=True` is given
     """
     certstr = crypto.dump_certificate(
         crypto.FILETYPE_PEM,

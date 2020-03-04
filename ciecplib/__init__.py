@@ -19,14 +19,20 @@
 """A python client for SAML ECP authentication
 """
 
-# get a shibboleth session cookie
-from .ecp import authenticate
-
-# get an X509 certificate
-from .x509 import get_cert as get_x509_cert
-
 # request the contents of a URL
-from .requests import request
+from .requests import (
+    get,
+    request
+)
+
+# generate session handling
+from .sessions import Session
+
+# user interfaces
+from .ui import (
+    get_cert,
+    get_cookie,
+)
 
 __author__ = "Duncan Macleod <duncan.macleod@ligo.org>"
 __credits__ = "Scott Koranda, Dave Dykstra"

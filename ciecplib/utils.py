@@ -17,10 +17,8 @@
 # along with ciecplib.  If not, see <http://www.gnu.org/licenses/>.
 
 import os.path
-import platform
 import random
 import re
-import ssl
 import string
 from getpass import getpass
 try:
@@ -33,46 +31,46 @@ except ImportError:  # python < 3
 
 __author__ = "Duncan Macleod <duncan.macleod@ligo.org>"
 
-# -- default CA files ---------------------------------------------------------
 
-DEFAULT_VERIFY_PATHS = ssl.get_default_verify_paths()
+# -- default paths ------------------------------------------------------------
 
-
-def _defaults():
-    if platform.system() in {"Windows", "Darwin"}:
-        return DEFAULT_VERIFY_PATHS.cafile, DEFAULT_VERIFY_PATHS.capath
-
-    # -- on Linux we can be a bit more discerning
-
-    # always prefer python's default cafile
-    for path in (
-        DEFAULT_VERIFY_PATHS.cafile,
-        "/etc/ssl/certs/ca-certificates.crt",  # debian
-        "/etc/pki/tls/cert.pem",
-    ):
-        if os.path.isfile(path or ""):
-            cafile = path
-            break
+def get_ecpcookie_path():
+    if os.name == "nt":
+        tmpdir = r'%SYSTEMROOT%\Temp'
+        tmpname = "ecpcookie.{0}".format(os.getlogin())
     else:
-        cafile = None
-
-    # prefer globus certificates path
-    globusdir = "/etc/grid-security/certificates"
-    if os.path.isdir(globusdir):
-        return cafile, globusdir
-
-    return cafile, DEFAULT_VERIFY_PATHS.capath
+        tmpdir = "/tmp"
+        tmpname = "ecpcookie.u{0}".format(os.getuid())
+    return os.path.join(tmpdir, tmpname)
 
 
-DEFAULT_CAFILE, DEFAULT_CAPATH = _defaults()
+def get_x509_proxy_path():
+    """Returns the default path for the X.509 certificate file
 
+    Returns
+    -------
+    path : `str`
+    """
+    if os.getenv("X509_USER_PROXY"):
+        return os.environ["X509_USER_PROXY"]
+    if os.name == "nt":
+        tmpdir = r'%SYSTEMROOT%\Temp'
+        tmpname = "x509up_{0}".format(os.getlogin())
+    else:
+        tmpdir = "/tmp"
+        tmpname = "x509up_u{0}".format(os.getuid())
+    return os.path.join(tmpdir, tmpname)
+
+
+DEFAULT_COOKIE_FILE = get_ecpcookie_path()
+DEFAULT_X509_USER_FILE = get_x509_proxy_path()
 
 # -- institution URLs ----------------------------------------------------
 
 DEFAULT_IDPLIST_URL = "https://cilogon.org/include/ecpidps.txt"
 DEFAULT_SP_URL = "https://ecp.cilogon.org/secure/getcert"
-KERBEROS_SUFFIX = " (Kerberos)"
-KERBEROS_REGEX = re.compile(r"{0}\Z".format(re.escape(KERBEROS_SUFFIX)))
+_KERBEROS_SUFFIX = " (Kerberos)"
+_KERBEROS_REGEX = re.compile(r"{0}\Z".format(re.escape(_KERBEROS_SUFFIX)))
 
 
 def get_idps(url=DEFAULT_IDPLIST_URL):
@@ -98,7 +96,7 @@ def get_idps(url=DEFAULT_IDPLIST_URL):
 
 def _match_institution(value, institutions):
     regex = re.compile(r"{0}($| \()".format(value))
-    institutions = {KERBEROS_REGEX.split(name, 1)[0] for name in institutions}
+    institutions = {_KERBEROS_REGEX.split(name, 1)[0] for name in institutions}
     matches = [inst for inst in institutions if regex.match(inst)]
     if len(matches) == 1:
         return matches[0]
@@ -115,10 +113,10 @@ def get_idp_urls(institution, url=DEFAULT_IDPLIST_URL):
     """
     idps = get_idps(url=url)
     institution = _match_institution(institution, idps)
-    if institution.endswith(KERBEROS_SUFFIX):
+    if institution.endswith(_KERBEROS_SUFFIX):
         return None, idps[institution]
     url = idps[institution]
-    krbinst = institution + KERBEROS_SUFFIX
+    krbinst = institution + _KERBEROS_SUFFIX
     krburl = idps[krbinst] if krbinst in idps else url
     return url, krburl
 
@@ -184,3 +182,13 @@ def prompt_username_password(host, username=None):
         "Enter password for {0!r} on {1}: ".format(username, host),
     )
     return username, password
+
+
+def get_xml_attribute(xdata, path, namespaces=None):
+    if namespaces is None:
+        namespaces = {
+            'ecp': 'urn:oasis:names:tc:SAML:2.0:profiles:SSO:ecp',
+            'S': 'http://schemas.xmlsoap.org/soap/envelope/',
+            'paos': 'urn:liberty:paos:2003-08'
+        }
+    return xdata.xpath(path, namespaces=namespaces)[0]

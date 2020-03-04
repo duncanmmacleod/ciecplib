@@ -21,100 +21,95 @@
 
 from __future__ import absolute_import
 
-try:
-    from urllib.request import Request
-except ImportError:  # python < 3
-    from urllib2 import Request
-
-from .cookies import (
-    COOKIE_FILE,
-    ECPCookieJar,
-    has_session_cookies,
-    load_cookiejar,
+from .env import DEFAULT_IDP
+from .sessions import Session
+from .utils import (
+    DEFAULT_COOKIE_FILE,
 )
-from .ecp import authenticate
-from .http import build_verified_opener
-from .kerberos import has_credential
-from .utils import format_endpoint_url
 
 __author__ = "Duncan Macleod <duncan.macleod@ligo.org>"
 
 
-def request(
-        url,
-        username=None,
-        endpoint=None,
-        kerberos=None,
-        cookiejar=None,
-        cookiefile=COOKIE_FILE,
-        debug=False,
-        store_session_cookies=False,
-):
-    """Request the given URL using ECP shibboleth authentication
+def _ecp_session(func):
+    """Decorate a function to open a `requests_ecp.Session`
+    """
+    def _wrapper(*args, **kwargs):
+        if kwargs.get('session') is None:
+            kwargs['session'] = Session(
+                idp=kwargs.pop("endpoint", DEFAULT_IDP),
+                username=kwargs.pop("username", None),
+                password=kwargs.pop("password", None),
+                kerberos=kwargs.pop("kerberos", False),
+                cookiejar=kwargs.pop("cookiejar", None),
+                cookiefile=kwargs.pop("cookiefile", DEFAULT_COOKIE_FILE),
+                store_cookies=kwargs.pop("store_cookies", False),
+            )
+        return func(*args, **kwargs)
+    return _wrapper
 
-        >>> from ligo.org import request
-        >>> response = request(myurl)
-        >>> print(response.read())
 
+def _session_func_factory(method, docstring):
+    @_ecp_session
+    def _func(url, **kwargs):
+        # the decorator guarantees us a session
+        with kwargs.pop("session") as session:
+            meth = getattr(session, method)
+            return meth(url, **kwargs)
+    _func.__doc__ = docstring + _request_params_doc.format(method=method)
+    return _func
+
+
+_request_params_doc = """
     Parameters
     ----------
     url : `str`
-        URL path for request
+        URL path for request.
 
     endpoint : `str`, optional
-        ECP endpoint URL for request
+        ECP endpoint name or URL for request.
+
+    username : `str`, optional
+        the username with which to authenticate, will be prompted for
+        if not given, and not using ``kerberos``.
+
+    password : `str`, optional
+        the password with which to authenticate, will be prompted for
+        if not given, and not using ``kerberos``.
 
     kerberos : `bool`, optional
         use existing kerberos credential for login, default is to try, but
-        fall back to username/password prompt
+        fall back to username/password prompt.
 
-    debug : `bool`, optional, default: `False`
-        query in verbose debugging mode
+    cookiejar : `http.cookielib.CookieJar`, optional
+        a jar of cookies to add to the `requests.Session`.
+
+    cookiefile : `str`, optional
+        the path of a cookie file from which to read existing cookies,
+        this argument is ignored if ``cookiejar`` is given.
+
+    kwargs
+        other keyword arguments are passed directly to
+        :meth:`requests.Session.{method}`
 
     Returns
     -------
     response : `http.client.HTTPResponse`
         the response from the URL
+
+    See Also
+    --------
+    requests.Session.{method}
+        for full details of the request handling
+"""
+
+get = _session_func_factory(
+    "get",
+    """Send a GET request using ECP authentication
     """
+)
 
-    # read existing cookies
-    if cookiejar is None:
-        cookiejar = load_cookiejar(cookiefile, strict=False)
-    reuse = has_session_cookies(cookiejar, url)
-
-    # -- authenticate ---------------------------
-
-    if not reuse:
-        if kerberos is None:  # guess availability of kerberos
-            kerberos = has_credential()
-        try:
-            endpoint = format_endpoint_url(endpoint, kerberos=kerberos)
-        except AttributeError:
-            raise ValueError(
-                "a valid endpoint name or URL is required when "
-                "no existing cookie can be used"
-            )
-        authenticate(
-            endpoint,
-            username=username,
-            spurl=url,
-            kerberos=kerberos,
-            cookiejar=cookiejar,
-            debug=debug,
-        )
-
-        # cache cookies for next time (only if using our fancy jar)
-        if isinstance(cookiejar, ECPCookieJar) and cookiefile is not None:
-            cookiejar.save(
-                cookiefile,
-                ignore_discard=store_session_cookies,
-                ignore_expires=store_session_cookies,
-            )
-
-    # -- actually send GET ----------------------
-
-    myheaders = {'Accept': 'text/*'}    # allow any text mime not only html
-    request = Request(url=url, headers=myheaders)
-    opener = build_verified_opener(cookiejar=cookiejar, debug=debug)
-    response = opener.open(request)
-    return response
+request = _session_func_factory(
+    "request",
+    """Request a URL using ECP authentication
+    """
+)

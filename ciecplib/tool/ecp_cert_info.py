@@ -23,10 +23,10 @@ r"""Print information about an existing X.509 credential.
 from __future__ import print_function
 
 from ..x509 import (
-    get_x509_proxy_path,
     load_cert,
     print_cert_info,
 )
+from ..utils import DEFAULT_X509_USER_FILE
 from .utils import (
     ArgumentParser,
 )
@@ -66,8 +66,15 @@ def create_parser():
     parser.add_argument(
         "-f",
         "--file",
-        default=get_x509_proxy_path(),
+        default=DEFAULT_X509_USER_FILE,
         help="certificate file to create/reuse/destroy",
+    )
+    parser.add_argument(
+        "-v",
+        "--verbose",
+        action="store_true",
+        default=False,
+        help="print full text of certificate",
     )
     return parser
 
@@ -85,7 +92,11 @@ def parse_args(parser):
 def main():
     parser = create_parser()
     args = parse_args(parser)
-    print_cert_info(load_cert(args.file), path=args.file)
+    print_cert_info(
+        load_cert(args.file),
+        path=args.file,
+        verbose=args.verbose,
+    )
 
 
 if __name__ == "__main__":

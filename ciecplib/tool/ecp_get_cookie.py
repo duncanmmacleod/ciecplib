@@ -42,13 +42,14 @@ import os
 import sys
 
 from ..cookies import (
-    COOKIE_FILE as DEFAULT_COOKIE_FILE,
-    ECPCookieJar,
+    has_session_cookies,
+    load_cookiejar,
 )
-from ..ecp import authenticate
+from ..ui import get_cookie
+from ..utils import DEFAULT_COOKIE_FILE
 from .utils import (
     ArgumentParser,
-    reuse_cookiefile,
+    init_logging,
 )
 
 __author__ = "Duncan Macleod <duncan.macleod@ligo.org>"
@@ -151,6 +152,9 @@ def main():
     parser = create_parser()
     args = parse_args(parser)
 
+    if args.debug:
+        init_logging()
+
     # if asked to destroy, just do that
     if args.destroy:
         if args.verbose:
@@ -158,39 +162,40 @@ def main():
         os.unlink(args.cookiefile)
         sys.exit()
 
-    # if asked to reuse, check that we can
-    cookiejar = None
-    if args.reuse:
-        cookiejar, args.reuse = reuse_cookiefile(
-            args.cookiefile,
-            args.target_url,
-            verbose=args.verbose,
-        )
+    # load old cookies
+    cookiejar = load_cookiejar(args.cookiefile, strict=True)
 
-    # get new certificate
-    if not args.reuse:
-        cookiejar = cookiejar or ECPCookieJar()
+    # if we can't or won't reuse cookies, get a new one
+    if not args.reuse or not has_session_cookies(
+            cookiejar,
+            args.target_url,
+    ):
         if args.verbose:
-            print("Authenticating...")
-        authenticate(
-            args.identity_provider,
-            spurl=args.target_url,
-            cookiejar=cookiejar,
+            print("Acquiring new session cookie...")
+        cookie = get_cookie(
+            args.target_url,
+            endpoint=args.identity_provider,
             username=getattr(args, "username", None),
+            cookiejar=None,
+            cookiefile=None,
             kerberos=args.kerberos,
             debug=args.debug,
         )
 
-        # write certificate to a file
+        # write cookies back to the file
         if args.verbose:
             print("Storing cookies...")
+
+        cookiejar.set_cookie(cookie)
         cookiejar.save(
             args.cookiefile,
             ignore_discard=True,
             ignore_expires=True,
         )
         if args.verbose:
-            print("Cookies stored in '{0!s}'".format(args.cookiefile))
+            print("Cookie stored in '{0!s}'".format(args.cookiefile))
+    else:
+        print("Reusing existing cookies")
 
     # load the cert from file to print information
     if args.debug or args.verbose:

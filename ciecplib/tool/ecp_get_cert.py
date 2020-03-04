@@ -25,18 +25,17 @@ import argparse
 import os
 import sys
 
-from OpenSSL import crypto
-
+from ..ui import get_cert
 from ..x509 import (
     check_cert,
-    get_cert,
-    get_x509_proxy_path,
     load_cert,
     print_cert_info,
     write_cert,
 )
+from ..utils import DEFAULT_X509_USER_FILE
 from .utils import (
     ArgumentParser,
+    init_logging,
 )
 
 __author__ = "Duncan Macleod <duncan.macleod@ligo.org>"
@@ -44,11 +43,11 @@ __author__ = "Duncan Macleod <duncan.macleod@ligo.org>"
 EPILOG = r"""
 Examples:
 
-    $ ecp-get-cert 'My Institution' user.name
+    $ ecp-get-cert user.name --institution 'My Institution'
 
 to authenticate with a password prompt, or
 
-    $ ecp-get-cert 'My Institution' --kerberos
+    $ ecp-get-cert --institution 'My Institution' --kerberos
 
 to reuse an existing kerberos (``kinit``) credential.
 
@@ -56,14 +55,17 @@ The identitity provider name can be given in a number of ways, so long as the
 argument uniquely identifies a provider.  For example, the following are all
 equivalent:
 
-    $ ecp-get-cert 'Cardiff University' user.name
-    $ ecp-get-cert Cardiff user.name
-    $ ecp-get-cert idp.cf.ac.uk user.name
+    $ ecp-get-cert user.name --institution 'Cardiff University'
+    $ ecp-get-cert user.name --institution Cardiff
+    $ ecp-get-cert user.name --institution idp.cf.ac.uk
+    $ ECP_IDP="Cardiff" ecp-get-cert user.name
 
 Environment:
 
 X509_USER_PROXY:
     the default path for the credential file
+ECP_IDP:
+    the name/url of the default Identity Provider (--institution)
 """
 
 MANPAGE = [
@@ -103,12 +105,13 @@ def create_parser():
         "--debug",
         action="store_true",
         default=False,
-        help="write debug output to stdout (implies --verbose)",
+        help="write debug output (uses both stderr and stdout, "
+             "implies --verbose)",
     )
     parser.add_argument(
         "-f",
         "--file",
-        default=get_x509_proxy_path(),
+        default=DEFAULT_X509_USER_FILE,
         help="certificate file to create/reuse/destroy",
     )
     parser.add_argument(
@@ -194,6 +197,9 @@ def main():
     parser = create_parser()
     args = parse_args(parser)
 
+    if args.debug:
+        init_logging()
+
     # if asked to destroy, just do that
     if args.destroy:
         if args.verbose:
@@ -216,7 +222,7 @@ def main():
         if args.verbose:
             print("Fetching certificate...")
         cert = get_cert(
-            args.identity_provider,
+            endpoint=args.identity_provider,
             username=getattr(args, "username", None),
             kerberos=args.kerberos,
             hours=args.hours,
@@ -239,17 +245,9 @@ def main():
     if args.debug or args.verbose:
         x509 = load_cert(args.file)
 
-    # dump full text of cert
-    if args.debug:
-        certstr = crypto.dump_certificate(
-            crypto.FILETYPE_PEM,
-            x509,
-        )
-        print(certstr.decode("utf-8"), end="")
-
     # print certificate/proxy info
     if args.verbose:
-        print_cert_info(x509, path=args.file)
+        print_cert_info(x509, path=args.file, verbose=True)
 
 
 if __name__ == "__main__":

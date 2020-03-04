@@ -19,6 +19,7 @@
 """Tests for :mod:`ciecplib.utils`
 """
 
+import os
 try:
     from unittest import mock
 except ImportError:  # python < 3
@@ -37,6 +38,30 @@ RAW_INSTITUTION_LIST = [
     b"https://inst1.test Institution 1",
     b"https://inst2.test Institution 2",
 ]
+
+
+@mock.patch(
+    "os.getlogin" if os.name == "nt" else "os.getuid",
+    return_value=123,
+)
+def test_get_ecpcookie_path(_):
+    if os.name == "nt":
+        path = r"%SYSTEMROOT%\Temp\ecpcookie.123"
+    else:
+        path = "/tmp/ecpcookie.u123"
+    assert ciecplib_utils.get_ecpcookie_path() == path
+
+
+@mock.patch(
+    "os.getlogin" if os.name == "nt" else "os.getuid",
+    return_value=123,
+)
+def get_x509_proxy_path():
+    if os.name == "nt":
+        path = r"%SYSTEMROOT%\Temp\x509up_123"
+    else:
+        path = "/tmp/x509up_u123"
+    assert ciecplib_utils.get_x509_proxy_path() == path
 
 
 @mock.patch(
