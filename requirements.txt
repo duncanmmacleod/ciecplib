@@ -1,4 +1,7 @@
 M2Crypto
 pyOpenSSL
+pytest
+pytest-cov
 requests
 requests-ecp
+requests-mock
