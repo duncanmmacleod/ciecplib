@@ -75,6 +75,7 @@ tests_require = [
     "mock ; python_version < '3'",
     "pytest",
     "pytest-cov",
+    "requests-mock",
 ]
 extras_require = {
     "test": tests_require,

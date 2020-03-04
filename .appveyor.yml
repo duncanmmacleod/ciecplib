@@ -21,6 +21,7 @@ install:
         "pytest-cov"
         "requests"
         "requests-ecp"
+        "requests-mock"
         "setuptools>=27.3"
   - conda activate ciecplib
   - conda info

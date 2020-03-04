@@ -24,9 +24,6 @@ try:
     from unittest import mock
 except ImportError:  # python < 3
     import mock
-    urlreqmodname = "urllib2"
-else:
-    urlreqmodname = "urllib.request"
 
 import pytest
 
@@ -34,10 +31,15 @@ from .. import utils as ciecplib_utils
 
 __author__ = 'Duncan Macleod <duncan.macleod@ligo.org>'
 
-RAW_INSTITUTION_LIST = [
-    b"https://inst1.test Institution 1",
-    b"https://inst2.test Institution 2",
-]
+# mock response from ECP IdP list
+INSTITUTIONS = {
+    "Institution 1": "https://inst1.test",
+    "Institution 1 (Kerberos)": "https://inst1.test.krb",
+    "Institution 2": "https://inst2.test",
+}
+RAW_IDP_LIST = "\n".join(
+    (" ".join((y, x)) for (x, y) in INSTITUTIONS.items()),
+).encode()
 
 
 @mock.patch(
@@ -64,37 +66,31 @@ def get_x509_proxy_path():
     assert ciecplib_utils.get_x509_proxy_path() == path
 
 
-@mock.patch(
-    "{0}.urlopen".format(urlreqmodname),
-    return_value=RAW_INSTITUTION_LIST,
-)
-def test_get_idps(urlopen):
-    assert ciecplib_utils.get_idps("something") == {
-        "Institution 1": "https://inst1.test",
-        "Institution 2": "https://inst2.test",
-    }
-    assert urlopen.called_with("something")
+def test_get_idps(requests_mock):
+    requests_mock.get("https://idp-list-url", content=RAW_IDP_LIST)
+    assert ciecplib_utils.get_idps("https://idp-list-url") == INSTITUTIONS
 
 
-@mock.patch(
-    "{0}.urlopen".format(urlreqmodname),
-    return_value=RAW_INSTITUTION_LIST,
-)
-def test_get_idp_urls(_):
-    assert ciecplib_utils.get_idp_urls("Institution 1") == (
-        "https://inst1.test",
-        "https://inst1.test",
-    )
+@pytest.mark.parametrize("inst, result", [
+    ("Institution 1", (
+        INSTITUTIONS["Institution 1"],
+        INSTITUTIONS["Institution 1 (Kerberos)"],
+    )),
+    ("Institution 2", (INSTITUTIONS["Institution 2"],) * 2),
+])
+def test_get_idp_urls(requests_mock, inst, result):
+    requests_mock.get("https://idp-list-url", content=RAW_IDP_LIST)
+    assert ciecplib_utils.get_idp_urls(
+        inst,
+        url="https://idp-list-url",
+    ) == result
 
 
-@mock.patch(
-    "{0}.urlopen".format(urlreqmodname),
-    return_value=RAW_INSTITUTION_LIST,
-)
 @pytest.mark.parametrize("inst", ["Institution*", "something else"])
-def test_get_idp_urls_error(_, inst):
+def test_get_idp_urls_error(requests_mock, inst):
+    requests_mock.get("https://idp-list-url", content=RAW_IDP_LIST)
     with pytest.raises(ValueError):
-        ciecplib_utils.get_idp_urls(inst)
+        ciecplib_utils.get_idp_urls(inst, url="https://idp-list-url")
 
 
 @pytest.mark.parametrize("url, result", [
