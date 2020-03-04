@@ -19,7 +19,7 @@
 """Cookie handling for SAML ECP authentication
 """
 
-from __future__ import print_function
+from __future__ import (absolute_import, print_function)
 
 import time
 try:
