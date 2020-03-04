@@ -9,6 +9,9 @@ version: 2
 sphinx:
   configuration: docs/conf.py
 
+conda:
+  environment: docs/rtd-environment.yml
+
 python:
   install:
     - method: pip

@@ -1,0 +1,17 @@
+name: ciecplib
+channels:
+  - conda-forge
+dependencies:
+  - pip
+  - python=3.7
+  - pip:
+    - m2crypto
+    - pyopenssl
+    - requests
+    - requests-ecp
+    - setuptools
+    - sphinx
+    - sphinx-argparse
+    - sphinx-automodapi
+    - sphinx_rtd_theme
+    - sphinx_tabs
