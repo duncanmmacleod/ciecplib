@@ -1,5 +1,12 @@
 language: generic
 
+# only build on master to not duplicate builds when developing
+# this can be removed when the 'main' repo is not under duncanmmacleod's
+# personal namespace
+branches:
+  only:
+    - master
+
 matrix:
   fast_finish: true
   include:
