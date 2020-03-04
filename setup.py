@@ -66,16 +66,16 @@ setup_requires = [
     "setuptools",  # MIT
 ]
 install_requires = [
-    "lxml",  # BSD
     "M2Crypto",  # MIT
-    "pykerberos ; sys_platform != 'win32'",  # Apache 2.0
-    "pyOpenSSL",  # Apache 2.0
-    "winkerberos ; sys_platform == 'win32'",  # Apache 2.0
+    "pyOpenSSL",  # Apache-2.0
+    "requests",  # Apache-2.0
+    "requests-ecp",  # GPL-3.0-or-later
 ]
 tests_require = [
     "mock ; python_version < '3'",
     "pytest",
     "pytest-cov",
+    "requests-mock",
 ]
 extras_require = {
     "test": tests_require,

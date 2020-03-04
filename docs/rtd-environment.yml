@@ -3,11 +3,11 @@ channels:
   - conda-forge
 dependencies:
   - ca-certificates
-  - lxml
   - m2crypto
-  - pykerberos
   - pyopenssl
   - python>=3
+  - requests
+  - requests-ecp
   - setuptools
   - sphinx
   - sphinx-argparse

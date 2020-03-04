@@ -59,3 +59,6 @@ def _get_default_idp():
         return os.environ["ECP_IDP"]
     except KeyError:
         return _parse_cigetcertops().get("institution")
+
+
+DEFAULT_IDP = _get_default_idp()

@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright (C) Cardiff University (2019-2020)
+# Copyright (C) Cardiff University (2020)
 #
 # This file is part of ciecplib.
 #
@@ -16,24 +16,24 @@
 # You should have received a copy of the GNU General Public License
 # along with ciecplib.  If not, see <http://www.gnu.org/licenses/>.
 
-"""A python client for SAML ECP authentication
-"""
+from subprocess import CalledProcessError
+try:
+    from unittest import mock
+except ImportError:  # python < 3
+    import mock
 
-# request the contents of a URL
-from .requests import (
-    get,
-    request,
-)
+import pytest
 
-# generate session handling
-from .sessions import Session
-
-# user interfaces
-from .ui import (
-    get_cert,
-    get_cookie,
-)
+from .. import kerberos as ciecplib_kerberos
 
 __author__ = "Duncan Macleod <duncan.macleod@ligo.org>"
-__credits__ = "Scott Koranda, Dave Dykstra"
-__version__ = "0.1.1"
+
+
+@pytest.mark.parametrize("side_effect, result", [
+    (None, True),
+    (CalledProcessError(1, "klist"), False),
+])
+@mock.patch("subprocess.check_output")
+def test_has_credential(mock_output, side_effect, result):
+    mock_output.side_effect = side_effect
+    assert ciecplib_kerberos.has_credential("klist") is result

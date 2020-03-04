@@ -22,13 +22,16 @@
 from __future__ import print_function
 
 import argparse
+import logging
 import sys
+try:
+    from http.client import HTTPConnection
+except ImportError:  # python < 3
+    from httplib import HTTPConnection
 
 from .. import __version__
 from ..cookies import (
-    LoadError,
     has_session_cookies,
-    load_cookiejar,
 )
 from ..env import _get_default_idp
 from ..utils import get_idps
@@ -146,8 +149,8 @@ class ListIdpsAction(argparse.Action):
 
 # -- miscellaneous ------------------------------
 
-def reuse_cookiefile(cookiefile, url, verbose=False):
-    """Load cookies from a cookiefile and determine if they can be reused
+def reuse_cookies(cookiejar, url, verbose=False):
+    """Determine if a cookiejar has session cookies we can reuse
 
     Parameters
     ----------
@@ -171,15 +174,24 @@ def reuse_cookiefile(cookiefile, url, verbose=False):
     """
     if verbose:
         print("Validating existing cookies...", end=" ")
-    try:
-        cookiejar = load_cookiejar(cookiefile, strict=True)
-    except (LoadError, OSError):
-        if verbose:
-            print("failed to load cookie file")
-        return None, None
     reuse = has_session_cookies(cookiejar, url)
     if verbose and reuse:
         print("OK")
     elif verbose:
         print("cannot reuse, need new cookies")
     return cookiejar, reuse
+
+
+def init_logging(level=logging.DEBUG):
+    """Enable logging in requests.
+
+    This function is taken from
+    https://requests.readthedocs.io/en/v2.9.1/api/#api-changes
+    """
+    HTTPConnection.debuglevel = 1
+    logging.basicConfig()
+    logging.getLogger().setLevel(logging.DEBUG)
+    requests_log = logging.getLogger("urllib3")
+    requests_log.setLevel(logging.DEBUG)
+    requests_log.propagate = True
+    return requests_log

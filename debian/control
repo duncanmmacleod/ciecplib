@@ -16,10 +16,10 @@ Build-Depends:
  python-setuptools,
  python3-all,
  python3-argparse-manpage,
- python3-kerberos,
- python3-lxml,
  python3-m2crypto,
  python3-openssl,
+ python3-requests,
+ python3-requests-ecp,
  python3-setuptools,
 
 # -- python-ciecplib ----------------------------------------------------------
@@ -29,10 +29,10 @@ Architecture: all
 Depends:
  ${misc:Depends},
  ${python:Depends},
- python-kerberos,
- python-lxml,
  python-m2crypto,
  python-openssl,
+ python-requests,
+ python-requests-ecp,
 Description: A python client for SAML ECP authentication
 
 # -- python3-ciecplib ---------------------------------------------------------
@@ -43,10 +43,10 @@ Architecture: all
 Depends:
  ${misc:Depends},
  ${python3:Depends},
- python3-kerberos,
- python3-lxml,
  python3-m2crypto,
  python3-openssl,
+ python3-requests,
+ python3-requests-ecp,
 Description: A python client for SAML ECP authentication
 
 # -- ciecp-utils --------------------------------------------------------------

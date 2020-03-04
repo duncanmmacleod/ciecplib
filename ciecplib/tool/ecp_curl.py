@@ -23,17 +23,20 @@ and prompts for authorisation information if required.
 Persistent cookies acquired during transactions are automatically
 recorded in the cookie file, but session cookies are discarded (unless
 --store-session-cookies is given).
+
+Currently only HTTP GET requests are supported (patches welcome!).
 """
 
 from __future__ import print_function
 
 import sys
 
-from .. import request
-from ..cookies import COOKIE_FILE as DEFAULT_COOKIE_FILE
+from .. import requests as ecp_requests
+from ..cookies import load_cookiejar
+from ..utils import DEFAULT_COOKIE_FILE
 from .utils import (
     ArgumentParser,
-    reuse_cookiefile,
+    init_logging,
 )
 
 __author__ = 'Duncan Macleod <duncan.macleod@ligo.org>'
@@ -66,7 +69,7 @@ def create_parser():
         "--debug",
         action="store_true",
         default=False,
-        help="write debug output to stdout",
+        help="write debug output (uses both stderr and stdout)",
     )
     parser.add_identity_provider_argument()
     parser.add_argument(
@@ -101,27 +104,27 @@ def create_parser():
 def main(args=None):
     parser = create_parser()
     args = parser.parse_args(args=args)
-    cookiejar = reuse_cookiefile(
+    if args.debug:
+        init_logging()
+    cookiejar = load_cookiejar(
         args.cookiefile,
-        args.url,
-        verbose=False,
-    )[0]
+        strict=False,
+    )
     if args.output:
         stream = open(args.output, "w")
     else:
         stream = sys.stdout
     try:
         print(
-            request(
+            ecp_requests.get(
                 args.url,
                 cookiefile=args.cookiefile,
                 cookiejar=cookiejar,
                 endpoint=args.identity_provider,
-                debug=args.debug,
                 username=args.username,
                 kerberos=args.kerberos,
-                store_session_cookies=args.store_session_cookies,
-            ).read().decode("utf-8"),
+                store_cookies=args.store_session_cookies,
+            ).text,
             file=stream,
             end="",
         )

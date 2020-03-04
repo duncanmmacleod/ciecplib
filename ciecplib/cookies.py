@@ -19,11 +19,9 @@
 """Cookie handling for SAML ECP authentication
 """
 
-from __future__ import print_function
+from __future__ import (absolute_import, print_function)
 
-import os
 import time
-import warnings
 try:
     from http.cookiejar import (LoadError, MozillaCookieJar)
     from urllib.parse import urlparse
@@ -31,25 +29,14 @@ except ImportError:  # python < 3
     from cookielib import (LoadError, MozillaCookieJar)
     from urlparse import urlparse
 
+from requests.cookies import RequestsCookieJar
+
 __author__ = 'Duncan Macleod <duncan.macleod@ligo.org>'
-
-
-def get_ecpcookie_path():
-    if os.name == "nt":
-        tmpdir = r'%SYSTEMROOT%\Temp'
-        tmpname = "ecpcookie.{0}".format(os.getlogin())
-    else:
-        tmpdir = "/tmp"
-        tmpname = "ecpcookie.u{0}".format(os.getuid())
-    return os.path.join(tmpdir, tmpname)
-
-
-COOKIE_FILE = get_ecpcookie_path()
 
 
 # -- cookie jar ---------------------------------------------------------------
 
-class ECPCookieJar(MozillaCookieJar):
+class ECPCookieJar(RequestsCookieJar, MozillaCookieJar):
     """Custom cookie jar
 
     Adapted from
@@ -103,8 +90,44 @@ class ECPCookieJar(MozillaCookieJar):
         return out
 
 
+# -- utilities ----------------------------------------------------------------
+
+def extract_session_cookie(jar, url):
+    """Returns s session cookie for the given URL from the jar
+
+    Parameters
+    ----------
+    jar : `http.cookiejar.CookieJar`
+        the cookie jar to check
+
+    url : `str`
+        the URL of the service that needs cookies
+
+    Returns
+    -------
+    cookie : `http.cookielib.Cookie`
+        the relevant cookie
+
+    Raises
+    ------
+    ValueError
+        if no appropriate cookie is found
+    """
+    url = urlparse(url).netloc
+    for cookie in list(jar)[::-1]:
+        if (
+                cookie.name.startswith("_shibsession_") and
+                cookie.domain == url and
+                cookie.expires is None
+        ):
+            return cookie
+    raise ValueError(
+        "no shibsession cookie found for {!r}".format(url),
+    )
+
+
 def has_session_cookies(jar, url):
-    """Returns `True` if this ``jar`` contains session cookies we can reuse
+    """Returns `True` if the given cookie jar has a session cookie we can use
 
     Parameters
     ----------
@@ -120,15 +143,12 @@ def has_session_cookies(jar, url):
         `True` if any cookie in the jar is a non-expiring ``shibsession``
         cookie for the given same domain as ``url``
     """
-    url = urlparse(url).netloc
-    for cookie in jar:
-        if (
-                cookie.name.startswith("_shibsession_") and
-                cookie.domain == url and
-                cookie.expires is None
-        ):
-            return True
-    return False
+    try:
+        extract_session_cookie(jar, url)
+    except ValueError:
+        return False
+    else:
+        return True
 
 
 def load_cookiejar(
@@ -159,8 +179,7 @@ def load_cookiejar(
             ignore_discard=ignore_discard,
             ignore_expires=ignore_expires,
         )
-    except (LoadError, OSError) as e:
+    except (LoadError, OSError):
         if strict:
             raise
-        warnings.warn('Caught error loading ECP cookie: %s' % str(e))
     return cookiejar

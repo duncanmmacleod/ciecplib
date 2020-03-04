@@ -33,8 +33,8 @@ BuildRequires: python2-rpm-macros
 BuildRequires: python2-setuptools
 BuildRequires: m2crypto
 BuildRequires: pyOpenSSL
-BuildRequires: python-kerberos
-BuildRequires: python-lxml
+BuildRequires: python2-requests
+BuildRequires: python2-requests-ecp
 
 %else
 
@@ -42,10 +42,10 @@ BuildRequires: python-lxml
 BuildRequires: /usr/bin/python3
 BuildRequires: python3-rpm-macros
 BuildRequires: python%{python3_pkgversion}-setuptools
-BuildRequires: python%{python3_pkgversion}-kerberos
-BuildRequires: python%{python3_pkgversion}-lxml
 BuildRequires: python%{python3_pkgversion}-m2crypto
 BuildRequires: python%{python3_pkgversion}-pyOpenSSL
+BuildRequires: python%{python3_pkgversion}-requests
+BuildRequires: python%{python3_pkgversion}-requests-ecp
 
 %endif
 
@@ -62,8 +62,8 @@ Summary: %{summary}
 Requires: m2crypto
 Requires: pyOpenSSL
 Requires: python
-Requires: python-kerberos
-Requires: python-lxml
+Requires: python2-requests
+Requires: python2-requests-ecp
 %{?python_provide:%python_provide python2-%{name}}
 %description -n python2-%{name}
 The Python %{python2_version} client for SAML ECP authentication.
@@ -72,10 +72,10 @@ The Python %{python2_version} client for SAML ECP authentication.
 
 %package -n python%{python3_pkgversion}-%{name}
 Summary: %{summary}
-Requires: python%{python3_pkgversion}-kerberos
-Requires: python%{python3_pkgversion}-lxml
 Requires: python%{python3_pkgversion}-m2crypto
 Requires: python%{python3_pkgversion}-pyOpenSSL
+Requires: python%{python3_pkgversion}-requests
+Requires: python%{python3_pkgversion}-requests-ecp
 %{?python_provide:%python_provide python%{python3_pkgversion}-%{name}}
 %description -n python%{python3_pkgversion}-%{name}
 The Python %{python3_version} client for SAML ECP authentication.
@@ -91,7 +91,7 @@ Requires: python%{python3_pkgversion}-%{name} = %{version}-%{release}
 %endif
 %description -n ciecp-utils
 Command line utilities for SAML ECP authentication, including
-ecp-cert-info, ecp-cookit-init, ecp-get-cert, and ecp-curl
+ecp-cert-info, ecp-get-cookie, ecp-get-cert, and ecp-curl
 (an ECP-aware curl alternative).
 
 # -- build ------------------
@@ -104,11 +104,7 @@ ecp-cert-info, ecp-cookit-init, ecp-get-cert, and ecp-curl
 %if 0%{?rhel} && 0%{?rhel} <= 7
 # old setuptools does not support environment markers:
 sed -i "/ ; /s/ ;.*/\",/g" setup.py
-# remove winkerberos requirement
-sed -i "/winkerberos/d" setup.py
 %endif
-# centos/epel provides kerberos (not pykerberos):
-sed -i "s/pykerberos/kerberos/g" setup.py
 
 %if 0%{?rhel} && 0%{?rhel} <= 7
 # build python2

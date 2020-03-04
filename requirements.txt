@@ -1,5 +1,7 @@
-lxml
 M2Crypto
-pykerberos ; sys_platform != 'win32'
 pyOpenSSL
-winkerberos ; sys_platform == 'win32'
+pytest
+pytest-cov
+requests
+requests-ecp
+requests-mock
