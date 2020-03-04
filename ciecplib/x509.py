@@ -61,7 +61,7 @@ def load_cert(path, format=crypto.FILETYPE_PEM):
         )
 
 
-def _timeleft(cert):
+def time_left(cert):
     """Returns the number of seconds left on this certificate
     """
     try:  # M2Crypto
@@ -102,7 +102,7 @@ def check_cert(cert, hours=1, proxy=None, rfc3820=True):
         is RFC 3820 compliant
     """
     # check expiry
-    remaining = _timeleft(cert)
+    remaining = time_left(cert)
     if remaining < hours * 3600.:
         raise RuntimeError(
             "less than {0} hours remaining on X509 certificate".format(hours)
@@ -156,7 +156,7 @@ def print_cert_info(x509, path=None, verbose=True):
     print("strength : {0} bits".format(pkey.bits()))
     if path:
         print("path     : " + str(path))
-    print("timeleft : " + str(datetime.timedelta(seconds=_timeleft(x509))))
+    print("timeleft : " + str(datetime.timedelta(seconds=time_left(x509))))
 
 
 def write_cert(path, pkcs12, use_proxy=False, minhours=168):

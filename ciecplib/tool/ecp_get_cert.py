@@ -164,14 +164,14 @@ def create_parser():
     return parser
 
 
-def parse_args(parser):
+def parse_args(parser, args=None):
     """Parse and validate the command-line arguments
 
     Returns
     -------
     args : `argparse.Namespace`
     """
-    args = parser.parse_args()
+    args = parser.parse_args(args=args)
 
     # check that username or --kerberos was given if not using --destroy
     if not args.destroy and not (
@@ -193,9 +193,9 @@ def can_reuse(path, proxy=None):
     return True
 
 
-def main():
+def main(args=None):
     parser = create_parser()
-    args = parse_args(parser)
+    args = parse_args(parser, args=args)
 
     if args.debug:
         init_logging()
