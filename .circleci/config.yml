@@ -356,20 +356,23 @@ workflows:
   version: 2
   build_and_test:
     jobs:
+      # -- stage 1
       - sdist
       - flake8
-      - centos:7:2.7:
-          requires:
-            - sdist
-      - centos:8:3.6:
-          requires:
-            - sdist
-      - debian:buster:2.7:
-          requires:
-            - sdist
-      - debian:buster:3.7:
-          requires:
-            - sdist
+      - sphinx
+      # -- stage 2
+      #- centos:7:2.7:
+      #    requires:
+      #      - sdist
+      #- centos:8:3.6:
+      #    requires:
+      #      - sdist
+      #- debian:buster:2.7:
+      #    requires:
+      #      - sdist
+      #- debian:buster:3.7:
+      #    requires:
+      #      - sdist
       - python:2.7:
           requires:
             - sdist
@@ -382,4 +385,3 @@ workflows:
       - python:3.8:
           requires:
             - sdist
-      - sphinx
