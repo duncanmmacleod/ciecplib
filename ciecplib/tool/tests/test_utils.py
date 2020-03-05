@@ -76,9 +76,10 @@ def test_list_idps_action(capsys):
     assert "'Cardiff University'" in stdout
 
 
+@mock.patch.dict(logging.Logger.manager.loggerDict)
 @mock.patch("{}.HTTPConnection.debuglevel".format(http_client.__name__))
 def test_init_logging(_):
-    log = tools_utils.init_logging(logging.INFO)
+    log = tools_utils.init_logging(logging.FATAL)
     assert http_client.HTTPConnection.debuglevel == 1
     assert log is logging.Logger.manager.loggerDict["urllib3"]
-    assert log.level == logging.INFO
+    assert log.level == logging.FATAL
