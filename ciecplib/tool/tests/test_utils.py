@@ -20,11 +20,17 @@
 """
 
 import argparse
+import logging
 import sys
 try:
-    from urllib.error import URLError
+    from unittest import mock
 except ImportError:  # python < 3
+    import mock
+    import httplib as http_client
     from urllib2 import URLError
+else:
+    from http import client as http_client
+    from urllib.error import URLError
 
 import pytest
 
@@ -68,3 +74,11 @@ def test_list_idps_action(capsys):
             pytest.skip(str(exc))
     stdout = capsys.readouterr()[0]
     assert "'Cardiff University'" in stdout
+
+
+@mock.patch("{}.HTTPConnection.debuglevel".format(http_client.__name__))
+def test_init_logging(_):
+    log = tools_utils.init_logging(logging.INFO)
+    assert http_client.HTTPConnection.debuglevel == 1
+    assert log is logging.Logger.manager.loggerDict["urllib3"]
+    assert log.level == logging.INFO
