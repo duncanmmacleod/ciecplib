@@ -23,7 +23,11 @@ from __future__ import print_function
 
 import argparse
 import os
-import sys
+
+try:
+    FileNotFoundError
+except NameError:  # python < 3
+    FileNotFoundError = OSError
 
 from ..ui import get_cert
 from ..x509 import (
@@ -197,30 +201,40 @@ def main(args=None):
     parser = create_parser()
     args = parse_args(parser, args=args)
 
+    def vprint(*pargs, **kwargs):
+        """Execute `print` only if --verbose was given
+        """
+        if args.verbose:
+            print(*pargs, **kwargs)
+
     if args.debug:
         init_logging()
 
     # if asked to destroy, just do that
     if args.destroy:
-        if args.verbose:
-            print("Removing credential file {!s}".format(args.file))
-        os.unlink(args.file)
-        sys.exit()
+        vprint("Removing credential file '{!s}'...".format(args.file), end=" ")
+        try:
+            os.unlink(args.file)
+        except FileNotFoundError:  # file doesn't exit, no matter
+            vprint("not found", end="")
+        else:
+            vprint("done", end="")
+        finally:
+            print()
+        return 0
 
     # if asked to reuse, check that we can
     if args.reuse:
-        if args.verbose:
-            print("Validating existing certificate...", end=" ")
+        print("Validating existing certificate...", end=" ")
         args.reuse = can_reuse(args.file, proxy=args.proxy)
-        if args.verbose and args.reuse:
-            print("OK")
-        elif args.verbose:
-            print("failed, will regenerate")
+        if args.reuse:
+            vprint("OK")
+        else:
+            vprint("failed, will regenerate")
 
     # get new certificate
     if not args.reuse:
-        if args.verbose:
-            print("Fetching certificate...")
+        vprint("Fetching certificate...")
         cert = get_cert(
             endpoint=args.identity_provider,
             username=getattr(args, "username", None),
@@ -230,16 +244,14 @@ def main(args=None):
         )
 
         # write certificate to a file
-        if args.verbose:
-            print("Storing certificate...")
+        vprint("Storing certificate...")
         write_cert(
             args.file,
             cert,
             use_proxy=args.proxy,
             minhours=args.hours,
         )
-        if args.verbose:
-            print("X.509 credential stored")
+        vprint("X.509 credential stored")
 
     # load the cert from file to print information
     if args.debug or args.verbose:
