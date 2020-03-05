@@ -190,8 +190,8 @@ def init_logging(level=logging.DEBUG):
     """
     HTTPConnection.debuglevel = 1
     logging.basicConfig()
-    logging.getLogger().setLevel(logging.DEBUG)
+    logging.getLogger().setLevel(level)
     requests_log = logging.getLogger("urllib3")
-    requests_log.setLevel(logging.DEBUG)
+    requests_log.setLevel(level)
     requests_log.propagate = True
     return requests_log
