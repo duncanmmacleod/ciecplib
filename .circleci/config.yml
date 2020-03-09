@@ -66,6 +66,7 @@ aliases:
         command: |
           set -x;
           apt-get -yqq update;
+          grep -q stretch /etc/os-release && BACKPORTS="-t stretch-backports" || true;
           if [[ "${CIRCLE_JOB}" == *"buster"* ]]; then
               echo -e "\ndeb http://deb.debian.org/debian buster-backports main" >> /etc/apt/sources.list;
               apt-get -yqq update;
@@ -78,7 +79,7 @@ aliases:
           pushd $(mktemp -d -p .);
           tar -xf ../ciecplib-*.tar.* --strip-components=1;
           # install build dependencies
-          mk-build-deps --tool "apt-get -y" --install --remove;
+          mk-build-deps --tool "apt-get -y ${BACKPORTS}" --install --remove;
           # build binary package
           dpkg-buildpackage -us -uc -b;
           popd;
