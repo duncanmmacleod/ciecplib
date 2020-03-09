@@ -83,7 +83,7 @@ def create_parser():
         "-f",
         "--file",
         default=DEFAULT_X509_USER_FILE,
-        help="certificate file to create/reuse/destroy",
+        help="certificate file to read (must exist)",
     )
     parser.add_argument(
         "-v",

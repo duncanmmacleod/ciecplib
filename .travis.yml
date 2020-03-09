@@ -41,12 +41,10 @@ before_install:
   - conda info --all
 
 install:
-  # create a conda environment including our requirements
-  - travis_retry conda create --quiet --name ci python=${PYTHON_VERSION}
-  - travis_retry conda activate ci
-  # install testing dependencies with conda
-  - travis_retry conda install --quiet --yes --update-deps --name ci --file requirements.txt
+  - travis_retry conda create --quiet --name ci python=${PYTHON_VERSION} pip setuptools
+  - travis_retry conda install --quiet --yes --name ci --file requirements.txt
   - if [ "${PYTHON_VERSION/./}" -lt 30 ]; then travis_retry conda install --quiet --yes --name ci mock; fi
+  - travis_retry conda activate ci
   # install this version
   - python -m pip install --editable .
 
