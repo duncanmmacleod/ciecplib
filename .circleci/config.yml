@@ -41,6 +41,20 @@ aliases:
           apt-get -yqq update;
           apt-get -yqq install ca-certificates;
 
+  - &debian_fetch_requests_ecp
+      run:
+        name: Fetch requests-ecp
+        command: |
+          apt-get -yqq update;
+          apt-get -yqq install base-files curl dpkg;
+          eval $(cat /etc/os-release);
+          curl -LO https://hypatia.aei.mpg.de/lsc-amd64-${VERSION_CODENAME}/python3-requests-ecp_0.1.1-1+deb${VERSION_ID}u0_all.deb
+          dpkg --install python3-requests-ecp_0.1.1-1+deb${VERSION_ID}u0_all.deb || { \
+              apt-get -y -f install;
+              dpkg --install python3-requests-ecp_0.1.1-1+deb${VERSION_ID}u0_all.deb;
+              dpkg --install python${PYTHON_VERSION:0:1}-ciecplib*.deb ciecp-utils*.deb;
+          };
+
   - &debian_build
       run:
         name: Build
@@ -75,6 +89,17 @@ aliases:
               apt-get -y -f install;
               dpkg --install python${PYTHON_VERSION:0:1}-ciecplib*.deb ciecp-utils*.deb;
           };
+
+  - &centos_fetch_requests_ecp
+      run:
+        name: Fetch requests-ecp
+        command: |
+          set -x;
+          yum -y -q update;
+          yum -y -q install curl;
+          curl -LO https://koji.ligo-la.caltech.edu/kojifiles/packages/requests-ecp/0.1.1/1.el8/noarch/python3-requests-ecp-0.1.1-1.el8.noarch.rpm;
+          yum -y --nogpgcheck localinstall python3-requests-ecp-0.1.1-1.el8.noarch.rpm;
+          rm -fv python3-requests-ecp-0.1.1-1.el8.noarch.rpm;
 
   - &centos_build
       run:
@@ -186,28 +211,30 @@ aliases:
         - checkout
         - *debian_configure
         - *attach_workspace
+        - *debian_fetch_requests_ecp
         - *debian_build
-        #- *debian_install
-        #- *debian_install_test_dependencies
-        #- *test
-        #- *coverage_report
-        #- *codecov
-        #- *store_test_results
-        #- *store_test_artifacts
+        - *debian_install
+        - *debian_install_test_dependencies
+        - *test
+        - *coverage_report
+        - *codecov
+        - *store_test_results
+        - *store_test_artifacts
         - *store_deb_artifacts
 
   - &centos
       steps:
         - checkout
         - *attach_workspace
+        - *centos_fetch_requests_ecp
         - *centos_build
-        #- *centos_install
-        #- *centos_install_test_dependencies
-        #- *test
-        #- *coverage_report
-        #- *codecov
-        #- *store_test_results
-        #- *store_test_artifacts
+        - *centos_install
+        - *centos_install_test_dependencies
+        - *test
+        - *coverage_report
+        - *codecov
+        - *store_test_results
+        - *store_test_artifacts
         - *store_rpm_artifacts
 
   - &python
