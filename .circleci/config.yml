@@ -293,7 +293,7 @@ jobs:
   debian:buster:3.7:
     <<: *debian
     docker:
-      - image: debian:buster
+      - image: debian:buster-backports
     environment:
       PYTHON_VERSION: "3.7"
 
