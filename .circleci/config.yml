@@ -298,7 +298,7 @@ jobs:
   debian:stretch:3.5:
     <<: *debian
     docker:
-      - image: debian:stretch
+      - image: debian:stretch-backports
     environment:
       PYTHON_VERSION: "3.5"
 
