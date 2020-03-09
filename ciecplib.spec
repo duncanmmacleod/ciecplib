@@ -21,13 +21,17 @@ Version:   %{version}
 
 # -- build requirements -----
 
+# macros
 BuildRequires: python-srpm-macros
 BuildRequires: python-rpm-macros
-BuildRequires: argparse-manpage
-
-BuildRequires: /usr/bin/python3
 BuildRequires: python3-rpm-macros
+
+# build
+BuildRequires: python3
 BuildRequires: python%{python3_pkgversion}-setuptools
+
+# man pages
+BuildRequires: python%{python3_pkgversion}-argparse-manpage
 BuildRequires: python%{python3_pkgversion}-m2crypto
 BuildRequires: python%{python3_pkgversion}-pyOpenSSL
 BuildRequires: python%{python3_pkgversion}-requests
