@@ -19,15 +19,9 @@
 """Cookie handling for SAML ECP authentication
 """
 
-from __future__ import (absolute_import, print_function)
-
 import time
-try:
-    from http.cookiejar import (LoadError, MozillaCookieJar)
-    from urllib.parse import urlparse
-except ImportError:  # python < 3
-    from cookielib import (LoadError, MozillaCookieJar)
-    from urlparse import urlparse
+from http.cookiejar import (LoadError, MozillaCookieJar)
+from urllib.parse import urlparse
 
 from requests.cookies import RequestsCookieJar
 
@@ -147,8 +141,7 @@ def has_session_cookies(jar, url):
         extract_session_cookie(jar, url)
     except ValueError:
         return False
-    else:
-        return True
+    return True
 
 
 def load_cookiejar(

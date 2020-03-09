@@ -19,15 +19,8 @@
 """Create an X.509 certificate using ECP authentication.
 """
 
-from __future__ import print_function
-
 import argparse
 import os
-
-try:
-    FileNotFoundError
-except NameError:  # python < 3
-    FileNotFoundError = OSError
 
 from ..ui import get_cert
 from ..x509 import (

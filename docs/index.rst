@@ -18,7 +18,7 @@ Installation
 
           $ python -m pip install ciecplib
 
-      Supported python versions: 2.7, 3.5+.
+      Supported python versions: 3.5+.
 
    .. tab:: Conda
 
@@ -26,23 +26,7 @@ Installation
 
           $ conda install -c conda-forge ciecplib
 
-      Supported python versions: 2.7, 3.6+.
-
-   .. tab:: Debian Linux
-
-      .. code-block:: bash
-
-          $ apt-get install python3-ciecplib ciecp-utils
-
-      Supported python versions: 2.7, 3.7
-
-   .. tab:: Scientific Linux
-
-      .. code-block:: bash
-
-          $ yum install python2-ciecplib ciecp-utils
-
-      Supported python versions: 2.7
+      Supported python versions: 3.6+.
 
 ==================
 User documentation

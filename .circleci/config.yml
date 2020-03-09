@@ -46,7 +46,6 @@ aliases:
         name: Build
         command: |
           set -x;
-          if [[ "${PYTHON_VERSION:0:1}" -eq 3 ]]; then PYTHON3="3"; fi
           apt-get -yqq update;
           if [[ "${CIRCLE_JOB}" == *"buster"* ]]; then
               echo -e "\ndeb http://deb.debian.org/debian buster-backports main" >> /etc/apt/sources.list;
@@ -55,7 +54,7 @@ aliases:
           apt-get -yqq install \
               dpkg-dev \
               devscripts \
-              python${PYTHON3}-pip \
+              python${PYTHON_VERSION:0:1}-pip \
           ;
           pushd $(mktemp -d -p .);
           tar -xf ../ciecplib-*.tar.* --strip-components=1;
@@ -72,19 +71,10 @@ aliases:
       run:
         name: Install
         command: |
-          # for python2, install everything (since ciecp-utils needs py3)
-          if [[ "${PYTHON_VERSION:0:1}" -eq 2 ]]; then
-              dpkg --install python*-ciecplib*.deb ciecp-utils*.deb || { \
-                  apt-get -y -f install;
-                  dpkg --install python*-ciecplib*.deb ciecp-utils*.deb;
-              };
-          # otherwise just install the py3 version
-          else
-              dpkg --install python3-ciecplib*.deb ciecp-utils*.deb || { \
-                  apt-get -y -f install;
-                  dpkg --install python3-ciecplib*.deb ciecp-utils*.deb;
-              };
-          fi
+          dpkg --install python${PYTHON_VERSION:0:1}-ciecplib*.deb ciecp-utils*.deb || { \
+              apt-get -y -f install;
+              dpkg --install python${PYTHON_VERSION:0:1}-ciecplib*.deb ciecp-utils*.deb;
+          };
 
   - &centos_build
       run:
@@ -97,9 +87,7 @@ aliases:
               rpm-build \
               yum-utils \
               python-srpm-macros \
-              python2-rpm-macros \
               python3-rpm-macros \
-              python2-pip \
               python3-pip \
           ;
           # build src rpm
@@ -132,34 +120,26 @@ aliases:
       run:
         name: Install test dependencies
         command: |
-          PYM="${PYTHON_VERSION:0:1}"
-          if [[ "${PYM}" -eq 2 ]]; then PYM=""; fi;
           apt-get -yqq install \
               debianutils \
-              python${PYM}-pytest \
-              python${PYM}-pytest-cov \
-              python${PYM}-requests-mock \
-              $([[ "${PYM}" == "" ]] && echo "python-mock") \
+              python${PYTHON_VERSION:0:1}-pytest \
+              python${PYTHON_VERSION:0:1}-pytest-cov \
+              python${PYTHON_VERSION:0:1}-requests-mock \
           ;
 
   - &centos_install_test_dependencies
       run:
         name: Install test dependencies
         command: |
-          if [[ "${PYTHON_VERSION:0:1}" -eq 3 ]]; then
-              PYXY=$(rpm --eval "%{?python3_pkgversion}");
-          else
-              PYXY="${PYTHON_VERSION:0:1}";
-          fi;
+          PYXY="${PYTHON_VERSION:0:1}";
           yum -y -q install epel-release;
           yum -y -q install \
               which \
-              python${PYXY}-pytest \
-              python${PYXY}-pytest-cov \
-              python${PYXY}-requests-mock \
-              $([ "${PYXY}" -eq 2 ] && echo "python2-mock") \
+              python${PYTHON_VERSION:0:1}-pytest \
+              python${PYTHON_VERSION:0:1}-pytest-cov \
+              python${PYTHON_VERSION:0:1}-requests-mock \
           ;
-          python${PYTHON_VERSION} -m pip install "pytest~=3.0" "more-itertools < 6.0a0"
+          python${PYTHON_VERSION} -m pip install "pytest~=3.0"
 
   - &test
       run:
@@ -167,7 +147,7 @@ aliases:
         command: |
           set -x;
           # install test requirements
-          python${PYTHON_VERSION} -m pip install "pytest" "pytest-cov" "requests-mock" "mock ; python_version < '3'" "zipp<2.0.0"
+          python${PYTHON_VERSION} -m pip install "pytest" "pytest-cov" "requests-mock" "zipp<2.0.0"
           # run test suite
           mkdir -pv tests;
           pushd tests;
@@ -281,26 +261,12 @@ jobs:
       - *store_test_results
       - *store_test_artifacts
 
-  debian:buster:2.7:
-    <<: *debian
-    docker:
-      - image: debian:buster
-    environment:
-      PYTHON_VERSION: "2.7"
-
   debian:buster:3.7:
     <<: *debian
     docker:
       - image: debian:buster
     environment:
       PYTHON_VERSION: "3.7"
-
-  centos:7:2.7:
-    <<: *centos
-    docker:
-      - image: centos:7
-    environment:
-      PYTHON_VERSION: "2.7"
 
   centos:8:3.6:
     <<: *centos
@@ -309,12 +275,12 @@ jobs:
     environment:
       PYTHON_VERSION: "3.6"
 
-  python:2.7:
+  python:3.5:
     <<: *python
     docker:
-      - image: python:2.7-buster
+      - image: python:3.5-buster
     environment:
-      PYTHON_VERSION: "2.7"
+      PYTHON_VERSION: "3.5"
 
   python:3.6:
     <<: *python
@@ -361,19 +327,13 @@ workflows:
       - flake8
       - sphinx
       # -- stage 2
-      #- centos:7:2.7:
-      #    requires:
-      #      - sdist
       #- centos:8:3.6:
-      #    requires:
-      #      - sdist
-      #- debian:buster:2.7:
       #    requires:
       #      - sdist
       #- debian:buster:3.7:
       #    requires:
       #      - sdist
-      - python:2.7:
+      - python:3.5:
           requires:
             - sdist
       - python:3.6:

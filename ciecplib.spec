@@ -25,20 +25,6 @@ BuildRequires: python-srpm-macros
 BuildRequires: python-rpm-macros
 BuildRequires: argparse-manpage
 
-%if 0%{?rhel} && 0%{?rhel} <= 7
-
-# python2 build (centos<=7 only)
-BuildRequires: /usr/bin/python2
-BuildRequires: python2-rpm-macros
-BuildRequires: python2-setuptools
-BuildRequires: m2crypto
-BuildRequires: pyOpenSSL
-BuildRequires: python2-requests
-BuildRequires: python2-requests-ecp
-
-%else
-
-# python3 build (centos>=8 only)
 BuildRequires: /usr/bin/python3
 BuildRequires: python3-rpm-macros
 BuildRequires: python%{python3_pkgversion}-setuptools
@@ -47,28 +33,11 @@ BuildRequires: python%{python3_pkgversion}-pyOpenSSL
 BuildRequires: python%{python3_pkgversion}-requests
 BuildRequires: python%{python3_pkgversion}-requests-ecp
 
-%endif
-
 # -- packages ---------------
 
 # src.rpm
 %description
 The Python client for SAML ECP authentication.
-
-%if 0%{?rhel} && 0%{?rhel} <= 7
-
-%package -n python2-%{name}
-Summary: %{summary}
-Requires: m2crypto
-Requires: pyOpenSSL
-Requires: python
-Requires: python2-requests
-Requires: python2-requests-ecp
-%{?python_provide:%python_provide python2-%{name}}
-%description -n python2-%{name}
-The Python %{python2_version} client for SAML ECP authentication.
-
-%else
 
 %package -n python%{python3_pkgversion}-%{name}
 Summary: %{summary}
@@ -80,15 +49,9 @@ Requires: python%{python3_pkgversion}-requests-ecp
 %description -n python%{python3_pkgversion}-%{name}
 The Python %{python3_version} client for SAML ECP authentication.
 
-%endif
-
 %package -n ciecp-utils
 Summary: Command line utilities for SAML ECP authentication
-%if 0%{?rhel} && 0%{?rhel} <= 7
-Requires: python2-%{name} = %{version}-%{release}
-%else
 Requires: python%{python3_pkgversion}-%{name} = %{version}-%{release}
-%endif
 %description -n ciecp-utils
 Command line utilities for SAML ECP authentication, including
 ecp-cert-info, ecp-get-cookie, ecp-get-cert, and ecp-curl
@@ -100,41 +63,15 @@ ecp-cert-info, ecp-get-cookie, ecp-get-cert, and ecp-curl
 %autosetup -n %{name}-%{version}
 
 %build
-# patch setup.py for old setuptools
-%if 0%{?rhel} && 0%{?rhel} <= 7
-# old setuptools does not support environment markers:
-sed -i "/ ; /s/ ;.*/\",/g" setup.py
-%endif
-
-%if 0%{?rhel} && 0%{?rhel} <= 7
-# build python2
-%py2_build
-%else
-# build python3
 %py3_build
-%endif
 
 %install
-%if 0%{?rhel} && 0%{?rhel} <= 7
-%py2_install
-%else
 %py3_install
-%endif
 
 %clean
 rm -rf $RPM_BUILD_ROOT
 
 # -- files ------------------
-
-%if 0%{?rhel} && 0%{?rhel} <= 7
-
-%files -n python2-%{name}
-%license LICENSE
-%doc README.md
-%{python2_sitelib}/*
-%exclude %{python2_sitelib}/ciecplib/tool
-
-%else
 
 %files -n python%{python3_pkgversion}-%{name}
 %license LICENSE
@@ -142,17 +79,11 @@ rm -rf $RPM_BUILD_ROOT
 %{python3_sitelib}/*
 %exclude %{python3_sitelib}/ciecplib/tool
 
-%endif
-
 %files -n ciecp-utils
 %license LICENSE
 %{_bindir}/*
 %{_mandir}/man1/*.1*
-%if 0%{?rhel} && 0%{?rhel} <= 7
-%{python2_sitelib}/ciecplib/tool
-%else
 %{python3_sitelib}/ciecplib/tool
-%endif
 
 # -- changelog --------------
 

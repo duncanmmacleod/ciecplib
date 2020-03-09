@@ -17,10 +17,7 @@
 # along with ciecplib.  If not, see <http://www.gnu.org/licenses/>.
 
 import os
-try:
-    from unittest import mock
-except ImportError:  # python < 3
-    import mock
+from unittest import mock
 
 import pytest
 

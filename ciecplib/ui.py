@@ -21,10 +21,7 @@
 
 import math
 import string
-try:
-    from urllib import parse as urllib_parse
-except ImportError:  # python < 3
-    import urlparse as urllib_parse
+from urllib import parse as urllib_parse
 
 from OpenSSL import crypto
 

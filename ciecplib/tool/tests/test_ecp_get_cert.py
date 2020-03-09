@@ -19,11 +19,7 @@
 """Tests for :mod:`ciecplib.tool.ecp_get_cert`
 """
 
-try:
-    from unittest import mock
-except ImportError:  # python < 3
-    import mock
-    FileNotFoundError = OSError
+from unittest import mock
 
 import pytest
 

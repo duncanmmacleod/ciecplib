@@ -35,8 +35,6 @@ defined by either
 - ``C:\Windows\Temp\ecpcookie.{username}`` (Windows)
 """  # noqa: E501
 
-from __future__ import print_function
-
 import argparse
 import os
 import sys

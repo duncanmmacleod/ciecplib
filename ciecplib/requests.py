@@ -19,8 +19,6 @@
 """HTTP request method with end-to-end ECP authentication
 """
 
-from __future__ import absolute_import
-
 from .env import DEFAULT_IDP
 from .sessions import Session
 from .utils import (

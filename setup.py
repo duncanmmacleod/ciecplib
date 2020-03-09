@@ -72,7 +72,6 @@ install_requires = [
     "requests-ecp",  # GPL-3.0-or-later
 ]
 tests_require = [
-    "mock ; python_version < '3'",
     "pytest",
     "pytest-cov",
     "requests-mock",
@@ -110,7 +109,6 @@ setup(
         'License :: OSI Approved :: GNU General Public License v3 (GPLv3)',
         'Natural Language :: English',
         'Operating System :: OS Independent',
-        'Programming Language :: Python :: 2.7',
         'Programming Language :: Python :: 3',
         'Programming Language :: Python :: 3.5',
         'Programming Language :: Python :: 3.6',
@@ -130,6 +128,7 @@ setup(
     },
     # dependencies
     cmdclass=cmdclass,
+    python_requires=">=3.5",
     setup_requires=setup_requires,
     install_requires=install_requires,
     tests_require=tests_require,

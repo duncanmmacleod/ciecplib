@@ -5,15 +5,12 @@ Section: python
 Priority: optional
 Maintainer: Duncan Macleod <duncan.macleod@ligo.org>
 Standards-Version: 4.2.1
-X-Python-Version: >= 2.7
 X-Python3-Version: >= 3.4
 Homepage: https://github.com/duncanmmacleod/ciecplib
 Build-Depends:
  debhelper (>= 9),
  dh-python,
  help2man,
- python-all,
- python-setuptools,
  python3-all,
  python3-argparse-manpage,
  python3-m2crypto,
@@ -21,19 +18,6 @@ Build-Depends:
  python3-requests,
  python3-requests-ecp,
  python3-setuptools,
-
-# -- python-ciecplib ----------------------------------------------------------
-
-Package: python-ciecplib
-Architecture: all
-Depends:
- ${misc:Depends},
- ${python:Depends},
- python-m2crypto,
- python-openssl,
- python-requests,
- python-requests-ecp,
-Description: A python client for SAML ECP authentication
 
 # -- python3-ciecplib ---------------------------------------------------------
 # requires buster-backports or newer

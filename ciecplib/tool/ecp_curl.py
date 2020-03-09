@@ -27,8 +27,6 @@ recorded in the cookie file, but session cookies are discarded (unless
 Currently only HTTP GET requests are supported (patches welcome!).
 """
 
-from __future__ import print_function
-
 import sys
 
 from .. import requests as ecp_requests
