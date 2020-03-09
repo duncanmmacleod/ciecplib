@@ -187,13 +187,13 @@ aliases:
         - *debian_configure
         - *attach_workspace
         - *debian_build
-        - *debian_install
-        - *debian_install_test_dependencies
-        - *test
-        - *coverage_report
-        - *codecov
-        - *store_test_results
-        - *store_test_artifacts
+        #- *debian_install
+        #- *debian_install_test_dependencies
+        #- *test
+        #- *coverage_report
+        #- *codecov
+        #- *store_test_results
+        #- *store_test_artifacts
         - *store_deb_artifacts
 
   - &centos
@@ -201,13 +201,13 @@ aliases:
         - checkout
         - *attach_workspace
         - *centos_build
-        - *centos_install
-        - *centos_install_test_dependencies
-        - *test
-        - *coverage_report
-        - *codecov
-        - *store_test_results
-        - *store_test_artifacts
+        #- *centos_install
+        #- *centos_install_test_dependencies
+        #- *test
+        #- *coverage_report
+        #- *codecov
+        #- *store_test_results
+        #- *store_test_artifacts
         - *store_rpm_artifacts
 
   - &python
@@ -261,10 +261,24 @@ jobs:
       - *store_test_results
       - *store_test_artifacts
 
+  debian:stretch:3.5:
+    <<: *debian
+    docker:
+      - image: debian:stretch
+    environment:
+      PYTHON_VERSION: "3.5"
+
   debian:buster:3.7:
     <<: *debian
     docker:
       - image: debian:buster
+    environment:
+      PYTHON_VERSION: "3.7"
+
+  debian:bullseye:3.7:
+    <<: *debian
+    docker:
+      - image: debian:bullseye
     environment:
       PYTHON_VERSION: "3.7"
 
@@ -327,12 +341,18 @@ workflows:
       - flake8
       - sphinx
       # -- stage 2
-      #- centos:8:3.6:
-      #    requires:
-      #      - sdist
-      #- debian:buster:3.7:
-      #    requires:
-      #      - sdist
+      - centos:8:3.6:
+          requires:
+            - sdist
+      - debian:stretch:3.5:
+          requires:
+            - sdist
+      - debian:buster:3.7:
+          requires:
+            - sdist
+      - debian:bullseye:3.7:
+          requires:
+            - sdist
       - python:3.5:
           requires:
             - sdist
