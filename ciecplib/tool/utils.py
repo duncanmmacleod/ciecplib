@@ -19,15 +19,10 @@
 """Common utilities for tools
 """
 
-from __future__ import print_function
-
 import argparse
 import logging
 import sys
-try:
-    from http.client import HTTPConnection
-except ImportError:  # python < 3
-    from httplib import HTTPConnection
+from http.client import HTTPConnection
 
 from .. import __version__
 from ..cookies import (

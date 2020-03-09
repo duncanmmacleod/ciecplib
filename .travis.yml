@@ -11,15 +11,11 @@ matrix:
   fast_finish: true
   include:
     - os: linux
-      env: PYTHON_VERSION="2.7"
-    - os: linux
       env: PYTHON_VERSION="3.6"
     - os: linux
       env: PYTHON_VERSION="3.7"
     - os: linux
       env: PYTHON_VERSION="3.8"
-    - os: osx
-      env: PYTHON_VERSION="2.7"
     - os: osx
       env: PYTHON_VERSION="3.6"
     - os: osx
@@ -43,7 +39,6 @@ before_install:
 install:
   - travis_retry conda create --quiet --name ci python=${PYTHON_VERSION} pip setuptools
   - travis_retry conda install --quiet --yes --name ci --file requirements.txt
-  - if [ "${PYTHON_VERSION/./}" -lt 30 ]; then travis_retry conda install --quiet --yes --name ci mock; fi
   - travis_retry conda activate ci
   # install this version
   - python -m pip install --editable .

@@ -21,16 +21,9 @@
 
 import argparse
 import logging
-import sys
-try:
-    from unittest import mock
-except ImportError:  # python < 3
-    import mock
-    import httplib as http_client
-    from urllib2 import URLError
-else:
-    from http import client as http_client
-    from urllib.error import URLError
+from http import client as http_client
+from unittest import mock
+from urllib.error import URLError
 
 import pytest
 
@@ -45,8 +38,8 @@ def test_help_formatter():
         formatter_class=tools_utils.HelpFormatter,
     )
     parser.add_argument("test")
-    help = parser.format_help()
-    assert "Usage: " in help
+    help_ = parser.format_help()
+    assert "Usage: " in help_
 
 
 def test_argument_parser(capsys):
@@ -58,11 +51,7 @@ def test_argument_parser(capsys):
     # check that the version gets parsed
     with pytest.raises(SystemExit):
         parser.parse_args(["--version"])
-    if sys.version_info[0] < 3:
-        # for python2 --version goes to stderr
-        assert capsys.readouterr()[1].strip() == ciecplib_version
-    else:
-        assert capsys.readouterr()[0].strip() == ciecplib_version
+    assert capsys.readouterr()[0].strip() == ciecplib_version
 
 
 def test_list_idps_action(capsys):

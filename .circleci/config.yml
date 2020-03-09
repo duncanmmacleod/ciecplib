@@ -41,21 +41,34 @@ aliases:
           apt-get -yqq update;
           apt-get -yqq install ca-certificates;
 
+  - &debian_fetch_requests_ecp
+      run:
+        name: Fetch requests-ecp
+        command: |
+          apt-get -yqq update;
+          apt-get -yqq install base-files curl dpkg lsb-release;
+          eval $(cat /etc/os-release);
+          CODENAME=$(lsb_release --codename --short);
+          if [[ ${CODENAME} = "bullseye" ]]; then VERSION_ID="11"; fi;
+          DEB="python3-requests-ecp_0.1.1-1+deb${VERSION_ID}u0_all.deb";
+          curl -LO https://hypatia.aei.mpg.de/lsc-amd64-${CODENAME}/${DEB};
+          dpkg --info ${DEB};
+          dpkg --install ${DEB} || { \
+              apt-get -y -f install;
+              dpkg --install ${DEB};
+          };
+          rm -fv ${DEB};
+
   - &debian_build
       run:
         name: Build
         command: |
           set -x;
-          if [[ "${PYTHON_VERSION:0:1}" -eq 3 ]]; then PYTHON3="3"; fi
           apt-get -yqq update;
-          if [[ "${CIRCLE_JOB}" == *"buster"* ]]; then
-              echo -e "\ndeb http://deb.debian.org/debian buster-backports main" >> /etc/apt/sources.list;
-              apt-get -yqq update;
-          fi
           apt-get -yqq install \
               dpkg-dev \
               devscripts \
-              python${PYTHON3}-pip \
+              python${PYTHON_VERSION:0:1}-pip \
           ;
           pushd $(mktemp -d -p .);
           tar -xf ../ciecplib-*.tar.* --strip-components=1;
@@ -72,19 +85,23 @@ aliases:
       run:
         name: Install
         command: |
-          # for python2, install everything (since ciecp-utils needs py3)
-          if [[ "${PYTHON_VERSION:0:1}" -eq 2 ]]; then
-              dpkg --install python*-ciecplib*.deb ciecp-utils*.deb || { \
-                  apt-get -y -f install;
-                  dpkg --install python*-ciecplib*.deb ciecp-utils*.deb;
-              };
-          # otherwise just install the py3 version
-          else
-              dpkg --install python3-ciecplib*.deb ciecp-utils*.deb || { \
-                  apt-get -y -f install;
-                  dpkg --install python3-ciecplib*.deb ciecp-utils*.deb;
-              };
-          fi
+          dpkg --install python${PYTHON_VERSION:0:1}-ciecplib*.deb ciecp-utils*.deb || { \
+              apt-get -y -f install;
+              dpkg --install python${PYTHON_VERSION:0:1}-ciecplib*.deb ciecp-utils*.deb;
+          };
+
+  - &centos_fetch_requests_ecp
+      run:
+        name: Fetch requests-ecp
+        command: |
+          set -x;
+          yum -y -q update;
+          yum -y -q install curl epel-release;
+          DIST_SUFFIX=$(rpm --eval "%{dist}");
+          RPM="python3-requests-ecp-0.1.1-1${DIST_SUFFIX}.noarch.rpm";
+          curl -LO https://koji.ligo-la.caltech.edu/kojifiles/packages/requests-ecp/0.1.1/1${DIST_SUFFIX}/noarch/${RPM};
+          yum -y --nogpgcheck localinstall ${RPM};
+          rm -fv ${RPM};
 
   - &centos_build
       run:
@@ -97,9 +114,7 @@ aliases:
               rpm-build \
               yum-utils \
               python-srpm-macros \
-              python2-rpm-macros \
               python3-rpm-macros \
-              python2-pip \
               python3-pip \
           ;
           # build src rpm
@@ -132,34 +147,26 @@ aliases:
       run:
         name: Install test dependencies
         command: |
-          PYM="${PYTHON_VERSION:0:1}"
-          if [[ "${PYM}" -eq 2 ]]; then PYM=""; fi;
           apt-get -yqq install \
               debianutils \
-              python${PYM}-pytest \
-              python${PYM}-pytest-cov \
-              python${PYM}-requests-mock \
-              $([[ "${PYM}" == "" ]] && echo "python-mock") \
+              python${PYTHON_VERSION:0:1}-pytest \
+              python${PYTHON_VERSION:0:1}-pytest-cov \
+              python${PYTHON_VERSION:0:1}-requests-mock \
           ;
 
   - &centos_install_test_dependencies
       run:
         name: Install test dependencies
         command: |
-          if [[ "${PYTHON_VERSION:0:1}" -eq 3 ]]; then
-              PYXY=$(rpm --eval "%{?python3_pkgversion}");
-          else
-              PYXY="${PYTHON_VERSION:0:1}";
-          fi;
+          PYXY="${PYTHON_VERSION:0:1}";
           yum -y -q install epel-release;
           yum -y -q install \
               which \
-              python${PYXY}-pytest \
-              python${PYXY}-pytest-cov \
-              python${PYXY}-requests-mock \
-              $([ "${PYXY}" -eq 2 ] && echo "python2-mock") \
+              python${PYTHON_VERSION:0:1}-pytest \
+              python${PYTHON_VERSION:0:1}-pytest-cov \
+              python${PYTHON_VERSION:0:1}-requests-mock \
           ;
-          python${PYTHON_VERSION} -m pip install "pytest~=3.0" "more-itertools < 6.0a0"
+          python${PYTHON_VERSION} -m pip install "pytest~=3.0"
 
   - &test
       run:
@@ -167,7 +174,7 @@ aliases:
         command: |
           set -x;
           # install test requirements
-          python${PYTHON_VERSION} -m pip install "pytest" "pytest-cov" "requests-mock" "mock ; python_version < '3'" "zipp<2.0.0"
+          python${PYTHON_VERSION} -m pip install "pytest" "pytest-cov" "requests-mock" "zipp<2.0.0"
           # run test suite
           mkdir -pv tests;
           pushd tests;
@@ -177,7 +184,7 @@ aliases:
               --junitxml junit.xml \
           ;
           # test --help for scripts
-          for script in $(python -c "import pkg_resources as pkgr; [print(x.name) for x in pkgr.iter_entry_points('console_scripts') if x.dist.project_name == 'ciecplib']"); do
+          for script in $(python${PYTHON_VERSION} -c "import pkg_resources as pkgr; [print(x.name) for x in pkgr.iter_entry_points('console_scripts') if x.dist.project_name == 'ciecplib']"); do
               python${PYTHON_VERSION} -m coverage run \
                   --append \
                   --rcfile ../setup.cfg \
@@ -206,6 +213,7 @@ aliases:
         - checkout
         - *debian_configure
         - *attach_workspace
+        - *debian_fetch_requests_ecp
         - *debian_build
         - *debian_install
         - *debian_install_test_dependencies
@@ -220,6 +228,7 @@ aliases:
       steps:
         - checkout
         - *attach_workspace
+        - *centos_fetch_requests_ecp
         - *centos_build
         - *centos_install
         - *centos_install_test_dependencies
@@ -281,26 +290,19 @@ jobs:
       - *store_test_results
       - *store_test_artifacts
 
-  debian:buster:2.7:
-    <<: *debian
-    docker:
-      - image: debian:buster
-    environment:
-      PYTHON_VERSION: "2.7"
-
   debian:buster:3.7:
     <<: *debian
     docker:
-      - image: debian:buster
+      - image: debian:buster-backports
     environment:
       PYTHON_VERSION: "3.7"
 
-  centos:7:2.7:
-    <<: *centos
+  debian:bullseye:3.7:
+    <<: *debian
     docker:
-      - image: centos:7
+      - image: debian:bullseye
     environment:
-      PYTHON_VERSION: "2.7"
+      PYTHON_VERSION: "3.7"
 
   centos:8:3.6:
     <<: *centos
@@ -309,12 +311,12 @@ jobs:
     environment:
       PYTHON_VERSION: "3.6"
 
-  python:2.7:
+  python:3.5:
     <<: *python
     docker:
-      - image: python:2.7-buster
+      - image: python:3.5-buster
     environment:
-      PYTHON_VERSION: "2.7"
+      PYTHON_VERSION: "3.5"
 
   python:3.6:
     <<: *python
@@ -361,19 +363,16 @@ workflows:
       - flake8
       - sphinx
       # -- stage 2
-      #- centos:7:2.7:
-      #    requires:
-      #      - sdist
-      #- centos:8:3.6:
-      #    requires:
-      #      - sdist
-      #- debian:buster:2.7:
-      #    requires:
-      #      - sdist
-      #- debian:buster:3.7:
-      #    requires:
-      #      - sdist
-      - python:2.7:
+      - centos:8:3.6:
+          requires:
+            - sdist
+      - debian:buster:3.7:
+          requires:
+            - sdist
+      - debian:bullseye:3.7:
+          requires:
+            - sdist
+      - python:3.5:
           requires:
             - sdist
       - python:3.6:

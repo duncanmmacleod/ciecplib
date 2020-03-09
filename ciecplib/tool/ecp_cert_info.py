@@ -20,8 +20,6 @@ r"""Print information about an existing X.509 credential.
 
 """  # noqa: E501
 
-from __future__ import print_function
-
 from datetime import timedelta
 
 from ..x509 import (

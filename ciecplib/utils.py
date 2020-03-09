@@ -16,16 +16,11 @@
 # You should have received a copy of the GNU General Public License
 # along with ciecplib.  If not, see <http://www.gnu.org/licenses/>.
 
-from __future__ import absolute_import
-
 import os.path
 import random
 import re
 import string
-try:
-    from urllib.parse import urlparse
-except ImportError:  # python < 3
-    from urlparse import urlparse
+from urllib.parse import urlparse
 
 import requests
 
