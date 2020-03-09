@@ -48,12 +48,15 @@ aliases:
           apt-get -yqq update;
           apt-get -yqq install base-files curl dpkg;
           eval $(cat /etc/os-release);
-          curl -LO https://hypatia.aei.mpg.de/lsc-amd64-${VERSION_CODENAME}/python3-requests-ecp_0.1.1-1+deb${VERSION_ID}u0_all.deb
-          dpkg --install python3-requests-ecp_0.1.1-1+deb${VERSION_ID}u0_all.deb || { \
-              apt-get -y -f install;
-              dpkg --install python3-requests-ecp_0.1.1-1+deb${VERSION_ID}u0_all.deb;
-              dpkg --install python${PYTHON_VERSION:0:1}-ciecplib*.deb ciecp-utils*.deb;
+          if [[ ${VERSION_CODENAME} = "stretch" ]]; then BACKPORTS="-t stretch-backports"; fi;
+          DEB="python3-requests-ecp_0.1.1-1+deb${VERSION_ID}u0_all.deb";
+          curl -LO https://hypatia.aei.mpg.de/lsc-amd64-${VERSION_CODENAME}/${DEB};
+          dpkg --info ${DEB};
+          dpkg --install ${DEB}; || { \
+              apt-get -y -f ${BACKPORTS} install;
+              dpkg --install ${DEB};
           };
+          rm -fv ${DEB};
 
   - &debian_build
       run:
@@ -96,10 +99,12 @@ aliases:
         command: |
           set -x;
           yum -y -q update;
-          yum -y -q install curl;
-          curl -LO https://koji.ligo-la.caltech.edu/kojifiles/packages/requests-ecp/0.1.1/1.el8/noarch/python3-requests-ecp-0.1.1-1.el8.noarch.rpm;
-          yum -y --nogpgcheck localinstall python3-requests-ecp-0.1.1-1.el8.noarch.rpm;
-          rm -fv python3-requests-ecp-0.1.1-1.el8.noarch.rpm;
+          yum -y -q install curl epel-release;
+          DIST_SUFFIX=$(rpm --eval "%{dist}");
+          RPM="python3-requests-ecp-0.1.1-1${DIST_SUFFIX}.noarch.rpm;"
+          curl -LO https://koji.ligo-la.caltech.edu/kojifiles/packages/requests-ecp/0.1.1/1${DIST_SUFFIX}/noarch/${RPM};
+          yum -y --nogpgcheck localinstall ${RPM};
+          rm -fv ${RPM};
 
   - &centos_build
       run:
