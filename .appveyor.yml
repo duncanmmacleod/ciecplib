@@ -1,28 +1,21 @@
 environment:
+  global:
+    MINICONDA: C:\Miniconda3-x64
   matrix:
-    - MINICONDA: C:\Miniconda37-x64
-      PYTHON_VERSION: 3.8
-    - MINICONDA: C:\Miniconda37-x64
-      PYTHON_VERSION: 3.7
-    - MINICONDA: C:\Miniconda36-x64
-      PYTHON_VERSION: 3.6
+    - PYTHON_VERSION: 3.5
+    - PYTHON_VERSION: 3.6
+    - PYTHON_VERSION: 3.7
+    - PYTHON_VERSION: 3.8
 install:
   - "set PATH=%MINICONDA%\\condabin;%PATH%"
   - call "%MINICONDA%\\Scripts\\activate.bat"
   - conda config --set always_yes yes
   - conda config --add channels conda-forge
-  - conda create --name ciecplib
+  - conda create --quiet --yes --name ciecplib
         "python=%PYTHON_VERSION%"
-        "coverage"
-        "m2crypto"
         "pip"
-        "pyopenssl"
-        "pytest>=3.0.0"
-        "pytest-cov"
-        "requests"
-        "requests-ecp"
-        "requests-mock"
         "setuptools>=27.3"
+  - conda install --quiet --yes --name ciecplib --file requirements.txt
   - conda activate ciecplib
   - conda info
   - conda list
