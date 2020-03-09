@@ -46,13 +46,15 @@ aliases:
         name: Fetch requests-ecp
         command: |
           apt-get -yqq update;
-          apt-get -yqq install base-files curl dpkg;
+          apt-get -yqq install base-files curl dpkg lsb-release;
           eval $(cat /etc/os-release);
-          if [[ ${VERSION_CODENAME} = "stretch" ]]; then BACKPORTS="-t stretch-backports"; fi;
+          CODENAME=$(lsb_release --codename --short);
+          if [[ ${CODENAME} = "stretch" ]]; then BACKPORTS="-t stretch-backports"; fi;
+          if [[ ${CODENAME} = "bullseye" ]]; then VERSION_ID="11"; fi;
           DEB="python3-requests-ecp_0.1.1-1+deb${VERSION_ID}u0_all.deb";
-          curl -LO https://hypatia.aei.mpg.de/lsc-amd64-${VERSION_CODENAME}/${DEB};
+          curl -LO https://hypatia.aei.mpg.de/lsc-amd64-${CODENAME}/${DEB};
           dpkg --info ${DEB};
-          dpkg --install ${DEB}; || { \
+          dpkg --install ${DEB} || { \
               apt-get -y -f ${BACKPORTS} install;
               dpkg --install ${DEB};
           };
@@ -101,7 +103,7 @@ aliases:
           yum -y -q update;
           yum -y -q install curl epel-release;
           DIST_SUFFIX=$(rpm --eval "%{dist}");
-          RPM="python3-requests-ecp-0.1.1-1${DIST_SUFFIX}.noarch.rpm;"
+          RPM="python3-requests-ecp-0.1.1-1${DIST_SUFFIX}.noarch.rpm";
           curl -LO https://koji.ligo-la.caltech.edu/kojifiles/packages/requests-ecp/0.1.1/1${DIST_SUFFIX}/noarch/${RPM};
           yum -y --nogpgcheck localinstall ${RPM};
           rm -fv ${RPM};
