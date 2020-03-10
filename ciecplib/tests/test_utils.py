@@ -20,6 +20,7 @@
 """
 
 import os
+from pathlib import Path
 from unittest import mock
 
 import pytest
@@ -41,26 +42,26 @@ RAW_IDP_LIST = "\n".join(
 
 @mock.patch(
     "os.getlogin" if os.name == "nt" else "os.getuid",
-    return_value=123,
+    mock.MagicMock(return_value=123),
 )
-def test_get_ecpcookie_path(_):
+def test_get_ecpcookie_path():
     if os.name == "nt":
         path = r"%SYSTEMROOT%\Temp\ecpcookie.123"
     else:
         path = "/tmp/ecpcookie.u123"
-    assert ciecplib_utils.get_ecpcookie_path() == path
+    assert ciecplib_utils.get_ecpcookie_path() == Path(path)
 
 
 @mock.patch(
     "os.getlogin" if os.name == "nt" else "os.getuid",
-    return_value=123,
+    mock.MagicMock(return_value=123),
 )
-def get_x509_proxy_path():
+def test_get_x509_proxy_path():
     if os.name == "nt":
         path = r"%SYSTEMROOT%\Temp\x509up_123"
     else:
         path = "/tmp/x509up_u123"
-    assert ciecplib_utils.get_x509_proxy_path() == path
+    assert ciecplib_utils.get_x509_proxy_path() == Path(path)
 
 
 def test_get_idps(requests_mock):
