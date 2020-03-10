@@ -16,10 +16,11 @@
 # You should have received a copy of the GNU General Public License
 # along with ciecplib.  If not, see <http://www.gnu.org/licenses/>.
 
-import os.path
+import os
 import random
 import re
 import string
+from pathlib import Path
 from urllib.parse import urlparse
 
 import requests
@@ -29,14 +30,24 @@ __author__ = "Duncan Macleod <duncan.macleod@ligo.org>"
 
 # -- default paths ------------------------------------------------------------
 
-def get_ecpcookie_path():
+def _tmpfile(prefix):
     if os.name == "nt":
         tmpdir = r'%SYSTEMROOT%\Temp'
-        tmpname = "ecpcookie.{0}".format(os.getlogin())
+        user = os.getlogin()
     else:
         tmpdir = "/tmp"
-        tmpname = "ecpcookie.u{0}".format(os.getuid())
-    return os.path.join(tmpdir, tmpname)
+        user = "u{}".format(os.getuid())
+    return Path(tmpdir) / "{}{}".format(prefix, user)
+
+
+def get_ecpcookie_path():
+    """Returns the default path for the ECP cookie file
+
+    Returns
+    -------
+    path : `pathlib.Path`
+    """
+    return _tmpfile("ecpcookie.")
 
 
 def get_x509_proxy_path():
@@ -44,21 +55,15 @@ def get_x509_proxy_path():
 
     Returns
     -------
-    path : `str`
+    path : `pathlib.Path`
     """
     if os.getenv("X509_USER_PROXY"):
-        return os.environ["X509_USER_PROXY"]
-    if os.name == "nt":
-        tmpdir = r'%SYSTEMROOT%\Temp'
-        tmpname = "x509up_{0}".format(os.getlogin())
-    else:
-        tmpdir = "/tmp"
-        tmpname = "x509up_u{0}".format(os.getuid())
-    return os.path.join(tmpdir, tmpname)
+        return Path(os.environ["X509_USER_PROXY"])
+    return _tmpfile("x509up_")
 
 
-DEFAULT_COOKIE_FILE = get_ecpcookie_path()
-DEFAULT_X509_USER_FILE = get_x509_proxy_path()
+DEFAULT_COOKIE_FILE = str(get_ecpcookie_path())
+DEFAULT_X509_USER_FILE = str(get_x509_proxy_path())
 
 # -- institution URLs ----------------------------------------------------
 

@@ -19,8 +19,8 @@
 """Build configuration for ciecplib
 """
 
-import os.path
 import re
+from pathlib import Path
 
 from setuptools import (find_packages, setup)
 from setuptools.command.build_py import build_py
@@ -50,7 +50,7 @@ __author__ = "Duncan Macleod <duncan.macleod@ligo.org>"
 def find_version(path, varname="__version__"):
     """Parse the version metadata in the given file.
     """
-    with open(path, 'r') as fobj:
+    with path.open('r') as fobj:
         version_file = fobj.read()
     version_match = re.search(
         r"^{0} = ['\"]([^'\"]*)['\"]".format(varname),
@@ -90,7 +90,7 @@ extras_require = {
 setup(
     # distribution metadata
     name="ciecplib",
-    version=find_version(os.path.join("ciecplib", "__init__.py")),
+    version=find_version(Path("ciecplib") / "__init__.py"),
     author="Duncan Macleod",
     author_email="duncan.macleod@ligo.org",
     license="GPL-3.0-or-later",
