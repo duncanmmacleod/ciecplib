@@ -35,11 +35,10 @@ defined by either
 - ``C:\Windows\Temp\ecpcookie.{username}`` (Windows)
 """  # noqa: E501
 
-import argparse
-import os
 import sys
 
 from ..cookies import (
+    ECPCookieJar,
     has_session_cookies,
     load_cookiejar,
 )
@@ -47,6 +46,7 @@ from ..ui import get_cookie
 from ..utils import DEFAULT_COOKIE_FILE
 from .utils import (
     ArgumentParser,
+    destroy_file,
     init_logging,
 )
 
@@ -63,20 +63,14 @@ def create_parser():
     parser = ArgumentParser(
         description=__doc__,
         prog="ecp-get-cookie",
+        add_auth=True,
+        add_helpers=True,
     )
     parser.add_argument(
         "target_url",
         metavar="URL",
         help="service URL for which to generate cookies",
     )
-    authtype = parser.add_mutually_exclusive_group()
-    authtype.add_argument(
-        "username",
-        nargs="?",
-        default=argparse.SUPPRESS,
-        help="authentication username, required if --kerberos not given",
-    )
-
     parser.add_argument(
         "-c",
         "--cookiefile",
@@ -90,14 +84,6 @@ def create_parser():
         action="store_true",
         default=False,
         help="write debug output to stdout (implies --verbose)",
-    )
-    parser.add_identity_provider_argument()
-    authtype.add_argument(
-        "-k",
-        "--kerberos",
-        action="store_true",
-        default=False,
-        help="enable kerberos negotiation, required if username not given"
     )
     parser.add_argument(
         "-r",
@@ -130,15 +116,13 @@ def parse_args(parser, args=None):
     -------
     args : `argparse.Namespace`
     """
-    args = parser.parse_args(args=args)
+    # if user has given -X/--destroy, and isn't just asking for help
+    # allow the URL positional argument to be empty
+    sargs = set(sys.argv[1:] if args is None else args)
+    if {"-X", "--destroy"} & sargs and not {"-h", "--help"} & sargs:
+        parser._get_positional_actions()[0].nargs = "?"
 
-    # check that username or --kerberos was given if not using --destroy
-    if not args.destroy and not (
-            args.kerberos or
-            getattr(args, "username", None) and args.idp
-    ):
-        parser.error("-k/--kerberos is required if IdP_tag and "
-                     "login are not given")
+    args = parser.parse_args(args=args)
 
     if args.debug:
         args.verbose = True
@@ -150,26 +134,32 @@ def main(args=None):
     parser = create_parser()
     args = parse_args(parser, args=args)
 
+    def vprint(*pargs, **kwargs):
+        """Execute `print` only if --verbose was given
+        """
+        if args.verbose:
+            print(*pargs, **kwargs)
+
     if args.debug:
         init_logging()
 
     # if asked to destroy, just do that
     if args.destroy:
-        if args.verbose:
-            print("Removing cookie file {0!s}".format(args.cookiefile))
-        os.unlink(args.cookiefile)
-        sys.exit()
+        destroy_file(args.cookiefile, "cookie file", verbose=args.verbose)
+        return 0
 
-    # load old cookies
-    cookiejar = load_cookiejar(args.cookiefile, strict=True)
+    # load old cookies (erroring if file is malformed only)
+    try:
+        cookiejar = load_cookiejar(args.cookiefile, strict=True)
+    except FileNotFoundError:
+        cookiejar = ECPCookieJar()
 
     # if we can't or won't reuse cookies, get a new one
     if not args.reuse or not has_session_cookies(
             cookiejar,
             args.target_url,
     ):
-        if args.verbose:
-            print("Acquiring new session cookie...")
+        vprint("Acquiring new session cookie...")
         cookie = get_cookie(
             args.target_url,
             endpoint=args.identity_provider,
@@ -181,8 +171,7 @@ def main(args=None):
         )
 
         # write cookies back to the file
-        if args.verbose:
-            print("Storing cookies...")
+        vprint("Storing cookies...")
 
         cookiejar.set_cookie(cookie)
         cookiejar.save(
@@ -190,13 +179,12 @@ def main(args=None):
             ignore_discard=True,
             ignore_expires=True,
         )
-        if args.verbose:
-            print("Cookie stored in '{0!s}'".format(args.cookiefile))
+        vprint("Cookie stored in '{0!s}'".format(args.cookiefile))
     else:
-        print("Reusing existing cookies")
+        vprint("Reusing existing cookies")
 
     # load the cert from file to print information
-    if args.debug or args.verbose:
+    if args.verbose:
         info = [(cookie.domain, cookie.path, cookie.secure, cookie.name) for
                 cookie in cookiejar]
         fmt = "%-{0}s %-5s %-7s %s".format(max(len(i[0]) for i in info))

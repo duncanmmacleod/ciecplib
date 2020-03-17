@@ -76,6 +76,8 @@ def create_parser():
         epilog=EPILOG,
         manpage=MANPAGE,
         prog="ecp-cert-info",
+        add_auth=False,
+        add_helpers=True,
     )
     parser.add_argument(
         "-f",

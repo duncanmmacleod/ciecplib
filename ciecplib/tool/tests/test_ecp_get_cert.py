@@ -29,6 +29,6 @@ from .. import ecp_get_cert
 @mock.patch("os.unlink", mock.Mock(side_effect=(None, FileNotFoundError)))
 @pytest.mark.parametrize("dummy", (True, False))
 def test_destroy(dummy):
-    """Check that the --destory option works whether the file exists or not
+    """Check that the --destroy option works whether the file exists or not
     """
-    ecp_get_cert.main(["user", "--destroy"])
+    ecp_get_cert.main(["--destroy"])

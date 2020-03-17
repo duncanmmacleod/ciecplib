@@ -19,9 +19,6 @@
 """Create an X.509 certificate using ECP authentication.
 """
 
-import argparse
-import os
-
 from ..ui import get_cert
 from ..x509 import (
     check_cert,
@@ -32,6 +29,7 @@ from ..x509 import (
 from ..utils import DEFAULT_X509_USER_FILE
 from .utils import (
     ArgumentParser,
+    destroy_file,
     init_logging,
 )
 
@@ -40,11 +38,15 @@ __author__ = "Duncan Macleod <duncan.macleod@ligo.org>"
 EPILOG = r"""
 Examples:
 
-    $ ecp-get-cert user.name --institution 'My Institution'
+    $ ecp-get-cert -i 'My Institution'
 
-to authenticate with a password prompt, or
+to authenticate with a username and password prompt, or
 
-    $ ecp-get-cert --institution 'My Institution' --kerberos
+    $ ecp-get-cert -u user.name -i 'My Institution'
+
+to authenticate with only a password prompt, or
+
+    $ ecp-get-cert -i 'My Institution' -k
 
 to reuse an existing kerberos (``kinit``) credential.
 
@@ -52,10 +54,10 @@ The identitity provider name can be given in a number of ways, so long as the
 argument uniquely identifies a provider.  For example, the following are all
 equivalent:
 
-    $ ecp-get-cert user.name --institution 'Cardiff University'
-    $ ecp-get-cert user.name --institution Cardiff
-    $ ecp-get-cert user.name --institution idp.cf.ac.uk
-    $ ECP_IDP="Cardiff" ecp-get-cert user.name
+    $ ecp-get-cert -i 'Cardiff University'
+    $ ecp-get-cert -i Cardiff
+    $ ecp-get-cert -i idp.cf.ac.uk
+    $ ECP_IDP="Cardiff" ecp-get-cert
 
 Environment:
 
@@ -87,16 +89,9 @@ def create_parser():
         epilog=EPILOG,
         prog="ecp-get-cert",
         manpage=MANPAGE,
+        add_auth=True,
+        add_helpers=True,
     )
-
-    authtype = parser.add_mutually_exclusive_group()
-    authtype.add_argument(
-        "username",
-        nargs="?",
-        default=argparse.SUPPRESS,
-        help="authentication username, required if --kerberos not given",
-    )
-
     parser.add_argument(
         "-d",
         "--debug",
@@ -117,14 +112,6 @@ def create_parser():
         type=int,
         default=277,
         help="lifetime of the certificate"
-    )
-    parser.add_identity_provider_argument()
-    authtype.add_argument(
-        "-k",
-        "--kerberos",
-        action="store_true",
-        default=False,
-        help="enable kerberos negotiation, required if username not given"
     )
     parser.add_argument(
         "-p",
@@ -170,12 +157,6 @@ def parse_args(parser, args=None):
     """
     args = parser.parse_args(args=args)
 
-    # check that username or --kerberos was given if not using --destroy
-    if not args.destroy and not (
-            getattr(args, "username", None) or args.kerberos
-    ):
-        parser.error("one of username or -k/--kerberos is required")
-
     if args.debug:
         args.verbose = True
 
@@ -205,15 +186,7 @@ def main(args=None):
 
     # if asked to destroy, just do that
     if args.destroy:
-        vprint("Removing credential file '{!s}'...".format(args.file), end=" ")
-        try:
-            os.unlink(args.file)
-        except FileNotFoundError:  # file doesn't exit, no matter
-            vprint("not found", end="")
-        else:
-            vprint("done", end="")
-        finally:
-            print()
+        destroy_file(args.file, "credential file", verbose=args.verbose)
         return 0
 
     # if asked to reuse, check that we can

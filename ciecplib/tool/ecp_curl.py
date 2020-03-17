@@ -50,6 +50,8 @@ def create_parser():
     parser = ArgumentParser(
         description=__doc__,
         prog="ecp-curl",
+        add_auth=True,
+        add_helpers=True,
     )
     parser.add_argument(
         "url",
@@ -69,14 +71,6 @@ def create_parser():
         default=False,
         help="write debug output (uses both stderr and stdout)",
     )
-    parser.add_identity_provider_argument()
-    parser.add_argument(
-        "-k",
-        "--kerberos",
-        action="store_true",
-        default=False,
-        help="enable kerberos negotiation"
-    )
     parser.add_argument(
         "-o",
         "--output",
@@ -89,12 +83,6 @@ def create_parser():
         action="store_true",
         default=False,
         help="store session cookies in the cookie file"
-    )
-    parser.add_argument(
-        "-u",
-        "--username",
-        help="authentication username, will be prompted for if not given "
-             "and not using --kerberos"
     )
     return parser
 
