@@ -31,6 +31,7 @@ from ..x509 import (
 from ..utils import DEFAULT_X509_USER_FILE
 from .utils import (
     ArgumentParser,
+    destroy_file,
     init_logging,
 )
 
@@ -187,15 +188,7 @@ def main(args=None):
 
     # if asked to destroy, just do that
     if args.destroy:
-        vprint("Removing credential file '{!s}'...".format(args.file), end=" ")
-        try:
-            os.unlink(args.file)
-        except FileNotFoundError:  # file doesn't exit, no matter
-            vprint("not found", end="")
-        else:
-            vprint("done", end="")
-        finally:
-            print()
+        destroy_file(args.file, "credential file", verbose=args.verbose)
         return 0
 
     # if asked to reuse, check that we can

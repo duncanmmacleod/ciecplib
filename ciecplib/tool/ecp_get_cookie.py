@@ -35,7 +35,6 @@ defined by either
 - ``C:\Windows\Temp\ecpcookie.{username}`` (Windows)
 """  # noqa: E501
 
-import os
 import sys
 
 from ..cookies import (
@@ -47,6 +46,7 @@ from ..ui import get_cookie
 from ..utils import DEFAULT_COOKIE_FILE
 from .utils import (
     ArgumentParser,
+    destroy_file,
     init_logging,
 )
 
@@ -139,9 +139,8 @@ def main(args=None):
 
     # if asked to destroy, just do that
     if args.destroy:
-        vprint("Removing cookie file {0!s}".format(args.cookiefile))
-        os.unlink(args.cookiefile)
-        sys.exit()
+        destroy_file(args.cookiefile, "cookie file", verbose=args.verbose)
+        return 0
 
     # load old cookies (erroring if file is malformed only)
     try:

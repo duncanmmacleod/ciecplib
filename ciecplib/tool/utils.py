@@ -21,7 +21,9 @@
 
 import argparse
 import logging
+import os
 import sys
+from functools import wraps
 from http.client import HTTPConnection
 
 from .. import __version__
@@ -224,3 +226,22 @@ def init_logging(level=logging.DEBUG):
     requests_log.setLevel(level)
     requests_log.propagate = True
     return requests_log
+
+
+def destroy_file(path, desc=None, verbose=False):
+    """Destroy a file (if it exists), with verbose output
+    """
+    if verbose:
+        desc = (desc or "").rstrip(" ") + " "
+        print("Removing {}'{!s}'...".format(desc, path), end=" ")
+    try:
+        os.unlink(path)
+    except FileNotFoundError:  # file doesn't exit, no matter
+        if verbose:
+            print("not found", end="")
+    else:
+        if verbose:
+            print("done", end="")
+    finally:
+        if verbose:
+            print()
