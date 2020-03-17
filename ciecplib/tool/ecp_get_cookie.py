@@ -116,6 +116,12 @@ def parse_args(parser, args=None):
     -------
     args : `argparse.Namespace`
     """
+    # if user has given -X/--destroy, and isn't just asking for help
+    # allow the URL positional argument to be empty
+    sargs = set(sys.argv[1:] if args is None else args)
+    if {"-X", "--destroy"} & sargs and not {"-h", "--help"} & sargs:
+        parser._get_positional_actions()[0].nargs = "?"
+
     args = parser.parse_args(args=args)
 
     if args.debug:

@@ -119,7 +119,6 @@ class ArgumentParser(argparse.ArgumentParser):
             auth.add_argument(
                 "-i",
                 "--identity-provider",
-                required=defaultidp is None,
                 default=defaultidp,
                 help="name of institution providing the identity (e.g. "
                      "'Cardiff University'), or domain name of IdP host "
@@ -148,6 +147,22 @@ class ArgumentParser(argparse.ArgumentParser):
             )
 
         return auth
+
+    @wraps(argparse.ArgumentParser.parse_args)
+    def parse_args(self, *args, **kwargs):
+        args = super().parse_args(*args, **kwargs)
+        # if -X/--destroy wasn't given and
+        # -i/--identity-provider also wasn't given (and is supported)
+        # then raise an error
+        #    - this just supports giving -X/--destroy without having to
+        #      also give -i/--identity-provider for no reason
+        destroy = getattr(args, "destroy", None)
+        idp = getattr(args, "identity_provider", False)
+        if not destroy and idp is None:
+            self.error(
+                "the following arguments are required: -i/--identity-provider",
+            )
+        return args
 
 
 class ListIdpsAction(argparse.Action):
