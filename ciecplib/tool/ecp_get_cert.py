@@ -19,8 +19,6 @@
 """Create an X.509 certificate using ECP authentication.
 """
 
-import os
-
 from ..ui import get_cert
 from ..x509 import (
     check_cert,
