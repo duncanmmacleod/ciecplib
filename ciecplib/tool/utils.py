@@ -53,6 +53,7 @@ class HelpFormatter(
 
 class ArgumentParser(argparse.ArgumentParser):
     def __init__(self, *args, **kwargs):
+        add_auth = kwargs.pop("add_auth", True)
         add_helpers = kwargs.pop("add_helpers", True)
         version = kwargs.pop("version", __version__)
         manpage = kwargs.pop("manpage", None)
@@ -62,56 +63,89 @@ class ArgumentParser(argparse.ArgumentParser):
         super(ArgumentParser, self).__init__(*args, **kwargs)
 
         self._positionals.title = "Required arguments"
-        self._optionals.title = "Options"
+        if add_auth:
+            self._optionals.title = "Other options"
+        else:
+            self._optionals.title = "Options"
 
         # add manpage options for argparse-manpage
         self._manpage = manpage
 
+        # add auth options group
+        if add_auth:
+            self.add_auth_arguments()
+            group = self._action_groups.pop(-1)
+            self._action_groups.insert(1, group)
+
         # add helper commands group
         if add_helpers:
-            helpers = self.add_argument_group("Helper arguments")
-            helpers.add_argument(
-                "-h",
-                "--help",
-                action="help",
-                default=argparse.SUPPRESS,
-                help="show this help message and exit",
-            )
-            helpers.add_argument(
-                "-l",
-                "--list-idps",
-                action=ListIdpsAction,
-            )
-            if version is not None:
-                helpers.add_argument(
-                    "-V",
-                    "--version",
-                    action="version",
-                    version=version,
-                )
+            self.add_helper_arguments(version=version)
 
-    def add_identity_provider_argument(
+    def add_helper_arguments(self, version=__version__):
+        helpers = self.add_argument_group("Helper arguments")
+        helpers.add_argument(
+            "-h",
+            "--help",
+            action="help",
+            default=argparse.SUPPRESS,
+            help="show this help message and exit",
+        )
+        helpers.add_argument(
+            "-l",
+            "--list-idps",
+            action=ListIdpsAction,
+        )
+        if version is not None:
+            helpers.add_argument(
+                "-V",
+                "--version",
+                action="version",
+                version=version,
+            )
+        return helpers
+
+    def add_auth_arguments(
             self,
-            *args,
-            **kwargs
+            identity_provider=True,
+            kerberos=True,
+            username=True,
     ):
-        if not args:
-            args = ("-i", "--identity-provider")
-        kwargs.setdefault("default", _get_default_idp())
-        kwargs.setdefault(
-            "help",
-            "name of institution providing the identity (e.g. 'Cardiff "
-            "University'), or domain name of IdP host (e.g. idp.cf.ac.uk), "
-            "see --list-idps for a list of Identity Provider (IdPs) and "
-            "their IdP URL. "
-            "Shortened institution names (e.g. 'Cardiff') can be given as "
-            "long as they uniquely match a full institution name known by "
-            "CILogon",
-        )
-        return super(ArgumentParser, self).add_argument(
-            *args,
-            **kwargs
-        )
+        auth = self.add_argument_group("Authentication options")
+
+        if identity_provider:
+            defaultidp = _get_default_idp()
+            auth.add_argument(
+                "-i",
+                "--identity-provider",
+                required=defaultidp is None,
+                default=defaultidp,
+                help="name of institution providing the identity (e.g. "
+                     "'Cardiff University'), or domain name of IdP host "
+                     "(e.g. idp.cf.ac.uk), see --list-idps for a list of "
+                     "Identity Provider (IdPs) and their IdP URL. Shortened "
+                     "institution names (e.g. 'Cardiff') can be given as "
+                     "long as they uniquely match a full institution name "
+                     "known by CILogon",
+            )
+
+        if kerberos:
+            auth.add_argument(
+                "-k",
+                "--kerberos",
+                action="store_true",
+                default=False,
+                help="enable kerberos negotiation",
+            )
+
+        if username:
+            auth.add_argument(
+                "-u",
+                "--username",
+                help="authentication username, will be prompted for if not "
+                     "given and not using --kerberos",
+            )
+
+        return auth
 
 
 class ListIdpsAction(argparse.Action):

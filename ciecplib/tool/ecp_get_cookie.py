@@ -35,7 +35,6 @@ defined by either
 - ``C:\Windows\Temp\ecpcookie.{username}`` (Windows)
 """  # noqa: E501
 
-import argparse
 import os
 import sys
 
@@ -64,6 +63,8 @@ def create_parser():
     parser = ArgumentParser(
         description=__doc__,
         prog="ecp-get-cookie",
+        add_auth=True,
+        add_helpers=True,
     )
     parser.add_argument(
         "target_url",
@@ -84,26 +85,12 @@ def create_parser():
         default=False,
         help="write debug output to stdout (implies --verbose)",
     )
-    parser.add_identity_provider_argument()
-    parser.add_argument(
-        "-k",
-        "--kerberos",
-        action="store_true",
-        default=False,
-        help="enable kerberos negotiation, required if username not given"
-    )
     parser.add_argument(
         "-r",
         "--reuse",
         default=False,
         action="store_true",
         help="reuse existing cookies if possible",
-    )
-    parser.add_argument(
-        "-u",
-        "--username",
-        help="authentication username, will be prompted for if not given "
-             "and not using --kerberos"
     )
     parser.add_argument(
         "-v",
