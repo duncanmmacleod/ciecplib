@@ -45,7 +45,7 @@ class HelpFormatter(
     def _format_usage(self, usage, actions, groups, prefix):
         if prefix is None:
             prefix = "Usage: "
-        return super(HelpFormatter, self)._format_usage(
+        return super()._format_usage(
             usage,
             actions,
             groups,
@@ -158,7 +158,7 @@ class ListIdpsAction(argparse.Action):
             default=argparse.SUPPRESS,
             help="show IdP names and URLs and exit",
     ):
-        super(ListIdpsAction, self).__init__(
+        super().__init__(
             option_strings=option_strings,
             dest=dest,
             default=default,

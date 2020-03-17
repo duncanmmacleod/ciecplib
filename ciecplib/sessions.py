@@ -58,7 +58,7 @@ class Session(ECPSession):
             kerberos = has_credential()
 
         # open session with ECP authentication
-        super(Session, self).__init__(
+        super().__init__(
             idp=format_endpoint_url(idp),
             kerberos=kerberos,
             username=username,
@@ -75,7 +75,7 @@ class Session(ECPSession):
 
     @wraps(ECPSession.close)
     def close(self):
-        super(Session, self).close()
+        super().close()
 
         # cache cookies for next time (only if using our fancy jar)
         if self._cookiefile and isinstance(self.cookies, ECPCookieJar):
