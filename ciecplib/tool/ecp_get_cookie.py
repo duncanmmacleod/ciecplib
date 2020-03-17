@@ -70,14 +70,6 @@ def create_parser():
         metavar="URL",
         help="service URL for which to generate cookies",
     )
-    authtype = parser.add_mutually_exclusive_group()
-    authtype.add_argument(
-        "username",
-        nargs="?",
-        default=argparse.SUPPRESS,
-        help="authentication username, required if --kerberos not given",
-    )
-
     parser.add_argument(
         "-c",
         "--cookiefile",
@@ -93,7 +85,7 @@ def create_parser():
         help="write debug output to stdout (implies --verbose)",
     )
     parser.add_identity_provider_argument()
-    authtype.add_argument(
+    parser.add_argument(
         "-k",
         "--kerberos",
         action="store_true",
@@ -106,6 +98,12 @@ def create_parser():
         default=False,
         action="store_true",
         help="reuse existing cookies if possible",
+    )
+    parser.add_argument(
+        "-u",
+        "--username",
+        help="authentication username, will be prompted for if not given "
+             "and not using --kerberos"
     )
     parser.add_argument(
         "-v",
@@ -132,14 +130,6 @@ def parse_args(parser, args=None):
     args : `argparse.Namespace`
     """
     args = parser.parse_args(args=args)
-
-    # check that username or --kerberos was given if not using --destroy
-    if not args.destroy and not (
-            args.kerberos or
-            getattr(args, "username", None) and args.idp
-    ):
-        parser.error("-k/--kerberos is required if IdP_tag and "
-                     "login are not given")
 
     if args.debug:
         args.verbose = True
