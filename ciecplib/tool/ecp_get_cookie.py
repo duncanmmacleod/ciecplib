@@ -141,13 +141,18 @@ def main(args=None):
     parser = create_parser()
     args = parse_args(parser, args=args)
 
+    def vprint(*pargs, **kwargs):
+        """Execute `print` only if --verbose was given
+        """
+        if args.verbose:
+            print(*pargs, **kwargs)
+
     if args.debug:
         init_logging()
 
     # if asked to destroy, just do that
     if args.destroy:
-        if args.verbose:
-            print("Removing cookie file {0!s}".format(args.cookiefile))
+        vprint("Removing cookie file {0!s}".format(args.cookiefile))
         os.unlink(args.cookiefile)
         sys.exit()
 
@@ -162,8 +167,7 @@ def main(args=None):
             cookiejar,
             args.target_url,
     ):
-        if args.verbose:
-            print("Acquiring new session cookie...")
+        vprint("Acquiring new session cookie...")
         cookie = get_cookie(
             args.target_url,
             endpoint=args.identity_provider,
@@ -175,8 +179,7 @@ def main(args=None):
         )
 
         # write cookies back to the file
-        if args.verbose:
-            print("Storing cookies...")
+        vprint("Storing cookies...")
 
         cookiejar.set_cookie(cookie)
         cookiejar.save(
@@ -184,13 +187,12 @@ def main(args=None):
             ignore_discard=True,
             ignore_expires=True,
         )
-        if args.verbose:
-            print("Cookie stored in '{0!s}'".format(args.cookiefile))
+        vprint("Cookie stored in '{0!s}'".format(args.cookiefile))
     else:
-        print("Reusing existing cookies")
+        vprint("Reusing existing cookies")
 
     # load the cert from file to print information
-    if args.debug or args.verbose:
+    if args.verbose:
         info = [(cookie.domain, cookie.path, cookie.secure, cookie.name) for
                 cookie in cookiejar]
         fmt = "%-{0}s %-5s %-7s %s".format(max(len(i[0]) for i in info))
