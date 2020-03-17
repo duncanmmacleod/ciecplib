@@ -40,6 +40,7 @@ import os
 import sys
 
 from ..cookies import (
+    ECPCookieJar,
     has_session_cookies,
     load_cookiejar,
 )
@@ -160,8 +161,11 @@ def main(args=None):
         os.unlink(args.cookiefile)
         sys.exit()
 
-    # load old cookies
-    cookiejar = load_cookiejar(args.cookiefile, strict=True)
+    # load old cookies (erroring if file is malformed only)
+    try:
+        cookiejar = load_cookiejar(args.cookiefile, strict=True)
+    except FileNotFoundError:
+        cookiejar = ECPCookieJar()
 
     # if we can't or won't reuse cookies, get a new one
     if not args.reuse or not has_session_cookies(
