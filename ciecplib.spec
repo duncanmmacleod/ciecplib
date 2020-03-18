@@ -1,5 +1,5 @@
 %define name ciecplib
-%define version 0.2.0
+%define version 0.2.1
 %define release 1
 %define author Duncan Macleod
 %define email duncan.macleod@ligo.org
@@ -92,6 +92,9 @@ rm -rf $RPM_BUILD_ROOT
 # -- changelog --------------
 
 %changelog
+* Wed Mar 18 2020 Duncan Macleod <duncan.macleod@ligo.org> - 0.2.1-1
+- update for 0.2.1
+
 * Tue Mar 10 2020 Duncan Macleod <duncan.macleod@ligo.org> - 0.2.0-1
 - update for 0.2.0
 - remove python2 packages
