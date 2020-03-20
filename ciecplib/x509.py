@@ -214,7 +214,7 @@ def write_cert(path, pkcs12, use_proxy=False, minhours=168):
 
     Parameters
     ----------
-    path : `str`
+    path : `str`, `pathlib.Path`
         the desired location of the final X509 file
 
     pkcs12 : `OpenSSL.crypto.PKCS12`
@@ -251,7 +251,7 @@ def write_cert(path, pkcs12, use_proxy=False, minhours=168):
         tmp.close()
 
         # move tmpfile into place
-        shutil.move(tmp.name, path)
+        shutil.move(tmp.name, str(path))
 
 
 def generate_proxy(cert, key, minhours=168, limited=False, bits=2048):
