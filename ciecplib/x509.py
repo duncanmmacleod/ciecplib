@@ -42,7 +42,7 @@ def load_cert(path, format=crypto.FILETYPE_PEM):
 
     Parameters
     ----------
-    path : `str`
+    path : `str`, `pathlib.Path`
         the file path from which to read
 
     format : `int`, optional
@@ -53,7 +53,7 @@ def load_cert(path, format=crypto.FILETYPE_PEM):
     cert : `OpenSSL.crypto.X509`
         the parsed certificate
     """
-    with open(path, "r") as fobj:
+    with open(str(path), "r") as fobj:
         return crypto.load_certificate(
             format,
             fobj.read(),
