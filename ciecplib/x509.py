@@ -18,7 +18,7 @@
 
 import calendar
 import datetime
-import os
+import shutil
 import struct
 import tempfile
 import time
@@ -199,7 +199,7 @@ def write_cert(path, pkcs12, use_proxy=False, minhours=168):
         tmp.close()
 
         # move tmpfile into place
-        os.rename(tmp.name, path)
+        shutil.move(tmp.name, path)
 
 
 def generate_proxy(cert, key, minhours=168, limited=False, bits=2048):
