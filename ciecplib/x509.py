@@ -20,6 +20,7 @@ import calendar
 import datetime
 import shutil
 import struct
+import sys
 import tempfile
 import time
 
@@ -41,7 +42,7 @@ def load_cert(path, format=crypto.FILETYPE_PEM):
 
     Parameters
     ----------
-    path : `str`
+    path : `str`, `pathlib.Path`
         the file path from which to read
 
     format : `int`, optional
@@ -52,7 +53,7 @@ def load_cert(path, format=crypto.FILETYPE_PEM):
     cert : `OpenSSL.crypto.X509`
         the parsed certificate
     """
-    with open(path, "r") as fobj:
+    with open(str(path), "r") as fobj:
         return crypto.load_certificate(
             format,
             fobj.read(),
@@ -120,41 +121,92 @@ def check_cert(cert, hours=1, proxy=None, rfc3820=True):
 def _cert_type(x509):
     """Returns the type of the given x509 certificate object
     """
+    # convert openssl to m2crypto for convenience
+    if isinstance(x509, crypto.X509):
+        x509 = X509.load_cert_string(crypto.dump_certificate(
+            crypto.FILETYPE_PEM,
+            x509,
+        ))
     # parse name entry as common name
-    sub = x509.get_subject().get_components()
-    if sub[-1][0] != b"CN":
+    sub = x509.get_subject()
+    ntype, name = sub.as_text().split()[-1].split('=', 1)
+
+    # if name entry is not 'common name' then EEC
+    if ntype != "CN":
         return "end entity credential"
-    if sub[-1][1] == "proxy":
+
+    # if we get here, it's a proxy of some sort
+
+    if name == "proxy":
         return "full legacy globus proxy"
-    if sub[-1][1] == "limited proxy":
+    if name == "limited proxy":
         return "limited legacy globus proxy"
 
-    # parse extensions for proxyCertInfo
-    extensions = [x509.get_extension(i) for
-                  i in range(x509.get_extension_count())]
-    names = [e.get_short_name() for e in extensions]
-    if b"proxyCertInfo" in names:
-        return "RFC 3820 compliant impersonation proxy"
-    return "end entity credential"
+    # get policy language
+    try:
+        policy = _get_cert_policy_language(x509)
+    except (KeyError, ValueError):
+        pass
+    else:
+        if policy == "1.3.6.1.4.1.3536.1.1.1.9":
+            return "RFC 3820 compliant limited proxy"
+        if policy == "Inherit all":
+            return "RFC 3820 compliant impersonation proxy"
+        return "RFC 3820 compliant restricted proxy"
+
+    return "unidentified proxy"
 
 
-def print_cert_info(x509, path=None, verbose=True):
+def _get_cert_policy_language(x509):
+    for i in range(x509.get_ext_count()):
+        ext = x509.get_ext_at(i)
+        name = ext.get_name()
+        if (
+            name == "proxyCertInfo" and
+            ext.get_critical()
+        ):
+            pcidata = dict(
+                map(str.strip, line.split(':', 1)) for
+                line in ext.get_value().rstrip().split('\n')
+            )
+            return pcidata["Policy Language"]
+    raise ValueError("no policy language found in cert")
+
+
+def print_cert_info(x509, path=None, verbose=True, stream=sys.stdout):
     """Print info about an X.509 certificate
+
+    Parameters
+    ----------
+    x509 : `OpenSSL.crypto.X509`
+        the certificate to parse
+
+    path : `str`, optional
+        the path of the certificate file on disk
+
+    verbose : `bool`, optional
+        if `True` (default) print the full text of the certificate
+
+    stream : `file`, optional
+        the file object to print to, defaults to `sys.stdout`
     """
     if verbose:
         certstr = crypto.dump_certificate(
             crypto.FILETYPE_PEM,
             x509,
         )
-        print(certstr.decode("utf-8"), end="")
+        print(certstr.decode("utf-8"), file=stream, end="")
     pkey = x509.get_pubkey()
-    print("subject  : " + _x509_name_str(x509.get_subject()))
-    print("issuer   : " + _x509_name_str(x509.get_issuer()))
-    print("type     : " + _cert_type(x509))
-    print("strength : {0} bits".format(pkey.bits()))
+    print("subject  : " + _x509_name_str(x509.get_subject()), file=stream)
+    print("issuer   : " + _x509_name_str(x509.get_issuer()), file=stream)
+    print("type     : " + _cert_type(x509), file=stream)
+    print("strength : {0} bits".format(pkey.bits()), file=stream)
     if path:
-        print("path     : " + str(path))
-    print("timeleft : " + str(datetime.timedelta(seconds=time_left(x509))))
+        print("path     : " + str(path), file=stream)
+    print(
+        "timeleft : " + str(datetime.timedelta(seconds=time_left(x509))),
+        file=stream,
+    )
 
 
 def write_cert(path, pkcs12, use_proxy=False, minhours=168):
@@ -162,7 +214,7 @@ def write_cert(path, pkcs12, use_proxy=False, minhours=168):
 
     Parameters
     ----------
-    path : `str`
+    path : `str`, `pathlib.Path`
         the desired location of the final X509 file
 
     pkcs12 : `OpenSSL.crypto.PKCS12`
@@ -199,7 +251,7 @@ def write_cert(path, pkcs12, use_proxy=False, minhours=168):
         tmp.close()
 
         # move tmpfile into place
-        shutil.move(tmp.name, path)
+        shutil.move(tmp.name, str(path))
 
 
 def generate_proxy(cert, key, minhours=168, limited=False, bits=2048):
@@ -208,6 +260,14 @@ def generate_proxy(cert, key, minhours=168, limited=False, bits=2048):
     Based on code from the gridproxy library
     https://github.com/abbot/gridproxy/blob/master/gridproxy/__init__.py
     which is Copyright Lev Shamardin and covered under the GNU GPLv3 license.
+
+    Parameters
+    ----------
+    cert : `M2Crypto.X509.X509`
+        the certificate object
+
+    key : `M2Crypto.RSA.RSA_pub`
+        the RSA key object
 
     Returns
     -------
@@ -236,9 +296,7 @@ def generate_proxy(cert, key, minhours=168, limited=False, bits=2048):
     not_after_time = now + int(minhours * 60 * 60)
     # make sure proxy doesn't expire later than the underlying cert
     cert_not_after_time = _parse_unix_time(cert.get_not_after())
-    if not_after_time > cert_not_after_time:
-        not_after_time = cert_not_after_time
-    not_after.set_time(not_after_time)
+    not_after.set_time(min(not_after_time, cert_not_after_time))
     proxy.set_not_after(not_after)
 
     proxy.set_issuer_name(cert.get_subject())
