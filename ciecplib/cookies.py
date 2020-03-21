@@ -37,7 +37,7 @@ class ECPCookieJar(RequestsCookieJar, MozillaCookieJar):
     https://wiki.shibboleth.net/confluence/download/attachments/4358416/ecp.py
     """
     def save(self, filename=None, ignore_discard=False, ignore_expires=False):
-        with open(filename, 'w') as f:
+        with open(str(filename), 'w') as f:
             f.write(self.header)
             for cookie in self:
                 if not ignore_discard and cookie.discard:
