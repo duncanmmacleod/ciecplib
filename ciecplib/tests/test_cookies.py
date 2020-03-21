@@ -67,14 +67,14 @@ class TestECPCookieJar(object):
         # check that there aren't actually any cookies
         # (since the cookie is a session cookie [`discard=True`])
         jar = self.TEST_CLASS()
-        jar.load(path)
+        jar.load(str(path))
         assert len(jar) == 0
 
     def test_save_ignore_discard(self, ecpcookiejar, tmp_path):
         path = tmp_path / "cookies"
         ecpcookiejar.save(path, ignore_discard=True, ignore_expires=True)
         jar = self.TEST_CLASS()
-        jar.load(path, ignore_discard=True, ignore_expires=True)
+        jar.load(str(path), ignore_discard=True, ignore_expires=True)
         assert jar["_shibsession_1234567890"] == "_1234567890"
 
 
