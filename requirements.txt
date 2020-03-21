@@ -1,7 +1,5 @@
+-r requirements-test.txt
 M2Crypto
 pyOpenSSL
-pytest >=3.9.0
-pytest-cov
 requests
 requests-ecp
-requests-mock

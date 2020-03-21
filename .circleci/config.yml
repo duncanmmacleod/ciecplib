@@ -166,7 +166,6 @@ aliases:
               python${PYTHON_VERSION:0:1}-pytest-cov \
               python${PYTHON_VERSION:0:1}-requests-mock \
           ;
-          python${PYTHON_VERSION} -m pip install "pytest~=3.0"
 
   - &test
       run:
@@ -174,7 +173,8 @@ aliases:
         command: |
           set -x;
           # install test requirements
-          python${PYTHON_VERSION} -m pip install "pytest" "pytest-cov" "requests-mock" "zipp<2.0.0"
+          python${PYTHON_VERSION} -m pip install "pip >=9.0.0"
+          python${PYTHON_VERSION} -m pip install -r requirements-test.txt
           # run test suite
           mkdir -pv tests;
           pushd tests;
