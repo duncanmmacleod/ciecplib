@@ -304,7 +304,7 @@ jobs:
     environment:
       PYTHON_VERSION: "3.7"
 
-  centos:8:3.6:
+  rhel:centos8:3.6:
     <<: *centos
     docker:
       - image: centos:8
@@ -363,7 +363,7 @@ workflows:
       - flake8
       - sphinx
       # -- stage 2
-      - centos:8:3.6:
+      - rhel:centos8:3.6:
           requires:
             - sdist
       - debian:buster:3.7:
