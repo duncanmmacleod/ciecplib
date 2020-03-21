@@ -19,9 +19,6 @@
 """Common fixtures for ciecplib tests
 """
 
-import tempfile
-from pathlib import Path
-
 from OpenSSL import crypto
 from M2Crypto import (
     X509 as m2X509,
@@ -58,12 +55,11 @@ def x509(pkey):
 
 
 @pytest.fixture(scope="session")
-def x509_path(x509):
-    with tempfile.TemporaryDirectory() as tmpdir:
-        path = Path(tmpdir) / "tmpx509.pem"
-        with path.open("wb") as tmp:
-            tmp.write(crypto.dump_certificate(crypto.FILETYPE_PEM, x509))
-        yield path
+def x509_path(tmp_path, x509):
+    path = tmp_path / "tmpx509.pem"
+    with path.open("wb") as tmp:
+        tmp.write(crypto.dump_certificate(crypto.FILETYPE_PEM, x509))
+    return path
 
 
 @pytest.fixture(scope="session")

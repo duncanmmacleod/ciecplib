@@ -19,7 +19,6 @@
 """Test suite for :mod:`ciecplib.cookies`
 """
 
-import tempfile
 from http.cookiejar import Cookie
 
 import pytest
