@@ -72,7 +72,7 @@ install_requires = [
     "requests-ecp",  # GPL-3.0-or-later
 ]
 tests_require = [
-    "pytest",
+    "pytest >= 3.9.0",
     "pytest-cov",
     "requests-mock",
 ]

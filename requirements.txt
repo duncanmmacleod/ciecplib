@@ -1,6 +1,6 @@
 M2Crypto
 pyOpenSSL
-pytest
+pytest >=3.9.0
 pytest-cov
 requests
 requests-ecp
