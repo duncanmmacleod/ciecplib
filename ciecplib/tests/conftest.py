@@ -19,9 +19,6 @@
 """Common fixtures for ciecplib tests
 """
 
-import tempfile
-from pathlib import Path
-
 from OpenSSL import crypto
 from M2Crypto import (
     X509 as m2X509,
@@ -31,14 +28,14 @@ from M2Crypto import (
 import pytest
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture
 def pkey():
     key = crypto.PKey()
     key.generate_key(crypto.TYPE_RSA, 1024)
     return key
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture
 def x509(pkey):
     cert = crypto.X509()
     sub = cert.get_subject()
@@ -57,30 +54,29 @@ def x509(pkey):
     return cert
 
 
-@pytest.fixture(scope="session")
-def x509_path(x509):
-    with tempfile.TemporaryDirectory() as tmpdir:
-        path = Path(tmpdir) / "tmpx509.pem"
-        with path.open("wb") as tmp:
-            tmp.write(crypto.dump_certificate(crypto.FILETYPE_PEM, x509))
-        yield path
+@pytest.fixture
+def x509_path(tmp_path, x509):
+    path = tmp_path / "tmpx509.pem"
+    with path.open("wb") as tmp:
+        tmp.write(crypto.dump_certificate(crypto.FILETYPE_PEM, x509))
+    return path
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture
 def x509_m2(x509):
     return m2X509.load_cert_string(
         crypto.dump_certificate(crypto.FILETYPE_PEM, x509),
     )
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture
 def pkey_m2(pkey):
     return m2EVP.load_key_string(
         crypto.dump_privatekey(crypto.FILETYPE_PEM, pkey),
     )
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture
 def pkcs12(pkey, x509):
     p12 = crypto.PKCS12()
     p12.set_privatekey(pkey)

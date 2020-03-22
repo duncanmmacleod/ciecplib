@@ -20,8 +20,6 @@
 """
 
 import sys
-import tempfile
-from pathlib import Path
 from unittest import mock
 
 import pytest
@@ -95,15 +93,14 @@ def test_print_cert_info(x509, capsys):
 
 
 @pytest.mark.parametrize('proxy', (False, True))
-def test_write_cert(pkcs12, proxy):
-    with tempfile.TemporaryDirectory() as tmpdir:
-        path = Path(tmpdir) / "509.pem"
-        # write the p12 cert to a file
-        ciecplib_x509.write_cert(path, pkcs12, use_proxy=proxy)
-        # check that we can read it
-        assert (
-            ciecplib_x509.load_cert(path).get_issuer().hash()
-        ) == 565972249
+def test_write_cert(tmp_path, pkcs12, proxy):
+    path = tmp_path / "509.pem"
+    # write the p12 cert to a file
+    ciecplib_x509.write_cert(path, pkcs12, use_proxy=proxy)
+    # check that we can read it
+    assert (
+        ciecplib_x509.load_cert(path).get_issuer().hash()
+    ) == 565972249
 
 
 @pytest.mark.parametrize("limited, ctype", [
