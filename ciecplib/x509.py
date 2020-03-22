@@ -135,8 +135,6 @@ def _cert_type(x509):
     if ntype != "CN":
         return "end entity credential"
 
-    # if we get here, it's a proxy of some sort
-
     if name == "proxy":
         return "full legacy globus proxy"
     if name == "limited proxy":
@@ -145,16 +143,16 @@ def _cert_type(x509):
     # get policy language
     try:
         policy = _get_cert_policy_language(x509)
-    except (KeyError, ValueError):
-        pass
+    except ValueError:  # no proxyCertInfo
+        return "end entity credential"
+    except KeyError:  # no policy language
+        return "unidentified proxy"
     else:
         if policy == "1.3.6.1.4.1.3536.1.1.1.9":
             return "RFC 3820 compliant limited proxy"
         if policy == "Inherit all":
             return "RFC 3820 compliant impersonation proxy"
         return "RFC 3820 compliant restricted proxy"
-
-    return "unidentified proxy"
 
 
 def _get_cert_policy_language(x509):
