@@ -104,7 +104,6 @@ def main(args=None):
         print(
             ecp_requests.get(
                 args.url,
-                cookiefile=args.cookiefile,
                 cookiejar=cookiejar,
                 endpoint=args.identity_provider,
                 username=args.username,

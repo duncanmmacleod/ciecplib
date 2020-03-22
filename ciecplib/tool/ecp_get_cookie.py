@@ -164,8 +164,7 @@ def main(args=None):
             args.target_url,
             endpoint=args.identity_provider,
             username=getattr(args, "username", None),
-            cookiejar=None,
-            cookiefile=None,
+            cookiejar=cookiejar,
             kerberos=args.kerberos,
             debug=args.debug,
         )
