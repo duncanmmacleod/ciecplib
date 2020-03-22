@@ -129,7 +129,7 @@ def _cert_type(x509):
         ))
     # parse name entry as common name
     sub = x509.get_subject()
-    ntype, name = sub.as_text().split()[-1].split('=', 1)
+    ntype, name = str(sub).split("/")[-1].split('=', 1)
 
     # if name entry is not 'common name' then EEC
     if ntype != "CN":
