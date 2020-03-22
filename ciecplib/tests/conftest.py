@@ -39,7 +39,7 @@ def pkey():
 def x509(pkey):
     cert = crypto.X509()
     sub = cert.get_subject()
-    sub.CN = "localhost"
+    sub.CN = "albert einstein"
     sub.C = "UK"
     sub.ST = "Wales"
     sub.L = "Cardiff"
