@@ -14,7 +14,9 @@ install:
         "python=%PYTHON_VERSION%"
         "pip"
         "setuptools>=27.3"
-  - conda install --quiet --yes --name ciecplib --file requirements.txt
+  - conda install --quiet --yes --name ciecplib
+        --file requirements.txt
+        --file requirements-test.txt
   - conda activate ciecplib
   - conda info
   - conda list
