@@ -28,10 +28,12 @@ from .. import x509 as ciecplib_x509
 
 __author__ = "Duncan Macleod <duncan.macleod@ligo.org>"
 
+X509_HASH = 967391982
+
 
 def test_load_cert(x509_path):
     x509 = ciecplib_x509.load_cert(x509_path)
-    assert x509.get_subject().hash() == 565972249
+    assert x509.get_subject().hash() == X509_HASH
 
 
 @pytest.mark.parametrize("lib", ("openssl", "m2crypto"))
@@ -86,7 +88,7 @@ def test_print_cert_info(x509, capsys):
     out = capsys.readouterr().out
     assert out.startswith("-----BEGIN CERTIFICATE-----")
     assert (
-        "subject  : /CN=localhost/C=UK/ST=Wales/L=Cardiff"
+        "subject  : /CN=albert einstein/C=UK/ST=Wales/L=Cardiff"
         "/O=Cardiff University/OU=Gravity"
     ) in out
     assert "path     : test" in out
@@ -100,7 +102,7 @@ def test_write_cert(tmp_path, pkcs12, proxy):
     # check that we can read it
     assert (
         ciecplib_x509.load_cert(path).get_issuer().hash()
-    ) == 565972249
+    ) == X509_HASH
 
 
 @pytest.mark.parametrize("limited, ctype", [
