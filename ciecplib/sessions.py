@@ -19,17 +19,12 @@
 """ECP-integated requests session
 """
 
-from functools import wraps
-
 from requests_ecp import Session as ECPSession
 
 from .cookies import ECPCookieJar
 from .env import _get_default_idp
 from .kerberos import has_credential
-from .utils import (
-    DEFAULT_COOKIE_FILE,
-    format_endpoint_url,
-)
+from .utils import format_endpoint_url
 
 __all__ = [
     "Session",
@@ -46,13 +41,7 @@ class Session(ECPSession):
             username=None,
             password=None,
             cookiejar=None,
-            cookiefile=DEFAULT_COOKIE_FILE,
-            store_cookies=False,
     ):
-        from .cookies import (
-            ECPCookieJar,
-            load_cookiejar,
-        )
 
         if kerberos is None:
             kerberos = has_credential()
@@ -66,21 +55,6 @@ class Session(ECPSession):
         )
 
         # load cookies from existing jar or file
-        self._cookiefile = cookiefile if store_cookies else None
         self.cookies = ECPCookieJar()
-        if cookiejar is None and cookiefile is not None:
-            cookiejar = load_cookiejar(cookiefile, strict=False)
-        if cookiejar is not None:
+        if cookiejar:
             self.cookies.update(cookiejar)
-
-    @wraps(ECPSession.close)
-    def close(self):
-        super().close()
-
-        # cache cookies for next time (only if using our fancy jar)
-        if self._cookiefile and isinstance(self.cookies, ECPCookieJar):
-            self.cookies.save(
-                self._cookiefile,
-                ignore_discard=True,
-                ignore_expires=True,
-            )
