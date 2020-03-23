@@ -21,9 +21,6 @@
 
 from .env import DEFAULT_IDP
 from .sessions import Session
-from .utils import (
-    DEFAULT_COOKIE_FILE,
-)
 
 __author__ = "Duncan Macleod <duncan.macleod@ligo.org>"
 
@@ -39,8 +36,6 @@ def _ecp_session(func):
                 password=kwargs.pop("password", None),
                 kerberos=kwargs.pop("kerberos", False),
                 cookiejar=kwargs.pop("cookiejar", None),
-                cookiefile=kwargs.pop("cookiefile", DEFAULT_COOKIE_FILE),
-                store_cookies=kwargs.pop("store_cookies", False),
             )
         return func(*args, **kwargs)
     return _wrapper
@@ -80,10 +75,6 @@ _request_params_doc = """
 
     cookiejar : `http.cookielib.CookieJar`, optional
         a jar of cookies to add to the `requests.Session`.
-
-    cookiefile : `str`, optional
-        the path of a cookie file from which to read existing cookies,
-        this argument is ignored if ``cookiejar`` is given.
 
     kwargs
         other keyword arguments are passed directly to

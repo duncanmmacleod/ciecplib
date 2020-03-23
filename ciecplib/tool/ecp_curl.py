@@ -29,8 +29,8 @@ Currently only HTTP GET requests are supported (patches welcome!).
 
 import sys
 
-from .. import requests as ecp_requests
 from ..cookies import load_cookiejar
+from ..sessions import Session
 from ..utils import DEFAULT_COOKIE_FILE
 from .utils import (
     ArgumentParser,
@@ -101,19 +101,25 @@ def main(args=None):
     else:
         stream = sys.stdout
     try:
-        print(
-            ecp_requests.get(
-                args.url,
-                cookiefile=args.cookiefile,
-                cookiejar=cookiejar,
-                endpoint=args.identity_provider,
-                username=args.username,
-                kerberos=args.kerberos,
-                store_cookies=args.store_session_cookies,
-            ).text,
-            file=stream,
-            end="",
-        )
+        with Session(
+            cookiejar=cookiejar,
+            idp=args.identity_provider,
+            username=args.username,
+            kerberos=args.kerberos,
+        ) as sess:
+            # GET
+            print(
+                sess.get(args.url).text,
+                file=stream,
+                end="",
+            )
+            # store session cookies
+            if args.store_session_cookies:
+                sess.cookies.save(
+                    args.cookiefile,
+                    ignore_discard=True,
+                    ignore_expires=True,
+                )
     finally:
         if args.output:
             stream.close()
