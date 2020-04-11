@@ -50,7 +50,7 @@ aliases:
           eval $(cat /etc/os-release);
           CODENAME=$(lsb_release --codename --short);
           if [[ ${CODENAME} = "bullseye" ]]; then VERSION_ID="11"; fi;
-          DEB="python3-requests-ecp_0.2.0-1+deb${VERSION_ID}u0_all.deb";
+          DEB="python3-requests-ecp_0.2.1-1+deb${VERSION_ID}u0_all.deb";
           curl -LO https://hypatia.aei.mpg.de/lsc-amd64-${CODENAME}/${DEB};
           dpkg --info ${DEB};
           dpkg --install ${DEB} || { \
@@ -98,8 +98,8 @@ aliases:
           yum -y -q update;
           yum -y -q install curl epel-release;
           DIST_SUFFIX=$(rpm --eval "%{dist}");
-          RPM="python3-requests-ecp-0.2.0-1${DIST_SUFFIX}.noarch.rpm";
-          curl -LO https://koji.ligo-la.caltech.edu/kojifiles/packages/requests-ecp/0.2.0/1${DIST_SUFFIX}/noarch/${RPM};
+          RPM="python3-requests-ecp-0.2.1-1${DIST_SUFFIX}.noarch.rpm";
+          curl -LO https://koji.ligo-la.caltech.edu/kojifiles/packages/requests-ecp/0.2.1/1${DIST_SUFFIX}/noarch/${RPM};
           yum -y --nogpgcheck localinstall ${RPM};
           rm -fv ${RPM};
 
