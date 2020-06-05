@@ -36,4 +36,4 @@ from .ui import (
 
 __author__ = "Duncan Macleod <duncan.macleod@ligo.org>"
 __credits__ = "Scott Koranda, Dave Dykstra"
-__version__ = "0.3.0"
+__version__ = "0.3.1"
