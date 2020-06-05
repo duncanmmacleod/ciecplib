@@ -32,7 +32,7 @@ __author__ = "Duncan Macleod <duncan.macleod@ligo.org>"
 
 def _tmpfile(prefix):
     if os.name == "nt":
-        tmpdir = r'%SYSTEMROOT%\Temp'
+        tmpdir = Path(os.environ["SYSTEMROOT"]) / "Temp"
         user = os.getlogin()
     else:
         tmpdir = "/tmp"

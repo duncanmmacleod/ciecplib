@@ -46,7 +46,7 @@ RAW_IDP_LIST = "\n".join(
 )
 def test_get_ecpcookie_path():
     if os.name == "nt":
-        path = r"%SYSTEMROOT%\Temp\ecpcookie.123"
+        path = r"C:\WINDOWS\Temp\ecpcookie.123"
     else:
         path = "/tmp/ecpcookie.u123"
     assert ciecplib_utils.get_ecpcookie_path() == Path(path)
@@ -58,7 +58,7 @@ def test_get_ecpcookie_path():
 )
 def test_get_x509_proxy_path():
     if os.name == "nt":
-        path = r"%SYSTEMROOT%\Temp\x509up_123"
+        path = r"C:\WINDOWS\Temp\x509up_123"
     else:
         path = "/tmp/x509up_u123"
     assert ciecplib_utils.get_x509_proxy_path() == Path(path)
