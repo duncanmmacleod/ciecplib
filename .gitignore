@@ -38,6 +38,7 @@ pip-delete-this-directory.txt
 *.swp
 .DS_Store
 .idea
+*~
 
 # Patches
 /*.patch
