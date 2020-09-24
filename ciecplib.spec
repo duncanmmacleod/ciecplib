@@ -1,5 +1,5 @@
 %define name ciecplib
-%define version 0.3.1
+%define version 0.3.2
 %define release 1
 %define author Duncan Macleod
 %define email duncan.macleod@ligo.org
@@ -92,6 +92,9 @@ rm -rf $RPM_BUILD_ROOT
 # -- changelog --------------
 
 %changelog
+* Thu Sep 24 2020 Duncan Macleod <duncan.macleod@ligo.org> - 0.3.2-1
+- update for 0.3.2
+
 * Fri Jun 05 2020 Duncan Macleod <duncan.macleod@ligo.org> - 0.3.1-1
 - update for 0.3.1
 
