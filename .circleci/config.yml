@@ -174,7 +174,11 @@ aliases:
           set -x;
           # install test requirements
           python${PYTHON_VERSION} -m pip install --upgrade pip
-          python${PYTHON_VERSION} -m pip install -r requirements-test.txt
+          python${PYTHON_VERSION} -m pip install \
+              --upgrade \
+              --upgrade-strategy only-if-needed \
+              -r requirements-test.txt \
+          ;
           # run test suite
           mkdir -pv tests;
           pushd tests;
