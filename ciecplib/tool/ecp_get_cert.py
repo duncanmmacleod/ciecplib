@@ -191,7 +191,7 @@ def main(args=None):
 
     # if asked to reuse, check that we can
     if args.reuse:
-        print("Validating existing certificate...", end=" ")
+        vprint("Validating existing certificate...", end=" ")
         args.reuse = can_reuse(args.file, proxy=args.proxy)
         if args.reuse:
             vprint("OK")
