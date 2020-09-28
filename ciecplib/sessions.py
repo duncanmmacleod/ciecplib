@@ -24,7 +24,7 @@ from requests_ecp import Session as ECPSession
 from .cookies import ECPCookieJar
 from .env import _get_default_idp
 from .kerberos import has_credential
-from .utils import format_endpoint_url
+from .utils import get_idp_url
 
 __all__ = [
     "Session",
@@ -48,7 +48,7 @@ class Session(ECPSession):
 
         # open session with ECP authentication
         super().__init__(
-            idp=format_endpoint_url(idp),
+            idp=get_idp_url(idp),
             kerberos=kerberos,
             username=username,
             password=password,
