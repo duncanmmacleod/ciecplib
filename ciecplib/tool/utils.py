@@ -25,6 +25,7 @@ import os
 import sys
 from functools import wraps
 from http.client import HTTPConnection
+from operator import attrgetter
 
 from .. import __version__
 from ..cookies import (
@@ -184,10 +185,10 @@ class ListIdpsAction(argparse.Action):
     def __call__(self, parser, namespace, values, option_string=None):
         idps = get_idps()
         formatter = parser._get_formatter()
-        fmt = "%-{0}r : %s".format(max(map(len, idps)) + 2)
+        fmt = "{0.name!r:%ss} : {0.url}" % (max(len(i.name) for i in idps) + 2)
         lines = []
-        for pair in sorted(idps.items(), key=lambda x: x[0]):
-            lines.append(fmt % pair)
+        for idp in sorted(idps, key=attrgetter("name")):
+            lines.append(fmt.format(idp))
         formatter.add_text('\n'.join(lines))
         parser._print_message(formatter.format_help(), sys.stdout)
         parser.exit()

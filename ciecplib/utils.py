@@ -20,6 +20,7 @@ import os
 import random
 import re
 import string
+from collections import namedtuple
 from pathlib import Path
 from urllib.parse import urlparse
 
@@ -70,7 +71,17 @@ DEFAULT_X509_USER_FILE = str(get_x509_proxy_path())
 DEFAULT_IDPLIST_URL = "https://cilogon.org/include/ecpidps.txt"
 DEFAULT_SP_URL = "https://ecp.cilogon.org/secure/getcert"
 _KERBEROS_SUFFIX = " (Kerberos)"
-_KERBEROS_REGEX = re.compile(r"{0}\Z".format(re.escape(_KERBEROS_SUFFIX)))
+_URL_REGEX = re.compile(r"[^ \t\n\r\f\vA-Z]+")
+
+
+EcpIdentityProvider = namedtuple(
+    "IdP",
+    (
+        'name',
+        'url',
+        'iskerberos',
+    ),
+)
 
 
 def get_idps(url=DEFAULT_IDPLIST_URL):
@@ -87,56 +98,65 @@ def get_idps(url=DEFAULT_IDPLIST_URL):
     url : `str`
         the URL of the IDP list file
     """
-    idps = dict()
+    idps = list()
     for line in requests.get(url, stream=True).iter_lines():
         url, inst = line.decode('utf-8').strip().split(' ', 1)
-        idps[inst] = url
+        idps.append(EcpIdentityProvider(
+            inst,
+            url,
+            inst.endswith(_KERBEROS_SUFFIX),
+        ))
     return idps
 
 
-def _match_institution(value, institutions):
-    regex = re.compile(r"{0}($| \()".format(value))
-    institutions = {_KERBEROS_REGEX.split(name, 1)[0] for name in institutions}
-    matches = [inst for inst in institutions if regex.match(inst)]
+def _match(value, idplist, attr, kerberos=None):
+    return [
+        inst for inst in idplist if
+        value in getattr(inst, attr).lower() and
+        kerberos in (None, inst.iskerberos)
+    ]
+
+
+def _match_institution(value, institutions, kerberos=None):
+    value = str(value).lower()
+
+    # try and match the institution name
+    matches = _match(value, institutions, "name", kerberos=kerberos)
     if len(matches) == 1:
-        return matches[0]
-    if len(matches) == 0 and not value.endswith(".*"):
-        try:
-            return _match_institution("{0}.*".format(value), institutions)
-        except ValueError:
-            pass
+        return matches.pop()
+
+    # otherwise match the IdP URL
+    if _URL_REGEX.match(value):
+        umatches = _match(value, institutions, "url", kerberos=kerberos)
+        if len(umatches) == 1:
+            return umatches.pop()
+        matches = matches or umatches or []
+
+    # if we found multiple matches, print them to help the user
+    if len(matches):
+        raise ValueError(
+            "failed to identify unique IdP URL for {0!r}, possible matches "
+            "include:\n"
+            "{1}".format(
+                value,
+                "\n".join(map("{0.name!r}: {0.url}".format, matches)),
+            ),
+        )
+
+    # otherwise just fail
     raise ValueError("failed to identify IdP URLs for {0!r}".format(value))
 
 
-def get_idp_urls(institution, url=DEFAULT_IDPLIST_URL):
-    """Return the regular and Kerberos IdP URLs for a given institution
-    """
-    idps = get_idps(url=url)
-    institution = _match_institution(institution, idps)
-    if institution.endswith(_KERBEROS_SUFFIX):
-        return None, idps[institution]
-    url = idps[institution]
-    krbinst = institution + _KERBEROS_SUFFIX
-    krburl = idps[krbinst] if krbinst in idps else url
-    return url, krburl
-
-
-def _endpoint_url(url):
-    parsed = urlparse(url)
-    if not parsed.scheme:
-        url = "https://{0}".format(url)
-    if not urlparse(url).path:
-        return "{0}/idp/profile/SAML2/SOAP/ECP".format(url)
-    return url
-
-
-def format_endpoint_url(url_or_name, kerberos=False):
-    """Format an endpoint reference as a URL
+def get_idp_url(url_or_name, idplist_url=DEFAULT_IDPLIST_URL, kerberos=False):
+    """Return the unique IdP URL for a given institution or URL stub
 
     Parameters
     ----------
     url_or_name: `str`
-        the name of an institution, or a URL for the endpoint
+        the name of an institution, or a URL for the endpoint, or part thereof
+
+    idplist_url : `str`, optional
+        the URL to query for the list of enabled ECP IdPs
 
     kerberos : `bool`, optional
         if ``True`` return a Kerberos URL, if available, otherwise return
@@ -150,21 +170,28 @@ def format_endpoint_url(url_or_name, kerberos=False):
     Raises
     ------
     ValueError
-        if ``url_or_name`` looks like an institution name, but
-        cilogon.org doesn't know what the corresponding ECP endpoint URL
-        is for that institution.
+        if there isn't a unique match for either the institution name, or the
+        IdP URL
 
     Examples
     --------
-    >>> format_endpoint_url("LIGO")
+    >>> get_idp_url("LIGO")
     'https://login.ligo.org/idp/profile/SAML2/SOAP/ECP'
-    >>> format_endpoint_url("login.myidp.com")
-    'https://login.myidp.com/idp/profile/SAML2/SOAP/ECP'
+    >>> get_idp_url("ligo.org")
+    'https://login.ligo.org/idp/profile/SAML2/SOAP/ECP'
     """
-    if url_or_name.count(".") >= 2:  # url
-        return _endpoint_url(url_or_name)
-    # institution name
-    return get_idp_urls(url_or_name)[int(kerberos)]
+    idps = get_idps(url=idplist_url)
+    institution = _match_institution(url_or_name, idps, kerberos=kerberos)
+    return institution.url
+
+
+def _endpoint_url(url):
+    parsed = urlparse(url)
+    if not parsed.scheme:
+        url = "https://{0}".format(url)
+    if not urlparse(url).path:
+        return "{0}/idp/profile/SAML2/SOAP/ECP".format(url)
+    return url
 
 
 # -- misc utilities -----------------------------------------------------------
