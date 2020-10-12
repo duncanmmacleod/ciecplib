@@ -85,9 +85,13 @@ def test_get_idps(requests_mock):
     ("inst1", False, INST_DICT["Institution 1"]),
     ("inst1.test.krb", None, INST_DICT["Institution 1 (Kerberos)"]),
     ("inst2", None, INST_DICT["Institution 2"]),
+    ("https://inst1.test/idp/profile/SAML2/SOAP/ECP", None,
+     INST_DICT["Institution 1"]),
 ])
 def test_get_idp_url(requests_mock, value, krb, result):
-    requests_mock.get("https://idp-list-url", content=RAW_IDP_LIST)
+    # only proxy idp-list-url if we need to
+    if not value.endswith(r"/ECP"):
+        requests_mock.get("https://idp-list-url", content=RAW_IDP_LIST)
     assert ciecplib_utils.get_idp_url(
         value,
         idplist_url="https://idp-list-url",
