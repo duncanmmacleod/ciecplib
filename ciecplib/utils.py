@@ -22,7 +22,6 @@ import re
 import string
 from collections import namedtuple
 from pathlib import Path
-from urllib.parse import urlparse
 
 import requests
 
@@ -70,6 +69,7 @@ DEFAULT_X509_USER_FILE = str(get_x509_proxy_path())
 
 DEFAULT_IDPLIST_URL = "https://cilogon.org/include/ecpidps.txt"
 DEFAULT_SP_URL = "https://ecp.cilogon.org/secure/getcert"
+_ECP_ENDPOINT_REGEX = re.compile(r"\Ahttps://.*/SOAP/ECP\Z")
 _KERBEROS_SUFFIX = " (Kerberos)"
 _URL_REGEX = re.compile(r"[^ \t\n\r\f\vA-Z]+")
 
@@ -180,18 +180,13 @@ def get_idp_url(url_or_name, idplist_url=DEFAULT_IDPLIST_URL, kerberos=False):
     >>> get_idp_url("ligo.org")
     'https://login.ligo.org/idp/profile/SAML2/SOAP/ECP'
     """
+    # short circuit full URLs
+    if _ECP_ENDPOINT_REGEX.match(url_or_name):
+        return url_or_name
+    # otherwise match against CILogon's registered list
     idps = get_idps(url=idplist_url)
     institution = _match_institution(url_or_name, idps, kerberos=kerberos)
     return institution.url
-
-
-def _endpoint_url(url):
-    parsed = urlparse(url)
-    if not parsed.scheme:
-        url = "https://{0}".format(url)
-    if not urlparse(url).path:
-        return "{0}/idp/profile/SAML2/SOAP/ECP".format(url)
-    return url
 
 
 # -- misc utilities -----------------------------------------------------------
