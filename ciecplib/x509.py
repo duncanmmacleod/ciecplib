@@ -62,6 +62,8 @@ def load_cert(path, format=crypto.FILETYPE_PEM):
 
 def time_left(cert):
     """Returns the number of seconds left on this certificate
+
+    If the certificate has expired, ``0`` is returned.
     """
     try:  # M2Crypto
         expiry = cert.get_not_after().get_datetime().timetuple()
@@ -70,7 +72,7 @@ def time_left(cert):
             cert.get_notAfter().decode("utf-8"),
             "%Y%m%d%H%M%SZ",
         )
-    return int(calendar.timegm(expiry) - time.time())
+    return max(0, int(calendar.timegm(expiry) - time.time()))
 
 
 def _x509_name_str(obj):
@@ -201,10 +203,14 @@ def print_cert_info(x509, path=None, verbose=True, stream=sys.stdout):
     print("strength : {0} bits".format(pkey.bits()), file=stream)
     if path:
         print("path     : " + str(path), file=stream)
-    print(
-        "timeleft : " + str(datetime.timedelta(seconds=time_left(x509))),
-        file=stream,
-    )
+    remaining = time_left(x509)
+    if remaining:
+        print(
+            "timeleft : " + str(datetime.timedelta(seconds=remaining)),
+            file=stream,
+        )
+    else:
+        print("timeleft : 0:00:00 [EXPIRED]", file=stream)
 
 
 def write_cert(path, pkcs12, use_proxy=False, minhours=168):

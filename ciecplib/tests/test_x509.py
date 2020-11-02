@@ -78,7 +78,13 @@ def test_check_cert_rfc3820_error(x509):
         ciecplib_x509.check_cert(x509, hours=1, rfc3820=True)
 
 
-def test_print_cert_info(x509, capsys):
+@pytest.mark.parametrize("timeleft", (
+    pytest.param(0, id="expired"),
+    pytest.param(10, id="active"),
+))
+@mock.patch("ciecplib.x509.time_left")
+def test_print_cert_info(mock_time_left, timeleft, x509, capsys):
+    mock_time_left.return_value = timeleft
     ciecplib_x509.print_cert_info(
         x509,
         path="test",
@@ -92,6 +98,7 @@ def test_print_cert_info(x509, capsys):
         "/O=Cardiff University/OU=Gravity"
     ) in out
     assert "path     : test" in out
+    assert ("[EXPIRED]" in out) is (timeleft == 0)
 
 
 @pytest.mark.parametrize('proxy', (False, True))
