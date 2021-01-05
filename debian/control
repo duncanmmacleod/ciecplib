@@ -12,6 +12,7 @@ Build-Depends:
  dh-python,
  python3-all,
  python3-argparse-manpage,
+ python3-distutils,
  python3-m2crypto,
  python3-openssl,
  python3-requests,
@@ -26,6 +27,7 @@ Architecture: all
 Depends:
  ${misc:Depends},
  ${python3:Depends},
+ python3-distutils,
  python3-m2crypto,
  python3-openssl,
  python3-requests,
