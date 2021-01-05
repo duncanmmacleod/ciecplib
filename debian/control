@@ -15,8 +15,10 @@ Build-Depends:
  python3-distutils,
  python3-m2crypto,
  python3-openssl,
+ python3-pytest,
  python3-requests,
  python3-requests-ecp,
+ python3-requests-mock,
  python3-setuptools,
 
 # -- python3-ciecplib ---------------------------------------------------------

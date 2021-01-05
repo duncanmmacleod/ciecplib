@@ -1,6 +1,7 @@
 ciecplib (0.4.1-2) unstable; urgency=low
 
   * add missing requirement on python3-distutils
+  * run test suite during build
 
  -- Duncan Macleod <duncan.macleod@ligo.org>  Tue, 05 Jan 2021 11:03:00 +0000
 
