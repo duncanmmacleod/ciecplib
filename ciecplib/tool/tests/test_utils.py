@@ -25,6 +25,8 @@ from http import client as http_client
 from unittest import mock
 from urllib.error import URLError
 
+from requests import RequestException
+
 import pytest
 
 from ... import __version__ as ciecplib_version
@@ -59,7 +61,7 @@ def test_list_idps_action(capsys):
     with pytest.raises(SystemExit):
         try:
             parser.parse_args(["--list-idps"])
-        except URLError as exc:
+        except (RequestException, URLError) as exc:
             pytest.skip(str(exc))
     stdout = capsys.readouterr()[0]
     assert "'Cardiff University'" in stdout
