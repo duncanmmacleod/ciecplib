@@ -19,10 +19,17 @@
 """Kerberos utilities for ciecplib
 """
 
+import re
 import subprocess
 from distutils.spawn import find_executable
 
 __author__ = "Duncan Macleod <duncan.macleod@ligo.org>"
+
+KLIST_EXE = find_executable("klist")
+KLIST_PRINCIPAL_RE = re.compile(
+    r"\nDefault principal: ([\w\.@]+)",
+    re.M,
+)
 
 
 def _find_executable(name):
@@ -32,7 +39,7 @@ def _find_executable(name):
     return exe
 
 
-def has_credential(klist=None):
+def has_credential(klist=KLIST_EXE):
     """Run ``klist`` to determine whether a kerberos credential is available.
 
     Parameters
@@ -48,9 +55,25 @@ def has_credential(klist=None):
         otherwise (including klist failures)
     """
     # run klist to check credentials
-    klist = klist or find_executable("klist")
+    klist = klist or _find_executable("klist")
     try:
         subprocess.check_output([klist, "-s"])
     except subprocess.CalledProcessError:
         return False
     return True
+
+
+def find_principal(klist=KLIST_EXE):
+    """Determine the default principal for an active kerberos credential
+
+    Parameters
+    ----------
+    klist : `str`, optional
+        path to the ``klist`` executable, defaults to searching ``$PATH``
+    """
+    klist = klist or _find_executable("klist")
+    out = subprocess.check_output([klist]).decode("utf-8")
+    try:
+        return KLIST_PRINCIPAL_RE.search(out).groups()[0]
+    except (AttributeError, IndexError):  # failed to parse principal
+        raise RuntimeError("failed to parse principal from `klist` output")
