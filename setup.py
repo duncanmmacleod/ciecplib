@@ -35,6 +35,15 @@ except ImportError:  # can't build manpages, that's ok
 else:
     from setuptools.command.build_py import build_py
     from setuptools.command.install import install
+    from build_manpages import build_manpage
+
+    class CiecplibManpage(build_manpage.Manpage):
+        def __init__(self, *args, **kwargs):
+            super().__init__(*args, **kwargs)
+            if getattr(self.parser, 'man_short_description', None):
+                self.description = self.description.split('\n', 1)[-1].strip()
+
+    build_manpage.Manpage = CiecplibManpage
     cmdclass = {
         "build_manpages": build_manpages,
         "build_py": get_build_py_cmd(build_py),
