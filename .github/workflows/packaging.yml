@@ -1,0 +1,326 @@
+# ---------------------------
+#
+# Prepare distributions of this project
+# for various platforms
+#
+# ---------------------------
+
+name: Packaging
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  tarball:
+    name: Tarball
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Get source code
+        uses: actions/checkout@v2
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.x'
+
+      - name: Install build requirements
+        run: python -m pip install build setuptools wheel
+
+      - name: Create distributions
+        run: python -m build . --sdist --wheel --outdir .
+
+      - uses: actions/upload-artifact@v2
+        with:
+          name: tarball
+          path: ciecplib-*.tar.*
+          if-no-files-found: error
+
+      - uses: actions/upload-artifact@v2
+        with:
+          name: wheel
+          path: ciecplib*.whl
+          if-no-files-found: error
+
+  # -- Debian ---------------
+
+  debian-source:
+    name: Debian ${{ matrix.debian }} source package
+    needs:
+      - tarball
+    strategy:
+      fail-fast: false
+      matrix:
+        debian:
+          - buster-backports
+          - bullseye
+    runs-on: ubuntu-latest
+    container: debian:${{ matrix.debian }}
+    env:
+      TARBALL: "ciecplib-*.tar.*"
+    steps:
+      - name: Download tarball
+        uses: actions/download-artifact@v2
+        with:
+          name: tarball
+
+      - name: Configure apt
+        run: |
+          apt-get autoclean
+          apt-get -y -q -q update
+          apt-get -y -q -q install \
+              dpkg-dev \
+          ;
+
+      - name: Create source package
+        run: |
+          mkdir src
+          tar -xf ${TARBALL} -C src --strip-components=1
+          # rename tarball for debian orig
+          _orig=$(basename ${TARBALL} | sed 's|\(.*\)-\(.*\).\(tar\..*\)|\1_\2.orig.tar.gz|')
+          mv -v ${TARBALL} "${_orig}"
+          # create debian source package files
+          dpkg-source --build src
+
+      - uses: actions/upload-artifact@v2
+        with:
+          name: dsc-${{ matrix.debian }}
+          path: |
+            *.orig.tar.*
+            *.debian.tar.*
+            *.dsc
+          if-no-files-found: error
+
+  debian-binary:
+    name: Debian ${{ matrix.debian }} binary package
+    needs:
+      - debian-source
+    strategy:
+      fail-fast: false
+      matrix:
+        debian:
+          - buster-backports
+          - bullseye
+    runs-on: ubuntu-latest
+    container: debian:${{ matrix.debian }}
+    env:
+      DSC: "ciecplib_*.dsc"
+    steps:
+      - name: Download source package
+        uses: actions/download-artifact@v2
+        with:
+          name: dsc-${{ matrix.debian }}
+
+      - name: Configure apt
+        run: |
+          apt-get -y -q -q update
+          apt-get -y -q -q install \
+              devscripts \
+              dpkg-dev \
+          ;
+
+      - name: Unpack DSC
+        run: |
+          dpkg-source --extract ${DSC} src
+
+      - name: Install requests-ecp
+        env:
+          REQUESTS_ECP_VERSION: "0.2.1-1"
+        shell: sh -ex {0}
+        run: |
+          apt-get -y -q -q update
+          apt-get -y -q -q install base-files curl dpkg lsb-release
+          eval $(cat /etc/os-release)
+          CODENAME=$(lsb_release --codename --short)
+          if [ ${CODENAME} = "bullseye" ]; then VERSION_ID="11"; fi
+          DEB="python3-requests-ecp_${REQUESTS_ECP_VERSION}+deb${VERSION_ID}u0_all.deb"
+          curl -LO https://hypatia.aei.mpg.de/lsc-amd64-${CODENAME}/${DEB}
+          dpkg --info ${DEB}
+          dpkg --install ${DEB} || { apt-get -y -f install; dpkg --install ${DEB}; };
+          rm -fv ${DEB}
+
+      - name: Install build dependencies
+        run: |
+          cd src
+          mk-build-deps \
+              --tool "apt-get -y -q -o Debug::pkgProblemResolver=yes --no-install-recommends" \
+              --install \
+              --remove \
+          ;
+
+      - name: Build binary packages
+        run: |
+          cd src
+          # build debian packages
+          dpkg-buildpackage -us -uc -b
+
+      - name: Print package info
+        run: |
+          # print contents of packages
+          for debf in *.deb; do
+              echo "===== ${debf}"
+              dpkg --info "${debf}"
+              dpkg --contents "${debf}"
+          done
+
+      - uses: actions/upload-artifact@v2
+        with:
+          name: deb-${{ matrix.debian }}
+          path: |
+            *.buildinfo
+            *.changes
+            *.deb
+          if-no-files-found: error
+
+  lint-debian:
+    name: Lint Debian packages
+    runs-on: ubuntu-latest
+    container: debian
+    needs:
+      - debian-binary
+    steps:
+      - name: Download debian package
+        uses: actions/download-artifact@v2
+        with:
+          name: deb-bullseye
+
+      - name: Install lintian
+        run: |
+          apt-get -y -q -q update
+          apt-get -y -q -q install \
+              lintian \
+          ;
+
+      - name: Lintian
+        run: lintian --color=auto --fail-on-warnings --allow-root --pedantic *.changes
+
+  # -- RHEL -----------------
+
+  rhel-source:
+    name: CentOS ${{ matrix.centos }} source package
+    needs:
+      - tarball
+    strategy:
+      fail-fast: false
+      matrix:
+        centos:
+          - 8
+    runs-on: ubuntu-latest
+    container: centos:${{ matrix.centos }}
+    env:
+      TARBALL: "ciecplib-*.tar.*"
+    steps:
+      - name: Download tarball
+        uses: actions/download-artifact@v2
+        with:
+          name: tarball
+
+      - name: Configure yum
+        run: |
+          yum -y -q install \
+              epel-release \
+              rpm-build \
+          ;
+
+      - name: Create source package
+        run: rpmbuild -ts --define "_srcrpmdir $(pwd)" ${TARBALL}
+
+      - uses: actions/upload-artifact@v2
+        with:
+          name: srpm-centos-${{ matrix.centos }}
+          path: "*.src.rpm"
+          if-no-files-found: error
+
+  rhel-binary:
+    name: CentOS ${{ matrix.centos }} binary package
+    needs:
+      - rhel-source
+    strategy:
+      fail-fast: false
+      matrix:
+        centos:
+          - 8
+    runs-on: ubuntu-latest
+    container: centos:${{ matrix.centos }}
+    env:
+      SRPM: "ciecplib-*.src.rpm"
+    steps:
+      - name: Download SRPM
+        uses: actions/download-artifact@v2
+        with:
+          name: srpm-centos-${{ matrix.centos }}
+
+      - name: Install build tools
+        run: |
+          yum -y -q install \
+              rpm-build \
+              yum-utils \
+          ;
+
+      - name: Install requests-ecp
+        env:
+          REQUESTS_ECP_VERSION: "0.2.1-1"
+        shell: sh -ex {0}
+        run: |
+          yum -y -q update
+          yum -y -q install curl epel-release
+          DIST_SUFFIX=$(rpm --eval "%{dist}")
+          RPM="python3-requests-ecp-${REQUESTS_ECP_VERSION}${DIST_SUFFIX}.noarch.rpm"
+          curl -LO https://koji.ligo-la.caltech.edu/kojifiles/packages/requests-ecp/${REQUESTS_ECP_VERSION/-/\/}${DIST_SUFFIX}/noarch/${RPM}
+          yum -y --nogpgcheck localinstall ${RPM}
+          rm -fv ${RPM}
+      - name: Install build dependencies
+        run: yum-builddep -y -q ${SRPM}
+
+      - name: Build binary packages
+        run: |
+          rpmbuild --rebuild --define "_rpmdir $(pwd)" ${SRPM}
+          rm -f ${SRPM}
+          mv */*.rpm .
+
+      - name: Print package info
+        run: |
+          # print contents of packages
+          for rpmf in *.rpm; do
+              echo "===== ${rpmf}"
+              rpm -qlp "${rpmf}"
+              echo "Files:"
+              rpm -qip "${rpmf}"
+              echo "Provides:"
+              rpm -qp --provides "${rpmf}"
+              echo "Requires:"
+              rpm -qp --requires "${rpmf}"
+          done
+
+      - uses: actions/upload-artifact@v2
+        with:
+          name: rpm-centos-${{ matrix.centos }}
+          path: "*.rpm"
+          if-no-files-found: error
+
+  lint-rhel:
+    name: Lint CentOS packages
+    runs-on: ubuntu-latest
+    container: centos:8
+    needs:
+      - rhel-binary
+    steps:
+      - name: Download RPM
+        uses: actions/download-artifact@v2
+        with:
+          name: rpm-centos-8
+
+      - name: Install rpmlint
+        run: |
+          yum -y -q install \
+              rpmlint \
+          ;
+
+      - name: Lint
+        run: rpmlint --info *.rpm
