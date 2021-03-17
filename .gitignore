@@ -9,6 +9,12 @@ __pycache__/
 .Python
 env/
 build/
+debian/tmp/
+debian/*.debhelper*
+debian/*.substvars
+debian/*-ciecplib/
+debian/ciecp-utils/
+debian/files
 develop-eggs/
 dist/
 eggs/
@@ -17,9 +23,10 @@ lib64/
 parts/
 sdist/
 var/
+*.egg
 *.egg-info/
 .installed.cfg
-*.egg
+.pybuild/
 MANIFEST
 
 # Testing / coverage
