@@ -17,6 +17,11 @@
 # along with ciecplib.  If not, see <http://www.gnu.org/licenses/>.
 
 """Create an X.509 certificate using ECP authentication.
+
+ecp-get-cert enables you to authenticate using SAML/ECP against any
+identity provider registered with CILogon, and create an X.509
+credential for use in querying services under the same identity and
+access management domain.
 """
 
 from ..ui import get_cert
