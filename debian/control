@@ -34,7 +34,11 @@ Depends:
  python3-openssl,
  python3-requests,
  python3-requests-ecp,
-Description: A python client for SAML ECP authentication
+Description: Python client for SAML/ECP authentication and HTTP requests
+ CIECPLib provides Python-based utilities for SAML/ECP authentication
+ and HTTP requests.
+ .
+ This package provides the Python 3 library.
 
 # -- ciecp-utils --------------------------------------------------------------
 
@@ -44,4 +48,8 @@ Depends:
  ${misc:Depends},
  ${python3:Depends},
  python3-ciecplib,
-Description: Command-line utlities for SAML ECP authentication
+Description: Command-line utilities for SAML/ECP authentication
+ CIECPLib provides Python-based utilities for SAML/ECP authentication
+ and HTTP requests.
+ .
+ This package provides the command-line utilities.
