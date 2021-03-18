@@ -146,10 +146,12 @@ jobs:
           rm -fv ${DEB}
 
       - name: Install build dependencies
+        shell: bash -ex {0}
         run: |
           cd src
+          if [[ "${{ matrix.debian }}" == *backports ]]; then BACKPORTS="-t ${{ matrix.debian }}"; fi
           mk-build-deps \
-              --tool "apt-get -y -q -o Debug::pkgProblemResolver=yes --no-install-recommends" \
+              --tool "apt-get -y -q ${BACKPORTS} -o Debug::pkgProblemResolver=yes --no-install-recommends" \
               --install \
               --remove \
           ;
