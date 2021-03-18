@@ -47,12 +47,10 @@ jobs:
       run: conda list --name docs
 
     - name: Build documentation
-      run: |
-        cd docs
-        python -m sphinx -b html -n -W . _build
+      run: python -m sphinx -b html -W docs/ _build/
 
     - name: Upload documentation build
       uses: actions/upload-artifact@v2
       with:
         name: docs
-        path: docs/_build
+        path: _build
