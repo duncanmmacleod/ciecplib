@@ -73,11 +73,12 @@ jobs:
       run: |
         conda install --quiet --yes --name test \
             --file requirements.txt \
-            --file requirements-test.txt \
+            pytest \
+            pytest-cov \
         ;
 
     - name: Install ciecplib
-      run: python -m pip install . --no-build-isolation -vv
+      run: python -m pip install .[tests] --no-build-isolation -vv
 
     - name: Package list
       run: conda list --name test

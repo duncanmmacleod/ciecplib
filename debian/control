@@ -13,6 +13,7 @@ Build-Depends:
  python3-all,
  python3-argparse-manpage,
  python3-distutils,
+ python3-importlib-metadata | libpython3-stdlib,
  python3-m2crypto,
  python3-openssl,
  python3-pytest,

@@ -16,7 +16,7 @@
 # You should have received a copy of the GNU General Public License
 # along with ciecplib.  If not, see <http://www.gnu.org/licenses/>.
 
-"""Tests for :mod:`ciecplib.utils`
+"""Tests for :mod:`ciecplib.tool.utils`
 """
 
 import argparse
