@@ -75,10 +75,12 @@ default_role = 'obj'
 # -- Extensions --------------------------------------------------------------
 
 # Intersphinx directory
-interphinx_mapping = {
-    'M2Crypto': ('https://m2crypto.readthedocs.io/en/latest/', None),
+intersphinx_mapping = {
+    'M2Crypto': ('https://m2crypto.readthedocs.io/en/stable/', None),
     'OpenSSL': ('https://www.pyopenssl.org/en/stable/', None),
     'python': ('https://docs.python.org/3/', None),
+    'requests': ('https://requests.readthedocs.io/en/stable/', None),
+    'requests_ecp': ('https://requests-ecp.readthedocs.io/en/stable/', None),
 }
 
 # napoleon configuration
