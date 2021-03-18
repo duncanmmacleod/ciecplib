@@ -27,12 +27,24 @@ jobs:
     - name: Get source code
       uses: actions/checkout@v2
 
+    - name: Cache conda packages
+      uses: actions/cache@v2
+      env:
+        # increment to reset cache
+        CACHE_NUMBER: 0
+      with:
+        path: ~/conda_pkgs_dir
+        key: docs-conda-${{ env.CACHE_NUMBER }}
+        restore-keys: docs-conda-
+
     - name: Configure conda
       uses: conda-incubator/setup-miniconda@v2
       with:
         activate-environment: docs
         channels: conda-forge
         python-version: '3.9'
+        # this is needed for caching to work properly:
+        use-only-tar-bz2: true
 
     - name: Conda info
       run: conda info --all
