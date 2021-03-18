@@ -40,13 +40,38 @@ __author__ = "Duncan Macleod <duncan.macleod@ligo.org>"
 def get_cookie(
         url,
         endpoint=DEFAULT_IDP,
-        hours=168,
         username=None,
         kerberos=False,
-        spurl=DEFAULT_SP_URL,
         debug=False,
         session=None,
 ):
+    """Create a SAML/ECP session cookie valid for the given URL
+
+    Parameters
+    ----------
+    url : `str`
+        the target URL/domain
+
+    endpoint : `str`, optional
+        the identity provider URL
+
+    username : `str`, optional
+        the username to use when authenticating
+
+    kerberos : `bool`, optional
+        if `True` use an existing kerberos TGT to authenticate
+
+    debug : `bool`, optional
+        if `True` enable verbose debugging from requests, currently unused
+
+    session : `requests.Session`, optional
+        an active `requests.Session` to use with the query
+
+    Returns
+    -------
+    cookie : `http.cookiejar.Cookie`
+        the newly-minted session cookie
+    """
     # decorator guarantees a populated session
     with session as sess:
         # authenticate against the endpoint
@@ -70,6 +95,33 @@ def get_cert(
         debug=False,
         session=None,
 ):
+    """Create an X.509 credential using SAML/ECP.
+
+    Parameters
+    ----------
+    endpoint : `str`, optional
+        the identity provider URL
+
+    hours : `int`, optional
+        the desired validity of the credential
+
+    username : `str`, optional
+        the username to use when authenticating
+
+    kerberos : `bool`, optional
+        if `True` use an existing kerberos TGT to authenticate
+
+    debug : `bool`, optional
+        if `True` enable verbose debugging from requests, currently unused
+
+    session : `requests.Session`, optional
+        an active `requests.Session` to use with the query
+
+    Returns
+    -------
+    cookie : `http.cookiejar.Cookie`
+        the newly-minted session cookie
+    """
     # decorator guarantees a populated session
     with session as sess:
         cookie = get_cookie(spurl, session=sess, debug=debug)
