@@ -18,6 +18,10 @@
 
 r"""Authenticate and store SAML/ECP session cookies.
 
+ecp-get-cookie queries a SAML/ECP-enabled service, automatically performing
+authentication where required, and records a session cookie to use in
+future requests to the same service.
+
 There are two usages:
 
     $ ecp-get-cookie -i 'My Institution' -u jsmith https://campus01.edu/my/secret/page

@@ -18,7 +18,7 @@
 
 """Transfer a URL using SAML/ECP authentication.
 
-This script attemps to use existing cookies for the target domain
+ecp-curl attemps to use existing cookies for the target domain
 and prompts for authorisation information if required.
 Persistent cookies acquired during transactions are automatically
 recorded in the cookie file, but session cookies are discarded (unless

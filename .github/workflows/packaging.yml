@@ -198,7 +198,7 @@ jobs:
           ;
 
       - name: Lintian
-        run: lintian --color=auto --allow-root --pedantic *.changes
+        run: lintian --color=auto --allow-root --pedantic --fail-on-warnings *.changes
 
   # -- RHEL -----------------
 

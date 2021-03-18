@@ -60,6 +60,7 @@ class ArgumentParser(argparse.ArgumentParser):
         add_helpers = kwargs.pop("add_helpers", True)
         version = kwargs.pop("version", __version__)
         manpage = kwargs.pop("manpage", None)
+        mandesc = kwargs.pop("man_short_description", None)
 
         kwargs.setdefault("formatter_class", HelpFormatter)
         kwargs.setdefault("add_help", not add_helpers)
@@ -73,6 +74,13 @@ class ArgumentParser(argparse.ArgumentParser):
 
         # add manpage options for argparse-manpage
         self._manpage = manpage
+        if not mandesc and self.description:
+            # if man_short_description was not given, copy the first line of
+            # the parser description, with some pedantic reformatting
+            mandesc = (
+                self.description.split("\n")[0].lower().rstrip(".")
+            )
+        self.man_short_description = mandesc
 
         # add auth options group
         if add_auth:

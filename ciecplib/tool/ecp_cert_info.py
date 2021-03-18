@@ -16,9 +16,12 @@
 # You should have received a copy of the GNU General Public License
 # along with ciecplib.  If not, see <http://www.gnu.org/licenses/>.
 
-r"""Print information about an existing X.509 credential.
+"""Print information about an existing X.509 credential.
 
-"""  # noqa: E501
+ecp-cert-info prints information from an existing X.509 credential,
+including owner information, certificate type, and time remaining
+until expiry.
+"""
 
 from datetime import timedelta
 
