@@ -1,4 +1,0 @@
-importlib_metadata ; python_version < '3.7'
-pytest >= 3.9.0
-pytest-cov >= 2.6.1
-requests-mock

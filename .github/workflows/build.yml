@@ -73,15 +73,12 @@ jobs:
       run: |
         conda install --quiet --yes --name test \
             --file requirements.txt \
-        ;
-        # we install the test requirements using pip because
-        # that file contains environment markers
-        python -m pip install
-            -r requirements-test.txt \
+            pytest \
+            pytest-cov \
         ;
 
     - name: Install ciecplib
-      run: python -m pip install . --no-build-isolation -vv
+      run: python -m pip install .[tests] --no-build-isolation -vv
 
     - name: Package list
       run: conda list --name test
