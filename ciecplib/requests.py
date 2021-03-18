@@ -19,6 +19,8 @@
 """HTTP request method with end-to-end ECP authentication
 """
 
+from functools import wraps
+
 from .env import DEFAULT_IDP
 from .sessions import Session
 
@@ -28,6 +30,7 @@ __author__ = "Duncan Macleod <duncan.macleod@ligo.org>"
 def _ecp_session(func):
     """Decorate a function to open a `requests_ecp.Session`
     """
+    @wraps(func)
     def _wrapper(*args, **kwargs):
         if kwargs.get('session') is None:
             kwargs['session'] = Session(
@@ -73,7 +76,7 @@ _request_params_doc = """
         use existing kerberos credential for login, default is to try, but
         fall back to username/password prompt.
 
-    cookiejar : `http.cookielib.CookieJar`, optional
+    cookiejar : `http.cookiejar.CookieJar`, optional
         a jar of cookies to add to the `requests.Session`.
 
     kwargs

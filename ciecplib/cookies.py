@@ -99,7 +99,7 @@ def extract_session_cookie(jar, url):
 
     Returns
     -------
-    cookie : `http.cookielib.Cookie`
+    cookie : `http.cookiejar.Cookie`
         the relevant cookie
 
     Raises
@@ -162,8 +162,8 @@ def load_cookiejar(
         if `False` just emit warnings
 
     ignore_discard, ignore_expires : `bool`, optional
-        options to pass to :meth:`ECPCookieJar.load`, both default to
-        `True` in this usage.
+        options to pass to :meth:`http.cookiejar.FileCookieJar.load`,
+        both default to `True` in this usage.
     """
     cookiejar = ECPCookieJar()
     try:
