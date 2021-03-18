@@ -3,6 +3,7 @@ channels:
   - conda-forge
 dependencies:
   - m2crypto
+  - pip
   - pyopenssl
   - python>=3
   - requests
