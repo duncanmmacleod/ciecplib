@@ -19,7 +19,7 @@ Build-Depends:
  python3-requests,
  python3-requests-ecp,
  python3-requests-mock,
- python3-setuptools,
+ python3-setuptools (>= 30.3.0),
 
 # -- python3-ciecplib ---------------------------------------------------------
 # requires buster-backports or newer
