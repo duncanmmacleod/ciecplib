@@ -22,9 +22,7 @@
 import re
 from pathlib import Path
 
-from setuptools import (find_packages, setup)
-from setuptools.command.build_py import build_py
-from setuptools.command.install import install
+from setuptools import setup
 
 try:
     from build_manpages.build_manpages import (
@@ -33,11 +31,10 @@ try:
         get_install_cmd,
     )
 except ImportError:  # can't build manpages, that's ok
-    cmdclass = {
-        "build_py": build_py,
-        "install": install,
-    }
+    cmdclass = {}
 else:
+    from setuptools.command.build_py import build_py
+    from setuptools.command.install import install
     cmdclass = {
         "build_manpages": build_manpages,
         "build_py": get_build_py_cmd(build_py),
@@ -62,75 +59,9 @@ def find_version(path, varname="__version__"):
     raise RuntimeError("Unable to find version string.")
 
 
-setup_requires = [
-    "setuptools",  # MIT
-]
-install_requires = [
-    "M2Crypto",  # MIT
-    "pyOpenSSL",  # Apache-2.0
-    "requests",  # Apache-2.0
-    "requests-ecp",  # GPL-3.0-or-later
-]
-tests_require = [
-    "pytest >= 3.9.0",
-    "pytest-cov",
-    "requests-mock",
-]
-extras_require = {
-    "test": tests_require,
-    "docs": [
-        "sphinx",
-        "sphinx-argparse",
-        "sphinx_automodapi",
-        "sphinx_rtd_theme",
-        "sphinx_tabs",
-    ],
-}
-
+# this function only manually specifies things that aren't
+# supported by setup.cfg (as of setuptools-30.3.0)
 setup(
-    # distribution metadata
-    name="ciecplib",
     version=find_version(Path("ciecplib") / "__init__.py"),
-    author="Duncan Macleod",
-    author_email="duncan.macleod@ligo.org",
-    license="GPL-3.0-or-later",
-    description="A python client for SAML ECP authentication",
-    long_description=open("README.md", "r").read(),
-    long_description_content_type="text/markdown",
-    url="https://pypi.org/project/ciecplib/",
-    project_urls={
-        "Bug Tracker": "https://github.com/duncanmmacleod/ciecplib/issues",
-        "Documentation": "https://ciecplib.readthedocs.io/",
-        "Source Code": "https://github.com/duncanmmacleod/ciecplib/",
-    },
-    classifiers=[
-        'Development Status :: 4 - Beta',
-        'Intended Audience :: Science/Research',
-        'License :: OSI Approved :: GNU General Public License v3 (GPLv3)',
-        'Natural Language :: English',
-        'Operating System :: OS Independent',
-        'Programming Language :: Python :: 3',
-        'Programming Language :: Python :: 3.5',
-        'Programming Language :: Python :: 3.6',
-        'Programming Language :: Python :: 3.7',
-        'Programming Language :: Python :: 3.8',
-        'Topic :: Scientific/Engineering',
-    ],
-    # contents
-    packages=find_packages(),
-    entry_points={
-        "console_scripts": [
-            "ecp-cert-info=ciecplib.tool.ecp_cert_info:main",
-            "ecp-curl=ciecplib.tool.ecp_curl:main",
-            "ecp-get-cert=ciecplib.tool.ecp_get_cert:main",
-            "ecp-get-cookie=ciecplib.tool.ecp_get_cookie:main",
-        ],
-    },
-    # dependencies
     cmdclass=cmdclass,
-    python_requires=">=3.5",
-    setup_requires=setup_requires,
-    install_requires=install_requires,
-    tests_require=tests_require,
-    extras_require=extras_require,
 )

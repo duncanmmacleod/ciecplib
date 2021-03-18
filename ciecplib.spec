@@ -28,7 +28,7 @@ BuildRequires: python3-rpm-macros
 
 # build
 BuildRequires: python3
-BuildRequires: python%{python3_pkgversion}-setuptools
+BuildRequires: python%{python3_pkgversion}-setuptools >= 30.3.0
 
 # man pages
 BuildRequires: python%{python3_pkgversion}-argparse-manpage
