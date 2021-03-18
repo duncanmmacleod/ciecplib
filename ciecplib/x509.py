@@ -94,7 +94,7 @@ def check_cert(cert, hours=1, proxy=None, rfc3820=True):
     hours : `float`, optional
         minimum number of hours remaining before expiry
 
-    proxy : `bool`, `NoneType`, optional
+    proxy : `bool`, `None`, optional
         if `True` (`False`), validate that the certificate is (is not)
         an impersonation proxy, if `None` (default) don't check.
 
