@@ -1,8 +1,6 @@
 %define name ciecplib
-%define version 0.4.1
+%define version 0.4.2
 %define release 1
-%define author Duncan Macleod
-%define email duncan.macleod@ligo.org
 
 # -- metadata ---------------
 
@@ -10,7 +8,7 @@ BuildArch: noarch
 Group:     Development/Libraries
 License:   GPL-3.0-or-later
 Name:      %{name}
-Packager:  %{author} <%{email}>
+Packager:  Duncan Macleod <duncan.macleod@ligo.org>
 Prefix:    %{_prefix}
 Release:   %{release}%{?dist}
 Source0:   %pypi_source
@@ -92,6 +90,9 @@ rm -rf $RPM_BUILD_ROOT
 # -- changelog --------------
 
 %changelog
+* Fri Mar 19 2021 Duncan Macleod <duncan.macleod@ligo.org> - 0.4.2-1
+- update for 0.4.2
+
 * Thu Oct 15 2020 Duncan Macleod <duncan.macleod@ligo.org> - 0.4.1-1
 - update for 0.4.1
 
