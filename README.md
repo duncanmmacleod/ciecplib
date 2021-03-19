@@ -6,7 +6,7 @@ SAML/ECP-authenticated content over HTTP with
 
 ## Release status
 
-[![PyPI version](https://badge.fury.io/py/ciecplib.svg)](http://badge.fury.io/py/ciecplib)
+[![PyPI version](https://img.shields.io/pypi/v/ciecplib.svg)](https://pypi.python.org/pypi/ciecplib)
 [![Conda version](https://img.shields.io/conda/vn/conda-forge/ciecplib.svg)](https://anaconda.org/conda-forge/ciecplib/)  
 [![DOI](https://zenodo.org/badge/33156275.svg)](https://zenodo.org/badge/latestdoi/33156275)
 [![License](https://img.shields.io/pypi/l/ciecplib.svg)](https://choosealicense.com/licenses/gpl-3.0/)
