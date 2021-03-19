@@ -1,3 +1,9 @@
+ciecplib (0.4.2-1) unstable; urgency=low
+
+  * Update for 0.4.2 bug-fix release
+
+ -- Duncan Macleod <duncan.macleod@ligo.org>  Fri, 19 Mar 2021 14:41:00 +0000
+
 ciecplib (0.4.1-2) unstable; urgency=low
 
   * add missing requirement on python3-distutils
