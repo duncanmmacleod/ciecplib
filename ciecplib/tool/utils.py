@@ -32,9 +32,15 @@ from ..cookies import (
     has_session_cookies,
 )
 from ..env import _get_default_idp
+from ..kerberos import find_principal
 from ..utils import get_idps
 
 __author__ = 'Duncan Macleod <duncan.macleod@ligo.org>'
+
+
+def _parse_kerberos_principal():
+    principal = find_principal()
+    return principal.split("@", 1)
 
 
 # -- argparse helpers ---------------------------
@@ -160,6 +166,9 @@ class ArgumentParser(argparse.ArgumentParser):
     @wraps(argparse.ArgumentParser.parse_args)
     def parse_args(self, *args, **kwargs):
         args = super().parse_args(*args, **kwargs)
+        # if -k/--kerberos was given, try and use it to set defaults
+        if getattr(args, "kerberos", None):
+            self._set_defaults_from_kerberos_principal(args)
         # if -X/--destroy wasn't given and
         # -i/--identity-provider also wasn't given (and is supported)
         # then raise an error
@@ -172,6 +181,21 @@ class ArgumentParser(argparse.ArgumentParser):
                 "the following arguments are required: -i/--identity-provider",
             )
         return args
+
+    @staticmethod
+    def _set_defaults_from_kerberos_principal(args):
+        """Set defaults for username and IdP based on a kerberos principal
+        """
+        try:
+            username, realm = _parse_kerberos_principal()
+        except Exception:
+            return
+        for arg, default in [
+            ("username", username),
+            ("identity_provider", realm),
+        ]:
+            if getattr(args, arg, "_notset_") is None:
+                setattr(args, arg, default)
 
 
 class ListIdpsAction(argparse.Action):

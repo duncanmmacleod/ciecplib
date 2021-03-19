@@ -56,6 +56,21 @@ def test_argument_parser(capsys):
     assert capsys.readouterr()[0].strip() == ciecplib_version
 
 
+@mock.patch("ciecplib.tool.utils.find_principal", side_effect=RuntimeError)
+def test_argument_parser_kerberos_error(capsys):
+    parser = tools_utils.ArgumentParser()
+    with pytest.raises(SystemExit):
+        parser.parse_args(["--kerberos"])
+
+
+@mock.patch("ciecplib.tool.utils.find_principal", return_value="user@REALM")
+def test_argument_parser_kerberos_defaults(capsys):
+    parser = tools_utils.ArgumentParser()
+    args = parser.parse_args(["--kerberos"])
+    assert args.username == "user"
+    assert args.identity_provider == "REALM"
+
+
 def test_list_idps_action(capsys):
     parser = tools_utils.ArgumentParser()
     with pytest.raises(SystemExit):
