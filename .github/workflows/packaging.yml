@@ -181,6 +181,13 @@ jobs:
               dpkg --contents "${debf}"
           done
 
+      - name: Install new packages
+        run: |
+          dpkg --install *.deb || { \
+              apt-get -y -f install;
+              dpkg --install *.deb;
+          }
+
       - uses: actions/upload-artifact@v2
         with:
           name: deb-${{ matrix.debian }}
@@ -309,6 +316,9 @@ jobs:
               echo "Requires:"
               rpm -qp --requires "${rpmf}"
           done
+
+      - name: Install new packages
+        run: yum -y localinstall *.rpm
 
       - uses: actions/upload-artifact@v2
         with:
