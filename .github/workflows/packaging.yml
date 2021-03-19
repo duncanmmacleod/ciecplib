@@ -57,11 +57,15 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        debian:
-          - buster-backports
-          - bullseye
+        include:
+          - debian: stretch
+            container: igwn/base:stretch-proposed
+          - debian: buster
+            container: debian:buster-backports
+          - debian: bullseye
+            container: debian:bullseye
     runs-on: ubuntu-latest
-    container: debian:${{ matrix.debian }}
+    container: ${{ matrix.container }}
     env:
       TARBALL: "ciecplib-*.tar.*"
     steps:
@@ -104,11 +108,15 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        debian:
-          - buster-backports
-          - bullseye
+        include:
+          - debian: stretch
+            container: igwn/base:stretch-proposed
+          - debian: buster
+            container: debian:buster-backports
+          - debian: bullseye
+            container: debian:bullseye
     runs-on: ubuntu-latest
-    container: debian:${{ matrix.debian }}
+    container: ${{ matrix.container }}
     env:
       DSC: "ciecplib_*.dsc"
     steps:
@@ -146,10 +154,12 @@ jobs:
           rm -fv ${DEB}
 
       - name: Install build dependencies
+        env:
+          DOCKER_CONTAINER: ${{ matrix.container }}
         shell: bash -ex {0}
         run: |
           cd src
-          if [[ "${{ matrix.debian }}" == *backports ]]; then BACKPORTS="-t ${{ matrix.debian }}"; fi
+          if [[ "${DOCKER_CONTAINER}" == *backports ]]; then BACKPORTS="-t ${DOCKER_CONTAINER##*:}"; fi
           mk-build-deps \
               --tool "apt-get -y -q ${BACKPORTS} -o Debug::pkgProblemResolver=yes --no-install-recommends" \
               --install \
