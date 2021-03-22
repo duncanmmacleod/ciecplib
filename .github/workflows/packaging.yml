@@ -48,6 +48,45 @@ jobs:
           path: ciecplib*.whl
           if-no-files-found: error
 
+  # -- Pip ------------------
+
+  pip-install:
+    name: Pip install from ${{ matrix.artifact }}
+    needs:
+      - tarball
+    strategy:
+      matrix:
+        include:
+          - artifact: tarball
+            source: ciecplib*.tar.*
+          - artifact: wheel
+            source: ciecplib*.whl
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download tarball
+        uses: actions/download-artifact@v2
+        with:
+          name: ${{ matrix.artifact }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.x'
+
+      - name: Install build requirements
+        run: |
+          sudo apt-get install -y -q -q \
+              libkrb5-dev \
+          ;
+          python -m pip install --upgrade \
+              pip \
+              setuptools \
+              wheel \
+          ;
+
+      - name: Install from ${{ matrix.artifact }}
+        run: python -m pip install ${{ matrix.source }} -v
+
   # -- Debian ---------------
 
   debian-source:
