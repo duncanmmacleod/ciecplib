@@ -229,7 +229,7 @@ jobs:
 
       - name: Install requests-ecp
         env:
-          REQUESTS_ECP_VERSION: "0.2.1-1"
+          REQUESTS_ECP_VERSION: "0.2.2-1"
         shell: sh -ex {0}
         run: |
           apt-get -y -q -q update
@@ -365,7 +365,7 @@ jobs:
 
       - name: Install requests-ecp
         env:
-          REQUESTS_ECP_VERSION: "0.2.1-1"
+          REQUESTS_ECP_VERSION: "0.2.2-1"
         shell: sh -ex {0}
         run: |
           yum -y -q update
