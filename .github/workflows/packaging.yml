@@ -85,7 +85,66 @@ jobs:
           ;
 
       - name: Install from ${{ matrix.artifact }}
-        run: python -m pip install ${{ matrix.source }} -v
+        run: python -m pip install ${{ matrix.source }}
+
+  # -- Conda ----------------
+
+  conda-install:
+    name: Conda build (fake)
+    needs:
+      - tarball
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download tarball
+        uses: actions/download-artifact@v2
+        with:
+          name: tarball
+
+      - name: Cache conda packages
+        uses: actions/cache@v2
+        env:
+          # increment to reset cache
+          CACHE_NUMBER: 0
+        with:
+          path: ~/conda_pkgs_dir
+          key: conda-build-fake-${{ env.CACHE_NUMBER }}
+          restore-keys: conda-build-fake-
+
+      - name: Configure conda
+        uses: conda-incubator/setup-miniconda@v2
+        with:
+          activate-environment: test
+          channels: conda-forge
+          python-version: 3
+          # this is needed for caching to work properly:
+          use-only-tar-bz2: true
+
+      - name: Conda info
+        run: conda info --all
+
+      - name: Unpack tarball
+        run: |
+          mkdir src
+          tar -xf ciecplib-*.tar.* --strip-components=1
+
+      - name: Install dependencies
+        run: |
+          conda install --quiet --yes --name test \
+              pip \
+              setuptools \
+              --file requirements.txt \
+          ;
+
+      - name: Install ciecplib
+        env:
+          # make out build look like a conda-build build
+          PIP_NO_BUILD_ISOLATION: "False"
+          PIP_NO_DEPENDENCIES: "True"
+          PIP_IGNORE_INSTALLED: "True"
+          PIP_CACHE_DIR: "${{ github.workspace }}/pip_cache"
+          PIP_NO_INDEX: "True"
+        shell: bash -el {0}
+        run: python -m pip install . -vv
 
   # -- Debian ---------------
 
