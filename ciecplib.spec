@@ -35,6 +35,12 @@ BuildRequires: python%{python3_pkgversion}-pyOpenSSL
 BuildRequires: python%{python3_pkgversion}-requests
 BuildRequires: python%{python3_pkgversion}-requests-ecp
 
+# tests
+BuildRequires: python%{python3_pkgversion}-pytest >= 3.9.0
+%if 0%{?fedora} < 32 && 0%{?rhel} <= 8
+BuildRequires: python%{python3_pkgversion}-importlib-metadata
+%endif
+
 # -- packages ---------------
 
 # src.rpm
@@ -70,6 +76,12 @@ ecp-cert-info, ecp-get-cookie, ecp-get-cert, and ecp-curl
 
 %install
 %py3_install
+
+%check
+export PYTHONPATH="%{buildroot}%{python3_sitelib}"
+export PATH="%{buildroot}%{_bindir}:${PATH}"
+%{__python3} -m pytest --verbose -ra --pyargs ciecplib
+ecp-get-cert --help
 
 %clean
 rm -rf $RPM_BUILD_ROOT
