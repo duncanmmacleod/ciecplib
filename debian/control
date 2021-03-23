@@ -16,7 +16,7 @@ Build-Depends:
  python3-importlib-metadata | libpython3-stdlib,
  python3-m2crypto,
  python3-openssl,
- python3-pytest (>= 3.9.0) | dpkg,
+ python3-pytest,
  python3-requests,
  python3-requests-ecp,
  python3-requests-mock,
