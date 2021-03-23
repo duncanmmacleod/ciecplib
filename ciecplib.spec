@@ -20,7 +20,6 @@ Version:   %{version}
 # -- build requirements -----
 
 # macros
-BuildRequires: python-srpm-macros
 BuildRequires: python-rpm-macros
 BuildRequires: python3-rpm-macros
 

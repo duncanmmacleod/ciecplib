@@ -349,7 +349,9 @@ jobs:
 
       - name: Configure EPEL
         if: matrix.dist == 'centos' || matrix.dist == 'sl'
-        run: dnf -y install epel-release
+        run: |
+          dnf -y install epel-release
+          dnf -y install epel-rpm-macros
 
       - name: Create source package
         run: rpmbuild -ts --define "_srcrpmdir $(pwd)" ${TARBALL}
@@ -383,7 +385,9 @@ jobs:
 
       - name: Configure EPEL
         if: matrix.dist == 'centos' || matrix.dist == 'sl'
-        run: dnf -y install epel-release
+        run: |
+          dnf -y install epel-release
+          dnf -y install epel-rpm-macros
 
       - name: Install build tools
         run: |
