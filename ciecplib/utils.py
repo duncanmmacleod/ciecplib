@@ -71,6 +71,19 @@ DEFAULT_IDPLIST_URL = "https://cilogon.org/include/ecpidps.txt"
 DEFAULT_SP_URL = "https://ecp.cilogon.org/secure/getcert"
 _ECP_ENDPOINT_REGEX = re.compile(r"\Ahttps://.*/SOAP/ECP\Z")
 _KERBEROS_SUFFIX = " (Kerberos)"
+_PRIMARY_SUFFIX_REGEX = re.compile(r" (\()?({})(\))?\Z".format("|".join((
+    "1",
+    "main",
+    "primary",
+    "principal",
+))))
+_SECONDARY_SUFFIX_REGEX = re.compile(r" (\()?({})(\))?\Z".format("|".join((
+    "[2-9]",
+    "[0-9][0-9]+",
+    "backup",
+    "secondary",
+    "test",
+))))
 _URL_REGEX = re.compile(r"[^ \t\n\r\f\vA-Z]+")
 
 
@@ -117,11 +130,38 @@ def _match(value, idplist, attr, kerberos=None):
     ]
 
 
+def _preferred_match(matches):
+    """Attempt to select a preferred match from a list of many
+
+    This only prefers institutions names that don't end with a
+    numeric suffix (or end with ' 1'), mainly to distinguish
+    between multiple entries like ``'Cardiff University 1'`` and
+    ``'Cardiff University 2'``
+    """
+    if not len(matches) > 1:
+        return matches
+    # find all names marked as 'primary' or similar
+    primaries = [x for x in matches if _PRIMARY_SUFFIX_REGEX.search(x.name)]
+    # find all names marked as 'backup' or similar
+    secondaries = [x for x in matches if
+                   _SECONDARY_SUFFIX_REGEX.search(x.name)]
+    # if only one primary, return that
+    if len(primaries) == 1:
+        return primaries[:1]
+    # if all secondary, bar one, return that
+    if len(secondaries) == len(matches) - 1:
+        return [(set(matches) - set(secondaries)).pop()]
+    # otherwise no preference, return everything
+    return matches
+
+
 def _match_institution(value, institutions, kerberos=None):
     value = str(value).lower()
 
     # try and match the institution name
-    matches = _match(value, institutions, "name", kerberos=kerberos)
+    matches = _preferred_match(
+        _match(value, institutions, "name", kerberos=kerberos)
+    )
     if len(matches) == 1:
         return matches.pop()
 
