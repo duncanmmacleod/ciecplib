@@ -25,7 +25,7 @@ BuildRequires: python-rpm-macros
 BuildRequires: python3-rpm-macros
 
 # build
-BuildRequires: python3
+BuildRequires: python3 >= 3.5.0
 BuildRequires: python%{python3_pkgversion}-setuptools >= 30.3.0
 
 # man pages
@@ -47,6 +47,7 @@ Requires: python%{python3_pkgversion}-m2crypto
 Requires: python%{python3_pkgversion}-pyOpenSSL
 Requires: python%{python3_pkgversion}-requests
 Requires: python%{python3_pkgversion}-requests-ecp
+Conflicts: ciecp-utils < 0.4.3-1
 %{?python_provide:%python_provide python%{python3_pkgversion}-%{name}}
 %description -n python%{python3_pkgversion}-%{name}
 The Python %{python3_version} client for SAML ECP authentication.
@@ -76,16 +77,15 @@ rm -rf $RPM_BUILD_ROOT
 # -- files ------------------
 
 %files -n python%{python3_pkgversion}-%{name}
-%license LICENSE
 %doc README.md
+%license LICENSE
 %{python3_sitelib}/*
-%exclude %{python3_sitelib}/ciecplib/tool
 
 %files -n ciecp-utils
+%doc README.md
 %license LICENSE
 %{_bindir}/*
 %{_mandir}/man1/*.1*
-%{python3_sitelib}/ciecplib/tool
 
 # -- changelog --------------
 
