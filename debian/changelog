@@ -1,3 +1,9 @@
+ciecplib (0.4.2-2) unstable; urgency=low
+
+  * Fix requirements for stretch
+
+ -- Duncan Macleod <duncan.macleod@ligo.org>  Fri, 19 Mar 2021 15:50:00 +0000
+
 ciecplib (0.4.2-1) unstable; urgency=low
 
   * Update for 0.4.2 bug-fix release

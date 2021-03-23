@@ -155,11 +155,15 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        debian:
-          - buster-backports
-          - bullseye
+        include:
+          - debian: stretch
+            container: igwn/base:stretch-proposed
+          - debian: buster
+            container: debian:buster-backports
+          - debian: bullseye
+            container: debian:bullseye
     runs-on: ubuntu-latest
-    container: debian:${{ matrix.debian }}
+    container: ${{ matrix.container }}
     env:
       TARBALL: "ciecplib-*.tar.*"
     steps:
@@ -202,11 +206,15 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        debian:
-          - buster-backports
-          - bullseye
+        include:
+          - debian: stretch
+            container: igwn/base:stretch-proposed
+          - debian: buster
+            container: debian:buster-backports
+          - debian: bullseye
+            container: debian:bullseye
     runs-on: ubuntu-latest
-    container: debian:${{ matrix.debian }}
+    container: ${{ matrix.container }}
     env:
       DSC: "ciecplib_*.dsc"
     steps:
@@ -244,10 +252,12 @@ jobs:
           rm -fv ${DEB}
 
       - name: Install build dependencies
+        env:
+          DOCKER_CONTAINER: ${{ matrix.container }}
         shell: bash -ex {0}
         run: |
           cd src
-          if [[ "${{ matrix.debian }}" == *backports ]]; then BACKPORTS="-t ${{ matrix.debian }}"; fi
+          if [[ "${DOCKER_CONTAINER}" == *backports ]]; then BACKPORTS="-t ${DOCKER_CONTAINER##*:}"; fi
           mk-build-deps \
               --tool "apt-get -y -q ${BACKPORTS} -o Debug::pkgProblemResolver=yes --no-install-recommends" \
               --install \
@@ -268,6 +278,13 @@ jobs:
               dpkg --info "${debf}"
               dpkg --contents "${debf}"
           done
+
+      - name: Install new packages
+        run: |
+          dpkg --install *.deb || { \
+              apt-get -y -f install;
+              dpkg --install *.deb;
+          }
 
       - uses: actions/upload-artifact@v2
         with:
@@ -397,6 +414,9 @@ jobs:
               echo "Requires:"
               rpm -qp --requires "${rpmf}"
           done
+
+      - name: Install new packages
+        run: yum -y localinstall *.rpm
 
       - uses: actions/upload-artifact@v2
         with:
