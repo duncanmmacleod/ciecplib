@@ -36,9 +36,8 @@ BuildRequires: python%{python3_pkgversion}-requests
 BuildRequires: python%{python3_pkgversion}-requests-ecp
 
 # tests
+%if 0%{?fedora} >= 30 || 0%{?rhel} >= 9
 BuildRequires: python%{python3_pkgversion}-pytest >= 3.9.0
-%if 0%{?fedora} < 32 && 0%{?rhel} <= 8
-BuildRequires: python%{python3_pkgversion}-importlib-metadata
 %endif
 
 # -- packages ---------------
@@ -80,8 +79,13 @@ ecp-cert-info, ecp-get-cookie, ecp-get-cert, and ecp-curl
 %check
 export PYTHONPATH="%{buildroot}%{python3_sitelib}"
 export PATH="%{buildroot}%{_bindir}:${PATH}"
-%{__python3} -m pytest --verbose -ra --pyargs ciecplib
+ecp-cert-info --help
+ecp-curl --help
 ecp-get-cert --help
+ecp-get-cookie --help
+%if 0%{?fedora} >= 30 || 0%{?rhel} >= 9
+%{__python3} -m pytest --verbose -ra --pyargs ciecplib
+%endif
 
 %clean
 rm -rf $RPM_BUILD_ROOT
