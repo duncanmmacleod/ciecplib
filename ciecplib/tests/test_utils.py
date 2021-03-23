@@ -29,6 +29,8 @@ from .. import utils as ciecplib_utils
 
 __author__ = 'Duncan Macleod <duncan.macleod@ligo.org>'
 
+EcpIdP = ciecplib_utils.EcpIdentityProvider
+
 # mock response from ECP IdP list
 INST_DICT = {
     "Institution 1": "https://inst1.test/idp/profile/SAML2/SOAP/ECP",
@@ -37,7 +39,7 @@ INST_DICT = {
     "Institution 2": "https://inst2.test/idp/profile/SAML2/SOAP/ECP",
 }
 INSTITUTIONS = [
-    ciecplib_utils.EcpIdentityProvider(
+    EcpIdP(
         name,
         url,
         name.endswith("(Kerberos)"),
@@ -108,3 +110,22 @@ def test_get_idp_url_error(requests_mock, inst):
     requests_mock.get("https://idp-list-url", content=RAW_IDP_LIST)
     with pytest.raises(ValueError):
         ciecplib_utils.get_idp_url(inst, idplist_url="https://idp-list-url")
+
+
+@pytest.mark.parametrize("matches, out", (
+    # match one primary
+    ([EcpIdP("Inst (main)", "", False), EcpIdP("Inst (backup)", "", False)],
+     [EcpIdP("Inst (main)", "", False)]),
+    ([EcpIdP("Inst (primary)", "", False), EcpIdP("Inst (backup)", "", False)],
+     [EcpIdP("Inst (primary)", "", False)]),
+    ([EcpIdP("Inst 1", "", False), EcpIdP("Inst 2", "", False)],
+     [EcpIdP("Inst 1", "", False)]),
+    # match all-bar-one secondaries
+    ([EcpIdP("Inst", "", False), EcpIdP("Inst 2", "", False)],
+     [EcpIdP("Inst", "", False)]),
+    # no match, return both
+    ([EcpIdP("Inst A", "", False), EcpIdP("Inst B", "", False)],
+     [EcpIdP("Inst A", "", False), EcpIdP("Inst B", "", False)]),
+))
+def test_preferred_match(matches, out):
+    assert ciecplib_utils._preferred_match(matches) == out
