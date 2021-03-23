@@ -23,12 +23,13 @@ thanks Leo!
 """
 
 import subprocess
+
+import pytest
+
 try:
     import importlib.metadata as importlib_metadata
 except ModuleNotFoundError:  # python < 3.7
-    import importlib_metadata
-
-import pytest
+    importlib_metadata = pytest.importorskip("importlib_metadata")
 
 from ... import (__version__, __name__)
 

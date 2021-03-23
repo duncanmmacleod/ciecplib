@@ -1,5 +1,5 @@
 %define name ciecplib
-%define version 0.4.2
+%define version 0.4.3
 %define release 1
 
 # -- metadata ---------------
@@ -20,12 +20,11 @@ Version:   %{version}
 # -- build requirements -----
 
 # macros
-BuildRequires: python-srpm-macros
 BuildRequires: python-rpm-macros
 BuildRequires: python3-rpm-macros
 
 # build
-BuildRequires: python3
+BuildRequires: python3 >= 3.5.0
 BuildRequires: python%{python3_pkgversion}-setuptools >= 30.3.0
 
 # man pages
@@ -34,6 +33,11 @@ BuildRequires: python%{python3_pkgversion}-m2crypto
 BuildRequires: python%{python3_pkgversion}-pyOpenSSL
 BuildRequires: python%{python3_pkgversion}-requests
 BuildRequires: python%{python3_pkgversion}-requests-ecp
+
+# tests
+%if 0%{?fedora} >= 30 || 0%{?rhel} >= 9
+BuildRequires: python%{python3_pkgversion}-pytest >= 3.9.0
+%endif
 
 # -- packages ---------------
 
@@ -47,6 +51,7 @@ Requires: python%{python3_pkgversion}-m2crypto
 Requires: python%{python3_pkgversion}-pyOpenSSL
 Requires: python%{python3_pkgversion}-requests
 Requires: python%{python3_pkgversion}-requests-ecp
+Conflicts: ciecp-utils < 0.4.3-1
 %{?python_provide:%python_provide python%{python3_pkgversion}-%{name}}
 %description -n python%{python3_pkgversion}-%{name}
 The Python %{python3_version} client for SAML ECP authentication.
@@ -70,26 +75,39 @@ ecp-cert-info, ecp-get-cookie, ecp-get-cert, and ecp-curl
 %install
 %py3_install
 
+%check
+export PYTHONPATH="%{buildroot}%{python3_sitelib}"
+export PATH="%{buildroot}%{_bindir}:${PATH}"
+ecp-cert-info --help
+ecp-curl --help
+ecp-get-cert --help
+ecp-get-cookie --help
+%if 0%{?fedora} >= 30 || 0%{?rhel} >= 9
+%{__python3} -m pytest --verbose -ra --pyargs ciecplib
+%endif
+
 %clean
 rm -rf $RPM_BUILD_ROOT
 
 # -- files ------------------
 
 %files -n python%{python3_pkgversion}-%{name}
-%license LICENSE
 %doc README.md
+%license LICENSE
 %{python3_sitelib}/*
-%exclude %{python3_sitelib}/ciecplib/tool
 
 %files -n ciecp-utils
+%doc README.md
 %license LICENSE
 %{_bindir}/*
 %{_mandir}/man1/*.1*
-%{python3_sitelib}/ciecplib/tool
 
 # -- changelog --------------
 
 %changelog
+* Tue Mar 23 2021 Duncan Macleod <duncan.macleod@ligo.org> - 0.4.3-1
+- update for 0.4.3
+
 * Fri Mar 19 2021 Duncan Macleod <duncan.macleod@ligo.org> - 0.4.2-1
 - update for 0.4.2
 

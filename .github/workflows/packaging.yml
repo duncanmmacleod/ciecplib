@@ -320,16 +320,18 @@ jobs:
   # -- RHEL -----------------
 
   rhel-source:
-    name: CentOS ${{ matrix.centos }} source package
+    name: ${{ matrix.displayname }} ${{ matrix.version }} source package
     needs:
       - tarball
     strategy:
       fail-fast: false
       matrix:
-        centos:
-          - 8
+        include:
+          - displayname: CentOS
+            dist: centos
+            version: 8
     runs-on: ubuntu-latest
-    container: centos:${{ matrix.centos }}
+    container: ${{ matrix.dist }}:${{ matrix.version }}
     env:
       TARBALL: "ciecplib-*.tar.*"
     steps:
@@ -338,46 +340,60 @@ jobs:
         with:
           name: tarball
 
-      - name: Configure yum
+      - name: Configure rpmbuild
         run: |
-          yum -y -q install \
-              epel-release \
+          dnf -y install \
+              python-srpm-macros \
               rpm-build \
           ;
+
+      - name: Configure EPEL
+        if: matrix.dist == 'centos' || matrix.dist == 'sl'
+        run: |
+          dnf -y install epel-release
+          dnf -y install epel-rpm-macros
 
       - name: Create source package
         run: rpmbuild -ts --define "_srcrpmdir $(pwd)" ${TARBALL}
 
       - uses: actions/upload-artifact@v2
         with:
-          name: srpm-centos-${{ matrix.centos }}
+          name: srpm-${{ matrix.dist }}-${{ matrix.version }}
           path: "*.src.rpm"
           if-no-files-found: error
 
   rhel-binary:
-    name: CentOS ${{ matrix.centos }} binary package
+    name: ${{ matrix.displayname }} ${{ matrix.version }} binary package
     needs:
       - rhel-source
     strategy:
       fail-fast: false
       matrix:
-        centos:
-          - 8
+        include:
+          - displayname: CentOS
+            dist: centos
+            version: 8
     runs-on: ubuntu-latest
-    container: centos:${{ matrix.centos }}
+    container: ${{ matrix.dist }}:${{ matrix.version }}
     env:
       SRPM: "ciecplib-*.src.rpm"
     steps:
       - name: Download SRPM
         uses: actions/download-artifact@v2
         with:
-          name: srpm-centos-${{ matrix.centos }}
+          name: srpm-${{ matrix.dist }}-${{ matrix.version }}
+
+      - name: Configure EPEL
+        if: matrix.dist == 'centos' || matrix.dist == 'sl'
+        run: |
+          dnf -y install epel-release
+          dnf -y install epel-rpm-macros
 
       - name: Install build tools
         run: |
-          yum -y -q install \
+          dnf -y install \
               rpm-build \
-              yum-utils \
+              "dnf-command(builddep)" \
           ;
 
       - name: Install requests-ecp
@@ -385,15 +401,15 @@ jobs:
           REQUESTS_ECP_VERSION: "0.2.1-1"
         shell: sh -ex {0}
         run: |
-          yum -y -q update
-          yum -y -q install curl epel-release
+          dnf -y -q install curl
           DIST_SUFFIX=$(rpm --eval "%{dist}")
           RPM="python3-requests-ecp-${REQUESTS_ECP_VERSION}${DIST_SUFFIX}.noarch.rpm"
           curl -LO https://koji.ligo-la.caltech.edu/kojifiles/packages/requests-ecp/${REQUESTS_ECP_VERSION/-/\/}${DIST_SUFFIX}/noarch/${RPM}
-          yum -y --nogpgcheck localinstall ${RPM}
+          dnf -y --nogpgcheck install ${RPM}
           rm -fv ${RPM}
+
       - name: Install build dependencies
-        run: yum-builddep -y -q ${SRPM}
+        run: dnf builddep -y ${SRPM}
 
       - name: Build binary packages
         run: |
@@ -416,11 +432,11 @@ jobs:
           done
 
       - name: Install new packages
-        run: yum -y localinstall *.rpm
+        run: dnf -y install *.rpm
 
       - uses: actions/upload-artifact@v2
         with:
-          name: rpm-centos-${{ matrix.centos }}
+          name: rpm-${{ matrix.dist }}-${{ matrix.version }}
           path: "*.rpm"
           if-no-files-found: error
 
@@ -438,7 +454,7 @@ jobs:
 
       - name: Install rpmlint
         run: |
-          yum -y -q install \
+          dnf -y install \
               rpmlint \
           ;
 
