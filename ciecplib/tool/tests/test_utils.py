@@ -57,6 +57,7 @@ def test_argument_parser(capsys):
 
 
 @mock.patch("ciecplib.tool.utils.find_principal", side_effect=RuntimeError)
+@mock.patch.dict("os.environ", clear=True)
 def test_argument_parser_kerberos_error(capsys):
     parser = tools_utils.ArgumentParser()
     with pytest.raises(SystemExit):
@@ -64,6 +65,7 @@ def test_argument_parser_kerberos_error(capsys):
 
 
 @mock.patch("ciecplib.tool.utils.find_principal", return_value="user@REALM")
+@mock.patch.dict("os.environ", clear=True)
 def test_argument_parser_kerberos_defaults(capsys):
     parser = tools_utils.ArgumentParser()
     args = parser.parse_args(["--kerberos"])
