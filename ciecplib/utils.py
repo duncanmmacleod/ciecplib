@@ -100,9 +100,7 @@ EcpIdentityProvider = namedtuple(
 def get_idps(url=DEFAULT_IDPLIST_URL):
     """Download the list of known ECP IdPs from the given URL
 
-    The output is a `dict` where the keys are institution names
-    (e.g. ``'Fermi National Accelerator Laboratory'``), and the values
-    are the URL of their IdP.
+    The output is a `list` of `EcpIdentityProvider` objects.
 
     Some institutions may have two entries if they also support Kerberos.
 
