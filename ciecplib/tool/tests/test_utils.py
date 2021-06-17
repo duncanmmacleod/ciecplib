@@ -23,13 +23,11 @@ import argparse
 import logging
 from http import client as http_client
 from unittest import mock
-from urllib.error import URLError
-
-from requests import RequestException
 
 import pytest
 
 from ... import __version__ as ciecplib_version
+from ...utils import EcpIdentityProvider
 from .. import utils as tools_utils
 
 __author__ = 'Duncan Macleod <duncan.macleod@ligo.org>'
@@ -73,13 +71,17 @@ def test_argument_parser_kerberos_defaults(capsys):
     assert args.identity_provider == "REALM"
 
 
-def test_list_idps_action(capsys):
+@mock.patch(
+    "ciecplib.tool.utils.get_idps",
+    return_value=[
+        EcpIdentityProvider("Inst 1", "https://url1", False),
+        EcpIdentityProvider("Cardiff University", "https://cardiff", True),
+    ],
+)
+def test_list_idps_action(_, capsys):
     parser = tools_utils.ArgumentParser()
     with pytest.raises(SystemExit):
-        try:
-            parser.parse_args(["--list-idps"])
-        except (RequestException, URLError) as exc:
-            pytest.skip(str(exc))
+        parser.parse_args(["--list-idps"])
     stdout = capsys.readouterr()[0]
     assert "'Cardiff University'" in stdout
 
