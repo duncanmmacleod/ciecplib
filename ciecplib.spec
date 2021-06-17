@@ -1,6 +1,6 @@
 %define name ciecplib
 %define version 0.4.3
-%define release 1
+%define release 2
 
 # -- metadata ---------------
 
@@ -28,7 +28,9 @@ BuildRequires: python3 >= 3.5.0
 BuildRequires: python%{python3_pkgversion}-setuptools >= 30.3.0
 
 # man pages
+%if 0%{?fedora} >= 26 || 0%{?rhel} >= 8
 BuildRequires: python%{python3_pkgversion}-argparse-manpage
+%endif
 BuildRequires: python%{python3_pkgversion}-m2crypto
 BuildRequires: python%{python3_pkgversion}-pyOpenSSL
 BuildRequires: python%{python3_pkgversion}-requests
@@ -100,11 +102,16 @@ rm -rf $RPM_BUILD_ROOT
 %doc README.md
 %license LICENSE
 %{_bindir}/*
+%if 0%{?fedora} >= 26 || 0%{?rhel} >= 8
 %{_mandir}/man1/*.1*
+%endif
 
 # -- changelog --------------
 
 %changelog
+* Tue Mar 30 2021 Duncan Macleod <duncan.macleod@ligo.org> - 0.4.3-2
+- exclude man pages on el7, no argparse-manpage
+
 * Tue Mar 23 2021 Duncan Macleod <duncan.macleod@ligo.org> - 0.4.3-1
 - update for 0.4.3
 

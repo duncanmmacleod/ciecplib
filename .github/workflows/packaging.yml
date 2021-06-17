@@ -210,9 +210,9 @@ jobs:
           - debian: stretch
             container: igwn/base:stretch-proposed
           - debian: buster
-            container: debian:buster-backports
+            container: igwn/base:buster
           - debian: bullseye
-            container: debian:bullseye
+            container: igwn/base:bullseye
     runs-on: ubuntu-latest
     container: ${{ matrix.container }}
     env:
@@ -235,31 +235,14 @@ jobs:
         run: |
           dpkg-source --extract ${DSC} src
 
-      - name: Install requests-ecp
-        env:
-          REQUESTS_ECP_VERSION: "${{ matrix.debian == 'stretch' && '0.2.1-1' || '0.2.2-1' }}"
-        shell: sh -ex {0}
-        run: |
-          apt-get -y -q -q update
-          apt-get -y -q -q install base-files curl dpkg lsb-release
-          eval $(cat /etc/os-release)
-          CODENAME=$(lsb_release --codename --short)
-          if [ ${CODENAME} = "bullseye" ]; then VERSION_ID="11"; fi
-          DEB="python3-requests-ecp_${REQUESTS_ECP_VERSION}+deb${VERSION_ID}u0_all.deb"
-          curl -LO https://hypatia.aei.mpg.de/lsc-amd64-${CODENAME}/${DEB}
-          dpkg --info ${DEB}
-          dpkg --install ${DEB} || { apt-get -y -f install; dpkg --install ${DEB}; };
-          rm -fv ${DEB}
-
       - name: Install build dependencies
         env:
           DOCKER_CONTAINER: ${{ matrix.container }}
         shell: bash -ex {0}
         run: |
           cd src
-          if [[ "${DOCKER_CONTAINER}" == *backports ]]; then BACKPORTS="-t ${DOCKER_CONTAINER##*:}"; fi
           mk-build-deps \
-              --tool "apt-get -y -q ${BACKPORTS} -o Debug::pkgProblemResolver=yes --no-install-recommends" \
+              --tool "apt-get -y -q -o Debug::pkgProblemResolver=yes --no-install-recommends" \
               --install \
               --remove \
           ;
@@ -295,6 +278,39 @@ jobs:
             *.deb
           if-no-files-found: error
 
+  debian-install:
+    name: Debian ${{ matrix.debian }} install test
+    needs:
+      - debian-binary
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - debian: stretch
+            container: igwn/base:stretch-proposed
+          - debian: buster
+            container: igwn/base:buster
+          - debian: bullseye
+            container: igwn/base:bullseye
+    runs-on: ubuntu-latest
+    container: ${{ matrix.container }}
+    steps:
+      - name: Download binary packages
+        uses: actions/download-artifact@v2
+        with:
+          name: deb-${{ matrix.debian }}
+
+      - name: Configure apt
+        run: apt-get -y -q -q update
+
+      - name: Install packages
+        shell: bash -ex {0}
+        run: |
+          dpkg --install *.deb || { \
+              apt-get -y -f install;
+              dpkg --install *.deb;
+          }
+
   lint-debian:
     name: Lint Debian packages
     runs-on: ubuntu-latest
@@ -320,18 +336,17 @@ jobs:
   # -- RHEL -----------------
 
   rhel-source:
-    name: ${{ matrix.displayname }} ${{ matrix.version }} source package
+    name: LSCSoft ${{ matrix.el }} source package
     needs:
       - tarball
     strategy:
       fail-fast: false
       matrix:
-        include:
-          - displayname: CentOS
-            dist: centos
-            version: 8
+        el:
+          - el7
+          - el8
     runs-on: ubuntu-latest
-    container: ${{ matrix.dist }}:${{ matrix.version }}
+    container: igwn/base:${{ matrix.el }}-testing
     env:
       TARBALL: "ciecplib-*.tar.*"
     steps:
@@ -339,6 +354,10 @@ jobs:
         uses: actions/download-artifact@v2
         with:
           name: tarball
+
+      - name: Configure yum/dnf
+        if: matrix.el == 'el7'
+        run: ln -s /usr/bin/yum /usr/bin/dnf
 
       - name: Configure rpmbuild
         run: |
@@ -348,7 +367,6 @@ jobs:
           ;
 
       - name: Configure EPEL
-        if: matrix.dist == 'centos' || matrix.dist == 'sl'
         run: |
           dnf -y install epel-release
           dnf -y install epel-rpm-macros
@@ -358,57 +376,61 @@ jobs:
 
       - uses: actions/upload-artifact@v2
         with:
-          name: srpm-${{ matrix.dist }}-${{ matrix.version }}
+          name: srpm-${{ matrix.el }}
           path: "*.src.rpm"
           if-no-files-found: error
 
   rhel-binary:
-    name: ${{ matrix.displayname }} ${{ matrix.version }} binary package
+    name: LSCSoft ${{ matrix.el }} binary package
     needs:
       - rhel-source
     strategy:
       fail-fast: false
       matrix:
-        include:
-          - displayname: CentOS
-            dist: centos
-            version: 8
+        el:
+          - el7
+          - el8
     runs-on: ubuntu-latest
-    container: ${{ matrix.dist }}:${{ matrix.version }}
+    container: igwn/base:${{ matrix.el }}-testing
     env:
       SRPM: "ciecplib-*.src.rpm"
     steps:
       - name: Download SRPM
         uses: actions/download-artifact@v2
         with:
-          name: srpm-${{ matrix.dist }}-${{ matrix.version }}
+          name: srpm-${{ matrix.el }}
+
+      - name: Configure yum/dnf
+        if: matrix.el == 'el7'
+        run: ln -s /usr/bin/yum /usr/bin/dnf
 
       - name: Configure EPEL
-        if: matrix.dist == 'centos' || matrix.dist == 'sl'
         run: |
           dnf -y install epel-release
           dnf -y install epel-rpm-macros
 
-      - name: Install build tools
+      - name: Install build tools (el7)
+        if: matrix.el == 'el7'
+        run: |
+          yum -y install \
+              rpm-build \
+              yum-utils \
+          ;
+
+      - name: Install build tools (el8+)
+        if: matrix.el != 'el7'
         run: |
           dnf -y install \
               rpm-build \
               "dnf-command(builddep)" \
           ;
 
-      - name: Install requests-ecp
-        env:
-          REQUESTS_ECP_VERSION: "0.2.1-1"
-        shell: sh -ex {0}
-        run: |
-          dnf -y -q install curl
-          DIST_SUFFIX=$(rpm --eval "%{dist}")
-          RPM="python3-requests-ecp-${REQUESTS_ECP_VERSION}${DIST_SUFFIX}.noarch.rpm"
-          curl -LO https://koji.ligo-la.caltech.edu/kojifiles/packages/requests-ecp/${REQUESTS_ECP_VERSION/-/\/}${DIST_SUFFIX}/noarch/${RPM}
-          dnf -y --nogpgcheck install ${RPM}
-          rm -fv ${RPM}
+      - name: Install build dependencies (el7)
+        if: matrix.el == 'el7'
+        run: yum-builddep -y ${SRPM}
 
-      - name: Install build dependencies
+      - name: Install build dependencies (el8+)
+        if: matrix.el != 'el7'
         run: dnf builddep -y ${SRPM}
 
       - name: Build binary packages
@@ -436,9 +458,37 @@ jobs:
 
       - uses: actions/upload-artifact@v2
         with:
-          name: rpm-${{ matrix.dist }}-${{ matrix.version }}
+          name: rpm-${{ matrix.el }}
           path: "*.rpm"
           if-no-files-found: error
+
+  rhel-install:
+    name: LSCSoft ${{ matrix.el }} install test
+    needs:
+      - rhel-binary
+    strategy:
+      fail-fast: false
+      matrix:
+        el:
+          - el7
+          - el8
+    runs-on: ubuntu-latest
+    container: igwn/base:${{ matrix.el }}-testing
+    steps:
+      - name: Download RPMs
+        uses: actions/download-artifact@v2
+        with:
+          name: rpm-${{ matrix.el }}
+
+      - name: Configure YUM
+        if: matrix.el == 'el7'
+        run: ln -s /usr/bin/yum /usr/bin/dnf
+
+      - name: Configure EPEL
+        run: dnf -y install epel-release
+
+      - name: Install RPMs
+        run: dnf -y install *.rpm
 
   lint-rhel:
     name: Lint CentOS packages
@@ -450,7 +500,7 @@ jobs:
       - name: Download RPM
         uses: actions/download-artifact@v2
         with:
-          name: rpm-centos-8
+          name: rpm-el8
 
       - name: Install rpmlint
         run: |
