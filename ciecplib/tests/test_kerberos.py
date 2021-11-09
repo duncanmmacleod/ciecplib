@@ -41,12 +41,12 @@ Valid starting       Expires              Service principal
 @mock.patch("subprocess.check_output")
 def test_has_credential(mock_output, side_effect, result):
     mock_output.side_effect = side_effect
-    assert ciecplib_kerberos.has_credential("klist") is result
+    assert ciecplib_kerberos.has_credential() is result
 
 
 @mock.patch("subprocess.check_output", return_value=KLIST_OUTPUT)
 def test_find_principal(_):
-    assert ciecplib_kerberos.find_principal("klist") == "test.user@REALM.ORG"
+    assert ciecplib_kerberos.find_principal() == "test.user@REALM.ORG"
 
 
 @mock.patch("subprocess.check_output", return_value=b"")

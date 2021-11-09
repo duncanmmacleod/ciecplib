@@ -12,7 +12,6 @@ Build-Depends:
  dh-python,
  python3-all,
  python3-argparse-manpage,
- python3-distutils | libpython3-stdlib (<< 3.7.0),
  python3-importlib-metadata | python3-minimal (<< 3.9.0),
  python3-m2crypto,
  python3-openssl,
@@ -30,7 +29,6 @@ Architecture: all
 Depends:
  ${misc:Depends},
  ${python3:Depends},
- python3-distutils | libpython3-stdlib (<< 3.7.0),
  python3-m2crypto,
  python3-openssl,
  python3-requests,
