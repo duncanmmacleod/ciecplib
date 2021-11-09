@@ -5,7 +5,7 @@ Section: python
 Priority: optional
 Maintainer: Duncan Macleod <duncan.macleod@ligo.org>
 Standards-Version: 4.2.1
-X-Python3-Version: >= 3.5
+X-Python3-Version: >= 3.6
 Homepage: https://github.com/duncanmmacleod/ciecplib
 Build-Depends:
  debhelper (>= 9),
