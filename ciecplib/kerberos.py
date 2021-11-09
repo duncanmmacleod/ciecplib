@@ -31,30 +31,46 @@ KLIST_PRINCIPAL_RE = re.compile(
 )
 
 
-def has_credential(klist=KLIST_EXE):
+def has_credential(*args, klist=KLIST_EXE):
     """Run ``klist`` to determine whether a kerberos credential is available.
 
     Parameters
     ----------
+    *args : `str`, optional
+        extra arguments to pass to ``klist``, note that the ``-s`` option
+        is always passed to ``klist``
+
     klist : `str`, optional
-        path to the ``klist`` executable, defaults to searching ``$PATH``
+        path to the ``klist`` executable
 
     Returns
-    ----------
+    -------
     True
         if ``klist -s`` indicates a valid credential
     False
         otherwise (including klist failures)
+
+    Examples
+    --------
+    >>> has_credential()
+    False
+    >>> has_credential("mykrb5cc", klist="/opt/special/bin/klist")
+    True
+
+    See also
+    --------
+    klist(1)
+        for details of options accepted by ``klist``
     """
     # run klist to check credentials
     try:
-        subprocess.check_output([klist, "-s"])
+        subprocess.check_output([klist, "-s"] + list(args))
     except subprocess.CalledProcessError:
         return False
     return True
 
 
-def find_principal(klist=KLIST_EXE):
+def find_principal(*args, klist=KLIST_EXE):
     """Determine the default principal for an active kerberos credential
 
     Parameters
@@ -62,7 +78,7 @@ def find_principal(klist=KLIST_EXE):
     klist : `str`, optional
         path to the ``klist`` executable, defaults to searching ``$PATH``
     """
-    out = subprocess.check_output([klist]).decode("utf-8")
+    out = subprocess.check_output([klist] + list(args)).decode("utf-8")
     try:
         return KLIST_PRINCIPAL_RE.search(out).groups()[0]
     except (AttributeError, IndexError):  # failed to parse principal
