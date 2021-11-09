@@ -21,22 +21,14 @@
 
 import re
 import subprocess
-from distutils.spawn import find_executable
 
 __author__ = "Duncan Macleod <duncan.macleod@ligo.org>"
 
-KLIST_EXE = find_executable("klist")
+KLIST_EXE = "klist"
 KLIST_PRINCIPAL_RE = re.compile(
     r"\nDefault principal: ([\w\.@]+)",
     re.M,
 )
-
-
-def _find_executable(name):
-    exe = find_executable(name)
-    if exe is None:
-        raise OSError("cannot find {0!r}".format(name))
-    return exe
 
 
 def has_credential(klist=KLIST_EXE):
@@ -55,7 +47,6 @@ def has_credential(klist=KLIST_EXE):
         otherwise (including klist failures)
     """
     # run klist to check credentials
-    klist = klist or _find_executable("klist")
     try:
         subprocess.check_output([klist, "-s"])
     except subprocess.CalledProcessError:
@@ -71,7 +62,6 @@ def find_principal(klist=KLIST_EXE):
     klist : `str`, optional
         path to the ``klist`` executable, defaults to searching ``$PATH``
     """
-    klist = klist or _find_executable("klist")
     out = subprocess.check_output([klist]).decode("utf-8")
     try:
         return KLIST_PRINCIPAL_RE.search(out).groups()[0]
