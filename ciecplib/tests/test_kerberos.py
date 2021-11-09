@@ -39,9 +39,10 @@ Valid starting       Expires              Service principal
     (CalledProcessError(1, "klist"), False),
 ])
 @mock.patch("subprocess.check_output")
-def test_has_credential(mock_output, side_effect, result):
-    mock_output.side_effect = side_effect
-    assert ciecplib_kerberos.has_credential() is result
+def test_has_credential(_check_output, side_effect, result):
+    _check_output.side_effect = side_effect
+    assert ciecplib_kerberos.has_credential("krb5ccname") is result
+    _check_output.assert_called_once_with(["klist", "-s", "krb5ccname"])
 
 
 @mock.patch("subprocess.check_output", return_value=KLIST_OUTPUT)
@@ -50,7 +51,8 @@ def test_find_principal(_):
 
 
 @mock.patch("subprocess.check_output", return_value=b"")
-def test_find_principal_error(_):
+def test_find_principal_error(_check_output):
     with pytest.raises(RuntimeError) as exc:
-        ciecplib_kerberos.find_principal("klist")
+        ciecplib_kerberos.find_principal("krb5ccname")
+    _check_output.assert_called_once_with(["klist", "krb5ccname"])
     assert str(exc.value) == "failed to parse principal from `klist` output"
