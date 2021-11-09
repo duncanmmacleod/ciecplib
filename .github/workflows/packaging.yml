@@ -156,8 +156,6 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - debian: stretch
-            container: igwn/base:stretch-proposed
           - debian: buster
             container: debian:buster-backports
           - debian: bullseye
@@ -207,8 +205,6 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - debian: stretch
-            container: igwn/base:stretch-proposed
           - debian: buster
             container: igwn/base:buster
           - debian: bullseye
@@ -286,8 +282,6 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - debian: stretch
-            container: igwn/base:stretch-proposed
           - debian: buster
             container: igwn/base:buster
           - debian: bullseye
