@@ -20,6 +20,11 @@
 """
 
 from http.cookiejar import Cookie
+try:
+    from http.cookiejar import NETSCAPE_HEADER_TEXT
+except ImportError:  # python < 3.10
+    from http.cookiejar import MozillaCookieJar
+    NETSCAPE_HEADER_TEXT = MozillaCookieJar.header
 
 import pytest
 
@@ -63,7 +68,7 @@ class TestECPCookieJar(object):
         path = tmp_path / "cookies"
         ecpcookiejar.save(path)
         # check that the header got written
-        assert path.open("r").read().startswith(ecpcookiejar.header)
+        assert path.read_text().startswith(NETSCAPE_HEADER_TEXT)
         # check that there aren't actually any cookies
         # (since the cookie is a session cookie [`discard=True`])
         jar = self.TEST_CLASS()
