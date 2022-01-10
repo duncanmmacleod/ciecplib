@@ -19,7 +19,8 @@
 """Cookie handling for SAML ECP authentication
 """
 
-import time
+from copy import deepcopy
+from functools import wraps
 from http.cookiejar import (LoadError, MozillaCookieJar)
 from urllib.parse import urlparse
 
@@ -31,55 +32,23 @@ __author__ = 'Duncan Macleod <duncan.macleod@ligo.org>'
 # -- cookie jar ---------------------------------------------------------------
 
 class ECPCookieJar(RequestsCookieJar, MozillaCookieJar):
-    """Custom cookie jar
+    """Custom cookie jar that stores cookies in the cURL format.
 
-    Adapted from
-    https://wiki.shibboleth.net/confluence/download/attachments/4358416/ecp.py
     """
-    def save(self, filename=None, ignore_discard=False, ignore_expires=False):
-        with open(str(filename), 'w') as f:
-            f.write(self.header)
-            for cookie in self:
-                if not ignore_discard and cookie.discard:
-                    continue
-                if not ignore_expires and cookie.is_expired(time.time()):
-                    continue
-                if cookie.expires is not None:
-                    expires = str(cookie.expires)
-                else:
-                    # change so that if a cookie does not have an expiration
-                    # date set it is saved with a '0' in that field instead
-                    # of a blank space so that the curl libraries can
-                    # read in and use the cookie
-                    expires = "0"
-                if cookie.value is None:
-                    # cookies.txt regards 'Set-Cookie: foo' as a cookie
-                    # with no name, whereas cookiejar regards it as a
-                    # cookie with no value.
-                    name = ""
-                    value = cookie.name
-                else:
-                    name = cookie.name
-                    value = cookie.value
-                print('\t'.join([
-                    cookie.domain,
-                    str(cookie.domain.startswith('.')).upper(),
-                    cookie.path,
-                    str(cookie.secure).upper(),
-                    expires,
-                    name,
-                    value,
-                ]), file=f)
+    @wraps(MozillaCookieJar.save)
+    def save(self, *args, **kwargs):
+        copy = deepcopy(self)
+        for cookie in copy:
+            if cookie.expires is None:
+                # hack the cookie to store 0 so that cURL will use it
+                cookie.expires = "0"
+        # now save our modified cookiejar
+        return super(ECPCookieJar, copy).save(*args, **kwargs)
 
-    def _really_load(self, f, filename, ignore_discard, ignore_expires):
-        out = super(ECPCookieJar, self)._really_load(
-            f,
-            filename,
-            ignore_discard,
-            ignore_expires,
-        )
+    def _really_load(self, *args, **kwargs):
+        out = super()._really_load(*args, **kwargs)
         for cookie in self:
-            if not cookie.expires:
+            if not cookie.expires:  # reformat "0" as None
                 cookie.expires = None
         return out
 
