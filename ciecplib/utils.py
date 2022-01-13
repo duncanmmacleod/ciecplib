@@ -158,14 +158,16 @@ def _match_institution(value, institutions, kerberos=None):
 
     # try and match the institution name
     matches = _preferred_match(
-        _match(value, institutions, "name", kerberos=kerberos)
+        _match(value, institutions, "name", kerberos=kerberos),
     )
     if len(matches) == 1:
         return matches.pop()
 
     # otherwise match the IdP URL
     if _URL_REGEX.match(value):
-        umatches = _match(value, institutions, "url", kerberos=kerberos)
+        umatches = _preferred_match(
+            _match(value, institutions, "url", kerberos=kerberos),
+        )
         if len(umatches) == 1:
             return umatches.pop()
         matches = matches or umatches or []
