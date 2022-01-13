@@ -33,10 +33,10 @@ EcpIdP = ciecplib_utils.EcpIdentityProvider
 
 # mock response from ECP IdP list
 INST_DICT = {
-    "Institution 1": "https://inst1.test/idp/profile/SAML2/SOAP/ECP",
-    "Institution 1 (Kerberos)":
-        "https://inst1.test.krb/idp-krb/profile/SAML2/SOAP/ECP",
-    "Institution 2": "https://inst2.test/idp/profile/SAML2/SOAP/ECP",
+    "Institution A": "https://login.insta.org/idp/profile/SAML2/SOAP/ECP",
+    "Institution A (Kerberos)":
+        "https://login.insta.krb/idp-krb/profile/SAML2/SOAP/ECP",
+    "Institution B": "https://login.instb.org/idp/profile/SAML2/SOAP/ECP",
 }
 INSTITUTIONS = [
     EcpIdP(
@@ -80,15 +80,18 @@ def test_get_idps(requests_mock):
 
 
 @pytest.mark.parametrize("value, krb, result", [
-    ("Institution 1", False, INST_DICT["Institution 1"]),
-    ("Institution 1 (Kerberos)", None,
-     INST_DICT["Institution 1 (Kerberos)"]),
-    ("Institution 1", True, INST_DICT["Institution 1 (Kerberos)"]),
-    ("inst1", False, INST_DICT["Institution 1"]),
-    ("inst1.test.krb", None, INST_DICT["Institution 1 (Kerberos)"]),
-    ("inst2", None, INST_DICT["Institution 2"]),
-    ("https://inst1.test/idp/profile/SAML2/SOAP/ECP", None,
-     INST_DICT["Institution 1"]),
+    # direct match for institution
+    ("Institution A", False, INST_DICT["Institution A"]),
+    ("Institution A (Kerberos)", None, INST_DICT["Institution A (Kerberos)"]),
+    # kerberos selection
+    ("Institution A", True, INST_DICT["Institution A (Kerberos)"]),
+    # partial match for URL
+    ("insta", False, INST_DICT["Institution A"]),
+    ("login.insta.krb", None, INST_DICT["Institution A (Kerberos)"]),
+    ("instb", None, INST_DICT["Institution B"]),
+    # valid ECP URL, just return it
+    ("https://myidp.org/idp/profile/SAML2/SOAP/ECP", None,
+     "https://myidp.org/idp/profile/SAML2/SOAP/ECP"),
 ])
 def test_get_idp_url(requests_mock, value, krb, result):
     # only proxy idp-list-url if we need to
