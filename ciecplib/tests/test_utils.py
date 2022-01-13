@@ -37,6 +37,9 @@ INST_DICT = {
     "Institution A (Kerberos)":
         "https://login.insta.krb/idp-krb/profile/SAML2/SOAP/ECP",
     "Institution B": "https://login.instb.org/idp/profile/SAML2/SOAP/ECP",
+    "Institution C": "https://login.instc.org/idp/profile/SAML2/SOAP/ECP",
+    "Institution C (backup)":
+        "https://login2.instc.org/idp/profile/SAML2/SOAP/ECP",
 }
 INSTITUTIONS = [
     EcpIdP(
@@ -92,6 +95,10 @@ def test_get_idps(requests_mock):
     # valid ECP URL, just return it
     ("https://myidp.org/idp/profile/SAML2/SOAP/ECP", None,
      "https://myidp.org/idp/profile/SAML2/SOAP/ECP"),
+    # preferred match based on institution name
+    ("Institution C", None, INST_DICT["Institution C"]),
+    # preferred match based on URL
+    ("instc", None, INST_DICT["Institution C"]),
 ])
 def test_get_idp_url(requests_mock, value, krb, result):
     # only proxy idp-list-url if we need to
