@@ -112,8 +112,11 @@ def test_get_idp_url(requests_mock, value, krb, result):
 
 
 @pytest.mark.parametrize("inst", [
-    "Institution*",
-    "test",
+    # name too vague, multiple matches
+    "Institution",
+    # URL too vague, multiple matches
+    "login",
+    # no matches
     "something else",
 ])
 def test_get_idp_url_error(requests_mock, inst):
