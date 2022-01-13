@@ -1,5 +1,5 @@
 %define name ciecplib
-%define version 0.4.3
+%define version 0.4.4
 %define release 2
 
 # -- metadata ---------------
@@ -109,6 +109,9 @@ rm -rf $RPM_BUILD_ROOT
 # -- changelog --------------
 
 %changelog
+* Thu Jan 13 2022 Duncan Macleod <duncan.macleod@ligo.org> - 0.4.4-1
+- update for 0.4.4
+
 * Tue Mar 30 2021 Duncan Macleod <duncan.macleod@ligo.org> - 0.4.3-2
 - exclude man pages on el7, no argparse-manpage
 
