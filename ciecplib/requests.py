@@ -37,7 +37,7 @@ def _ecp_session(func):
                 idp=kwargs.pop("endpoint", DEFAULT_IDP),
                 username=kwargs.pop("username", None),
                 password=kwargs.pop("password", None),
-                kerberos=kwargs.pop("kerberos", False),
+                kerberos=kwargs.pop("kerberos", None),
                 cookiejar=kwargs.pop("cookiejar", None),
             )
         return func(*args, **kwargs)
