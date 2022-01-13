@@ -1,3 +1,9 @@
+ciecplib (0.4.4-1) unstable; urgency=low
+
+  * Update for 0.4.4
+
+ -- Duncan Macleod <duncan.macleod@ligo.org>  Thu, 13 Jan 2022 10:18:00 +0000
+
 ciecplib (0.4.3-2) unstable; urgency=low
 
   * fix python library requirements
