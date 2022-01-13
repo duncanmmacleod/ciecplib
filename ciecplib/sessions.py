@@ -45,7 +45,7 @@ class Session(ECPSession):
             username=None,
             password=None,
             cookiejar=None,
-            **kwargs
+            **kwargs,
     ):
 
         if kerberos is None:
