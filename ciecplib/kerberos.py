@@ -83,3 +83,31 @@ def find_principal(*args, klist=KLIST_EXE):
         return KLIST_PRINCIPAL_RE.search(out).groups()[0]
     except (AttributeError, IndexError):  # failed to parse principal
         raise RuntimeError("failed to parse principal from `klist` output")
+
+
+def realm(principal):
+    """Return the kerbeos realm name from a principal
+
+    Parameters
+    ----------
+    principal : `str`
+        the kerberos principal to parse
+
+    Returns
+    -------
+    realm : `str`
+        the realm name
+
+    Examples
+    --------
+    >>> realm('marie.curie@EXAMPLE.ORG')
+    'EXAMPLE.ORG'
+    """
+    try:
+        user, realm = principal.rsplit("@", 1)
+    except ValueError as exc:  # no "@" character
+        exc.args = (
+            f"invalid kerberos principal '{principal}'",
+        )
+        raise
+    return realm
