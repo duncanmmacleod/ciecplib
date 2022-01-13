@@ -60,7 +60,7 @@ class Session(ECPSession):
 
         # open session with ECP authentication
         super().__init__(
-            idp=get_idp_url(idp),
+            idp=get_idp_url(idp) if idp else None,
             kerberos=kerberos,
             username=username,
             password=password,
