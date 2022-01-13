@@ -65,7 +65,7 @@ class Session(ECPSession):
             kerberos=kerberos,
             username=username,
             password=password,
-            **kwargs
+            **kwargs,
         )
 
         # load cookies from existing jar or file
