@@ -56,3 +56,13 @@ def test_find_principal_error(_check_output):
         ciecplib_kerberos.find_principal("krb5ccname")
     _check_output.assert_called_once_with(["klist", "krb5ccname"])
     assert str(exc.value) == "failed to parse principal from `klist` output"
+
+
+def test_realm():
+    assert ciecplib_kerberos.realm("marie.curie@EXAMPLE.ORG") == "EXAMPLE.ORG"
+
+
+def test_realm_error():
+    with pytest.raises(ValueError) as exc:
+        ciecplib_kerberos.realm("marie.curie")
+    assert str(exc.value) == "invalid kerberos principal 'marie.curie'"
