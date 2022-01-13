@@ -23,7 +23,11 @@ from requests_ecp import Session as ECPSession
 
 from .cookies import ECPCookieJar
 from .env import _get_default_idp
-from .kerberos import has_credential
+from .kerberos import (
+    has_credential as has_krb5_credential,
+    find_principal as find_krb5_principal,
+    realm as krb5_realm,
+)
 from .utils import get_idp_url
 
 __all__ = [
@@ -44,7 +48,15 @@ class Session(ECPSession):
     ):
 
         if kerberos is None:
-            kerberos = has_credential()
+            kerberos = has_krb5_credential()
+        if kerberos and not idp:
+            idp = krb5_realm(find_krb5_principal())
+        if not kerberos and not idp:
+            raise ValueError(
+                "no Identity Provider (IdP) given, and no kerberos "
+                "credential discovered, unable to dynamically determine IdP "
+                "endpoint",
+            )
 
         # open session with ECP authentication
         super().__init__(
