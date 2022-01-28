@@ -2,16 +2,18 @@ name: ciecplib
 channels:
   - conda-forge
 dependencies:
-  - m2crypto
-  - pip
-  - pyopenssl
   - python>=3
+  # build
+  - pip
+  - setuptools
+  # install
+  - m2crypto
+  - pyopenssl
   - requests
   - requests-ecp
-  - setuptools
+  # docs
   - sphinx
   - sphinx-argparse
   - sphinx-automodapi
   - sphinx_rtd_theme
-  - pip:
-    - sphinx_tabs
+  - sphinx-tabs
