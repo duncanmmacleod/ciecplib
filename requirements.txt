@@ -1,6 +1,0 @@
-argparse-manpage
-M2Crypto
-pyOpenSSL
-requests
-requests-ecp
-setuptools
