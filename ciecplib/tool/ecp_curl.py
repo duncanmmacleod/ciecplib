@@ -34,7 +34,6 @@ from ..sessions import Session
 from ..utils import DEFAULT_COOKIE_FILE
 from .utils import (
     ArgumentParser,
-    init_logging,
 )
 
 __author__ = 'Duncan Macleod <duncan.macleod@ligo.org>'
@@ -90,8 +89,6 @@ def create_parser():
 def main(args=None):
     parser = create_parser()
     args = parser.parse_args(args=args)
-    if args.debug:
-        init_logging()
     cookiejar = load_cookiejar(
         args.cookiefile,
         strict=False,

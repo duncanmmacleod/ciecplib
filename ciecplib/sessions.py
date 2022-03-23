@@ -28,6 +28,10 @@ from .kerberos import (
     find_principal as find_krb5_principal,
     realm as krb5_realm,
 )
+from .logging import (
+    init_logging,
+    reset_logging,
+)
 from .utils import get_idp_url
 
 __all__ = [
@@ -45,6 +49,7 @@ class Session(ECPSession):
             username=None,
             password=None,
             cookiejar=None,
+            debug=False,
             **kwargs,
     ):
 
@@ -72,3 +77,12 @@ class Session(ECPSession):
         self.cookies = ECPCookieJar()
         if cookiejar:
             self.cookies.update(cookiejar)
+
+        # configure debugging
+        self.debug = debug
+        if self.debug:
+            init_logging(level="DEBUG")
+
+    def close(self):
+        reset_logging()
+        return super().close()

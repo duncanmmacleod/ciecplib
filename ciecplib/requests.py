@@ -39,6 +39,7 @@ def _ecp_session(func):
                 password=kwargs.pop("password", None),
                 kerberos=kwargs.pop("kerberos", None),
                 cookiejar=kwargs.pop("cookiejar", None),
+                debug=kwargs.get("debug", False),
             )
         return func(*args, **kwargs)
     return _wrapper
