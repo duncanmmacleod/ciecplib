@@ -11,9 +11,15 @@ on:
   push:
     branches:
       - main
+      - release/**
   pull_request:
     branches:
       - main
+      - release/**
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   tarball:
