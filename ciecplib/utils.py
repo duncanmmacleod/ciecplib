@@ -231,7 +231,7 @@ def get_idp_url(url_or_name, idplist_url=DEFAULT_IDPLIST_URL, kerberos=False):
 
 # -- misc utilities -----------------------------------------------------------
 
-def random_string(length, outof=string.ascii_lowercase+string.digits):
+def random_string(length, outof=string.ascii_lowercase + string.digits):
     # http://stackoverflow.com/a/23728630/2213647 says SystemRandom()
     # is most secure
     return ''.join(random.SystemRandom().choice(outof) for _ in range(length))
