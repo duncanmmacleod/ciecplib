@@ -11,9 +11,15 @@ on:
   push:
     branches:
       - main
+      - release/**
   pull_request:
     branches:
       - main
+      - release/**
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   tarball:
@@ -94,6 +100,9 @@ jobs:
     needs:
       - tarball
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: bash -el {0}
     steps:
       - name: Download tarball
         uses: actions/download-artifact@v2
@@ -114,8 +123,9 @@ jobs:
         uses: conda-incubator/setup-miniconda@v2
         with:
           activate-environment: test
-          channels: conda-forge
+          miniforge-variant: Mambaforge
           python-version: 3
+          use-mamba: true
           # this is needed for caching to work properly:
           use-only-tar-bz2: true
 
@@ -128,11 +138,19 @@ jobs:
           tar -xf ciecplib-*.tar.* --strip-components=1
 
       - name: Install dependencies
+        shell: bash -el {0}
         run: |
-          conda install --quiet --yes --name test \
+          mamba install --name base pip2conda
+          ${CONDA_PYTHON_EXE} -m pip2conda \
+              --output environment.txt \
+          ;
+          echo "-----------------"
+          cat environment.txt
+          echo "-----------------"
+          mamba install --quiet --yes --name test \
               pip \
-              setuptools \
-              --file requirements.txt \
+              wheel \
+              --file environment.txt \
           ;
 
       - name: Install ciecplib
@@ -143,8 +161,13 @@ jobs:
           PIP_IGNORE_INSTALLED: "True"
           PIP_CACHE_DIR: "${{ github.workspace }}/pip_cache"
           PIP_NO_INDEX: "True"
-        shell: bash -el {0}
         run: python -m pip install . -vv
+
+      - name: Package list
+        run: mamba list --name test
+
+      - name: Check the pip install
+        run: python -m pip check
 
   # -- Debian ---------------
 
