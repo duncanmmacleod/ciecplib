@@ -79,9 +79,9 @@ def extract_session_cookie(jar, url):
     url = urlparse(url).netloc
     for cookie in list(jar)[::-1]:
         if (
-                cookie.name.startswith("_shibsession_") and
-                cookie.domain == url and
-                cookie.expires is None
+                cookie.name.startswith("_shibsession_")
+                and cookie.domain == url
+                and cookie.expires is None
         ):
             return cookie
     raise ValueError(

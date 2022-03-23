@@ -122,9 +122,9 @@ def get_idps(url=DEFAULT_IDPLIST_URL):
 
 def _match(value, idplist, attr, kerberos=None):
     return [
-        inst for inst in idplist if
-        value in getattr(inst, attr).lower() and
-        kerberos in (None, inst.iskerberos)
+        inst for inst in idplist
+        if value in getattr(inst, attr).lower()
+        and kerberos in (None, inst.iskerberos)
     ]
 
 

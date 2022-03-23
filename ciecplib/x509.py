@@ -162,8 +162,8 @@ def _get_cert_policy_language(x509):
         ext = x509.get_ext_at(i)
         name = ext.get_name()
         if (
-            name == "proxyCertInfo" and
-            ext.get_critical()
+            name == "proxyCertInfo"
+            and ext.get_critical()
         ):
             pcidata = dict(
                 map(str.strip, line.split(':', 1)) for
