@@ -137,9 +137,9 @@ def get_cert(
             'Cookie': 'CSRF={0}; {1.name}={1.value}'.format(csrfstr, cookie),
         }
         p12password = (
-            random_string(16, string.ascii_letters) +
-            random_string(2, string.digits) +
-            random_string(2, '!@#$%^&*()')
+            random_string(16, string.ascii_letters)
+            + random_string(2, string.digits)
+            + random_string(2, '!@#$%^&*()')
         )
         certdata = urllib_parse.urlencode({
             'submit': 'pkcs12',

@@ -122,9 +122,9 @@ def get_idps(url=DEFAULT_IDPLIST_URL):
 
 def _match(value, idplist, attr, kerberos=None):
     return [
-        inst for inst in idplist if
-        value in getattr(inst, attr).lower() and
-        kerberos in (None, inst.iskerberos)
+        inst for inst in idplist
+        if value in getattr(inst, attr).lower()
+        and kerberos in (None, inst.iskerberos)
     ]
 
 
@@ -231,7 +231,7 @@ def get_idp_url(url_or_name, idplist_url=DEFAULT_IDPLIST_URL, kerberos=False):
 
 # -- misc utilities -----------------------------------------------------------
 
-def random_string(length, outof=string.ascii_lowercase+string.digits):
+def random_string(length, outof=string.ascii_lowercase + string.digits):
     # http://stackoverflow.com/a/23728630/2213647 says SystemRandom()
     # is most secure
     return ''.join(random.SystemRandom().choice(outof) for _ in range(length))
