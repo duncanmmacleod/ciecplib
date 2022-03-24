@@ -45,6 +45,7 @@ class Session(ECPSession):
             username=None,
             password=None,
             cookiejar=None,
+            **kwargs,
     ):
 
         if kerberos is None:
@@ -64,6 +65,7 @@ class Session(ECPSession):
             kerberos=kerberos,
             username=username,
             password=password,
+            **kwargs,
         )
 
         # load cookies from existing jar or file
