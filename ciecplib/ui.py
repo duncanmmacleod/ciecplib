@@ -82,8 +82,9 @@ def get_cookie(
         )
 
         # make the original request, it may introduce more cookies
-        resp = sess.get(url=url)
-        resp.raise_for_status()
+        if url != DEFAULT_SP_URL:
+            resp = sess.get(url=url)
+            resp.raise_for_status()
 
         # extract the shibsession cookie for the SP:
         #   we do this by searching for all cookies associated with
