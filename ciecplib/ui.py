@@ -79,6 +79,10 @@ def get_cookie(
             url=url,
         )
 
+        # make the original request, it may introduce more cookies
+        resp = sess.get(url=url)
+        resp.raise_for_status()
+
         # extract the shibsession cookie for the SP:
         #   we do this by searching for all cookies associated with
         #   the relevant SP domain, and picking the most recent one
