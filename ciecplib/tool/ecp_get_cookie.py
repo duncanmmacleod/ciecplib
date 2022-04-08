@@ -16,11 +16,11 @@
 # You should have received a copy of the GNU General Public License
 # along with ciecplib.  If not, see <http://www.gnu.org/licenses/>.
 
-r"""Authenticate and store SAML/ECP session cookies.
+r"""Authenticate and store session cookies.
 
 ecp-get-cookie queries a SAML/ECP-enabled service, automatically performing
-authentication where required, and records a session cookie to use in
-future requests to the same service.
+authentication where required, and saves cookies to use in future requests
+to the same service.
 
 There are two usages:
 
@@ -41,6 +41,7 @@ defined by either
 
 import sys
 
+from ..sessions import Session
 from ..cookies import (
     ECPCookieJar,
     has_session_cookies,
@@ -163,25 +164,22 @@ def main(args=None):
             cookiejar,
             args.target_url,
     ):
-        vprint("Acquiring new session cookie...")
-        cookie = get_cookie(
-            args.target_url,
-            endpoint=args.identity_provider,
-            username=getattr(args, "username", None),
+        vprint("Initialising new session...")
+        with Session(
+            idp=args.identity_provider,
             cookiejar=cookiejar,
+            username=getattr(args, "username", None),
             kerberos=args.kerberos,
-            debug=args.debug,
-        )
+        ) as sess:
+            get_cookie(args.target_url, session=sess)
 
-        # write cookies back to the file
-        vprint("Storing cookies...")
-
-        cookiejar.set_cookie(cookie)
-        cookiejar.save(
-            args.cookiefile,
-            ignore_discard=True,
-            ignore_expires=True,
-        )
+            # write cookies back to the file
+            vprint("Storing cookies...")
+            sess.cookies.save(
+                args.cookiefile,
+                ignore_discard=True,
+                ignore_expires=True,
+            )
         vprint("Cookie stored in '{0!s}'".format(args.cookiefile))
     else:
         vprint("Reusing existing cookies")
