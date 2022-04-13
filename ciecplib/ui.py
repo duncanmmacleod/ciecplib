@@ -69,6 +69,9 @@ def get_cookie(
     session : `requests.Session`, optional
         an active `requests.Session` to use with the query
 
+    return_all : `bool`, optional
+        return all cookies from the authentication request
+
     Returns
     -------
     cookie : `http.cookiejar.Cookie`

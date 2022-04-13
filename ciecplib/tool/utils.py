@@ -20,11 +20,9 @@
 """
 
 import argparse
-import logging
 import os
 import sys
 from functools import wraps
-from http.client import HTTPConnection
 from operator import attrgetter
 
 from .. import __version__
@@ -259,21 +257,6 @@ def reuse_cookies(cookiejar, url, verbose=False):
     elif verbose:
         print("cannot reuse, need new cookies")
     return cookiejar, reuse
-
-
-def init_logging(level=logging.DEBUG):
-    """Enable logging in requests.
-
-    This function is taken from
-    https://requests.readthedocs.io/en/v2.9.1/api/#api-changes
-    """
-    HTTPConnection.debuglevel = 1
-    logging.basicConfig()
-    logging.getLogger().setLevel(level)
-    requests_log = logging.getLogger("urllib3")
-    requests_log.setLevel(level)
-    requests_log.propagate = True
-    return requests_log
 
 
 def destroy_file(path, desc=None, verbose=False):

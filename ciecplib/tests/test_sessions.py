@@ -19,6 +19,7 @@
 """Test suite for :mod:`cieclib.sessions`
 """
 
+import logging
 from unittest import mock
 
 import pytest
@@ -40,3 +41,25 @@ class TestSession():
         with pytest.raises(ValueError) as exc:
             self.TEST_CLASS()
         assert str(exc.value).startswith("no Identity Provider")
+
+    @pytest.mark.parametrize("debug", (False, True))
+    def test_debug(self, debug):
+        """Check that the ``debug`` keyword argument is handled properly
+        """
+        sess = self.TEST_CLASS(
+            idp="https://example.com/idp/profile/SAML2/SOAP/ECP",
+            kerberos=False,
+            debug=debug,
+        )
+        # check that the parameter was recorded properly
+        assert sess.debug is debug
+        # check that the level was propagated up to the root logger properly
+        assert logging.getLogger().isEnabledFor(logging.DEBUG) is debug
+        # check that closing does the right thing
+        sess.close()
+        assert (
+            # either debug is disabled
+            logging.getLogger().isEnabledFor(logging.DEBUG) is False
+            # or the logger was set back to NOTSET
+            or logging.getLogger().getEffectiveLevel() == logging.NOTSET
+        )

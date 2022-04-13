@@ -35,7 +35,6 @@ from ..utils import DEFAULT_X509_USER_FILE
 from .utils import (
     ArgumentParser,
     destroy_file,
-    init_logging,
 )
 
 __author__ = "Duncan Macleod <duncan.macleod@ligo.org>"
@@ -185,9 +184,6 @@ def main(args=None):
         """
         if args.verbose:
             print(*pargs, **kwargs)
-
-    if args.debug:
-        init_logging()
 
     # if asked to destroy, just do that
     if args.destroy:

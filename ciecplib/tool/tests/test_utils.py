@@ -20,8 +20,6 @@
 """
 
 import argparse
-import logging
-from http import client as http_client
 from unittest import mock
 
 import pytest
@@ -84,12 +82,3 @@ def test_list_idps_action(_, capsys):
         parser.parse_args(["--list-idps"])
     stdout = capsys.readouterr()[0]
     assert "'Cardiff University'" in stdout
-
-
-@mock.patch.dict(logging.Logger.manager.loggerDict)
-@mock.patch("{}.HTTPConnection.debuglevel".format(http_client.__name__))
-def test_init_logging(_):
-    log = tools_utils.init_logging(logging.FATAL)
-    assert http_client.HTTPConnection.debuglevel == 1
-    assert log is logging.Logger.manager.loggerDict["urllib3"]
-    assert log.level == logging.FATAL
