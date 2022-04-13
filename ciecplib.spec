@@ -1,6 +1,6 @@
 %define name ciecplib
-%define version 0.4.4
-%define release 2
+%define version 0.5.0
+%define release 1
 
 # -- metadata ---------------
 
@@ -109,6 +109,9 @@ rm -rf $RPM_BUILD_ROOT
 # -- changelog --------------
 
 %changelog
+* Wed Apr 13 2022 Duncan Macleod <duncan.macleod@ligo.org> - 0.5.0-1
+- update for 0.5.0
+
 * Thu Jan 13 2022 Duncan Macleod <duncan.macleod@ligo.org> - 0.4.4-1
 - update for 0.4.4
 
