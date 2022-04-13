@@ -1,3 +1,9 @@
+ciecplib (0.5.0-1) unstable; urgency=low
+
+  * Update for 0.5.0
+
+ -- Duncan Macleod <duncan.macleod@ligo.org>  Wed, 13 Apr 2022 15:24:00 +0100
+
 ciecplib (0.4.4-1) unstable; urgency=low
 
   * Update for 0.4.4
