@@ -6,6 +6,8 @@ select =
 	E,
 	# pyflakes
 	F,
+	# bandit security warnings
+	S,
 	# pycodestyle warnings
 	W,
 ignore =
@@ -20,3 +22,7 @@ exclude =
 per-file-ignores =
 	# unused import in __init__
 	__init__.py:F401
+	# tests:
+	#   - S101: use of assert
+	#   - S113: requests call without timeout
+	test_*.py:S101,S113

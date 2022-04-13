@@ -1,0 +1,13 @@
+exclude_dirs:
+  - .git
+  - .github
+  - docs
+  - venv
+
+assert_used:
+  skips:
+    - "*/test_*.py"
+
+request_without_timeout:
+  skips:
+    - "*/test_*.py"
