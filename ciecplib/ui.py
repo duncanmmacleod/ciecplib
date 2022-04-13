@@ -25,6 +25,8 @@ from urllib import parse as urllib_parse
 
 from OpenSSL import crypto
 
+from requests import HTTPError
+
 from .env import DEFAULT_IDP
 from .cookies import extract_session_cookie
 from .requests import _ecp_session
@@ -80,8 +82,9 @@ def get_cookie(
         )
 
         # make the original request, it may introduce more cookies
-        resp = sess.get(url=url)
-        resp.raise_for_status()
+        if url != DEFAULT_SP_URL:
+            resp = sess.get(url=url)
+            resp.raise_for_status()
 
         # extract the shibsession cookie for the SP:
         #   we do this by searching for all cookies associated with
@@ -156,6 +159,11 @@ def get_cert(
             data=certdata,
             headers=headers,
         )
+        try:
+            resp.raise_for_status()
+        except HTTPError as exc:
+            exc.args = (f"{exc}: '{resp.text}'",)
+            raise
 
         if debug:
             print("Certificate received.")
