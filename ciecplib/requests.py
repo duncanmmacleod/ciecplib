@@ -20,6 +20,18 @@
 """
 
 from functools import wraps
+try:
+    from contextlib import nullcontext
+except ImportError:  # python < 3.7
+    class nullcontext:
+        def __init__(self, enter_result=None):
+            self.enter_result = enter_result
+
+        def __enter__(self):
+            return self.enter_result
+
+        def __exit__(self, *excinfo):
+            pass
 
 from .env import DEFAULT_IDP
 from .sessions import Session
@@ -28,12 +40,19 @@ __author__ = "Duncan Macleod <duncan.macleod@ligo.org>"
 
 
 def _ecp_session(func):
-    """Decorate a function to open a `requests_ecp.Session`
+    """Decorate a function to open a `requests_ecp.Session`.
+
+    If a `Session` is already open, this function returns an instance of
+    `contextlib.nullcontext` that should _only_ be used with the `with`
+    statement, not a real `Session` object. This is only to support chaining
+    this method reentrant with respect to setting/resetting debug logging
+    levels.
     """
     @wraps(func)
     def _wrapper(*args, **kwargs):
-        if kwargs.get('session') is None:
-            kwargs['session'] = Session(
+        sess = kwargs.pop("session", None)
+        if sess is None:
+            sess = Session(
                 idp=kwargs.pop("endpoint", DEFAULT_IDP),
                 username=kwargs.pop("username", None),
                 password=kwargs.pop("password", None),
@@ -41,13 +60,16 @@ def _ecp_session(func):
                 cookiejar=kwargs.pop("cookiejar", None),
                 debug=kwargs.get("debug", False),
             )
-        return func(*args, **kwargs)
+        else:
+            sess = nullcontext(enter_result=sess)
+        return func(*args, session=sess, **kwargs)
     return _wrapper
 
 
 def _session_func_factory(method, docstring):
     @_ecp_session
     def _func(url, **kwargs):
+        kwargs.pop("debug", None)  # not supported by requests functions
         # the decorator guarantees us a session
         with kwargs.pop("session") as session:
             meth = getattr(session, method)
@@ -97,12 +119,12 @@ _request_params_doc = """
 
 get = _session_func_factory(
     "get",
-    """Send a GET request using ECP authentication
+    """Send a GET request using ECP authentication.
     """
 )
 
 request = _session_func_factory(
     "request",
-    """Request a URL using ECP authentication
+    """Request a URL using ECP authentication.
     """
 )
