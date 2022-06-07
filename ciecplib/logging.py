@@ -25,7 +25,11 @@ from http.client import HTTPConnection
 logging.basicConfig()
 ROOT_LOGGER = logging.getLogger()
 URLLIB3_LOGGER = logging.getLogger("requests.packages.urllib3")
-DEFAULT_LEVEL = URLLIB3_LOGGER.level
+LOGGERS = (
+    ROOT_LOGGER,
+    URLLIB3_LOGGER,
+)
+_DEFAULT_LEVEL = {logger: logger.level for logger in LOGGERS}
 
 
 def init_logging(level=logging.DEBUG):
@@ -34,15 +38,21 @@ def init_logging(level=logging.DEBUG):
     This function is taken from
     https://requests.readthedocs.io/en/v2.9.1/api/#api-changes
     """
-    # set levels for loggers (also validates the input)
-    ROOT_LOGGER.setLevel(level)
-    URLLIB3_LOGGER.setLevel(level)
+    if level is None:  # restore to default
+        level = _DEFAULT_LEVEL
+    else:
+        level = {logger: level for logger in LOGGERS}
+    # set level
+    for logger in LOGGERS:
+        logger.setLevel(level[logger])
     # set debug logging for connections
-    debug = ROOT_LOGGER.level == logging.DEBUG
+    debug = ROOT_LOGGER.isEnabledFor(logging.DEBUG)
     HTTPConnection.debuglevel = int(debug)
     URLLIB3_LOGGER.propagate = debug
     return URLLIB3_LOGGER
 
 
 def reset_logging():
-    return init_logging(level=DEFAULT_LEVEL)
+    """Reset the logging levels back to their original values.
+    """
+    return init_logging(level=None)
