@@ -221,12 +221,12 @@ def main(args=None):
         vprint("X.509 credential stored")
 
     # load the cert from file to print information
-    if args.debug or args.verbose:
-        x509 = load_cert(args.file)
-
-    # print certificate/proxy info
     if args.verbose:
-        print_cert_info(x509, path=args.file, verbose=True)
+        print_cert_info(
+            load_cert(args.file),
+            path=args.file,
+            verbose=True,
+        )
 
 
 if __name__ == "__main__":
