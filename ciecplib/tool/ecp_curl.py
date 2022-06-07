@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright (C) Cardiff University (2019-2020)
+# Copyright (C) Cardiff University (2019-2022)
 #
 # This file is part of ciecplib.
 #
@@ -94,9 +94,9 @@ def main(args=None):
         strict=False,
     )
     if args.output:
-        stream = open(args.output, "w")
+        stream = open(args.output, "wb")
     else:
-        stream = sys.stdout
+        stream = sys.stdout.buffer
     try:
         with Session(
             cookiejar=cookiejar,
@@ -105,11 +105,10 @@ def main(args=None):
             kerberos=args.kerberos,
         ) as sess:
             # GET
-            print(
-                sess.get(args.url).text,
-                file=stream,
-                end="",
-            )
+            resp = sess.get(args.url)
+            resp.raise_for_status()
+            # write
+            stream.write(resp.content)
             # store session cookies
             if args.store_session_cookies:
                 sess.cookies.save(
