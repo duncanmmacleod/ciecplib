@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright (C) Cardiff University (2019-2020)
+# Copyright (C) Cardiff University (2019-2022)
 #
 # This file is part of ciecplib.
 #
@@ -36,4 +36,4 @@ from .ui import (
 
 __author__ = "Duncan Macleod <duncan.macleod@ligo.org>"
 __credits__ = "Scott Koranda, Dave Dykstra"
-__version__ = "0.5.0"
+__version__ = "0.5.1"
