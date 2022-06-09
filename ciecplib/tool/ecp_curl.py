@@ -86,6 +86,28 @@ def create_parser():
     return parser
 
 
+def write(data, path):
+    """Write ``data`` to a file path, or to stdout.
+
+    Parameters
+    ----------
+    data : `bytes`
+        The data to write.
+
+    path : `str`, `None`
+        The target path to write to, or `None` to write to stdout.
+    """
+    if path is None:
+        file = sys.stdout.buffer
+    else:
+        file = open(path, "wb")
+    try:
+        file.write(data)
+    finally:
+        if path is not None:
+            file.close()
+
+
 def main(args=None):
     parser = create_parser()
     args = parser.parse_args(args=args)
@@ -93,32 +115,24 @@ def main(args=None):
         args.cookiefile,
         strict=False,
     )
-    if args.output:
-        stream = open(args.output, "wb")
-    else:
-        stream = sys.stdout.buffer
-    try:
-        with Session(
-            cookiejar=cookiejar,
-            idp=args.identity_provider,
-            username=args.username,
-            kerberos=args.kerberos,
-        ) as sess:
-            # GET
-            resp = sess.get(args.url)
-            resp.raise_for_status()
-            # write
-            stream.write(resp.content)
-            # store session cookies
-            if args.store_session_cookies:
-                sess.cookies.save(
-                    args.cookiefile,
-                    ignore_discard=True,
-                    ignore_expires=True,
-                )
-    finally:
-        if args.output:
-            stream.close()
+    with Session(
+        cookiejar=cookiejar,
+        idp=args.identity_provider,
+        username=args.username,
+        kerberos=args.kerberos,
+    ) as sess:
+        # GET
+        resp = sess.get(args.url)
+        resp.raise_for_status()
+        # write
+        write(resp.content, args.output)
+        # store session cookies
+        if args.store_session_cookies:
+            sess.cookies.save(
+                args.cookiefile,
+                ignore_discard=True,
+                ignore_expires=True,
+            )
 
 
 if __name__ == "__main__":
