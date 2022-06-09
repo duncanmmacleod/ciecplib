@@ -123,8 +123,14 @@ get = _session_func_factory(
     """
 )
 
-request = _session_func_factory(
-    "request",
-    """Request a URL using ECP authentication.
+head = _session_func_factory(
+    "head",
+    """Send a HEAD request using ECP authentication.
+    """
+)
+
+post = _session_func_factory(
+    "post",
+    """Send a POST request using ECP authentication.
     """
 )

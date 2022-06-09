@@ -22,7 +22,8 @@
 # request the contents of a URL
 from .requests import (
     get,
-    request,
+    head,
+    post,
 )
 
 # generate session handling
