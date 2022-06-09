@@ -20,7 +20,6 @@
 """
 
 import logging
-from unittest import mock
 
 import pytest
 
@@ -32,14 +31,12 @@ __author__ = "Duncan Macleod <duncan.macleod@ligo.org>"
 class TestSession():
     TEST_CLASS = ciecplib_sessions.Session
 
-    @mock.patch("ciecplib.sessions._get_default_idp", lambda: None)
-    @mock.patch("ciecplib.sessions.has_krb5_credential", lambda: False)
     def test_init_error(self):
         """Check that the right error is raised when a Session is created
         with no IdP or kerberos credentials
         """
         with pytest.raises(ValueError) as exc:
-            self.TEST_CLASS()
+            self.TEST_CLASS(idp=None, kerberos=False)
         assert str(exc.value).startswith("no Identity Provider")
 
     @pytest.mark.parametrize("debug", (False, True))
