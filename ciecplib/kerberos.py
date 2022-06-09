@@ -65,7 +65,10 @@ def has_credential(*args, klist=KLIST_EXE):
     # run klist to check credentials
     try:
         subprocess.check_output([klist, "-s"] + list(args))
-    except subprocess.CalledProcessError:
+    except (
+        subprocess.CalledProcessError,   # klist failed
+        FileNotFoundError,  # klist not available
+    ):
         return False
     return True
 

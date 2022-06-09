@@ -36,7 +36,8 @@ Valid starting       Expires              Service principal
 
 @pytest.mark.parametrize("side_effect, result", [
     (None, True),
-    (CalledProcessError(1, "klist"), False),
+    (CalledProcessError(1, "klist"), False),  # klist failed
+    (FileNotFoundError("no klist"), False),  # klist not found
 ])
 @mock.patch("subprocess.check_output")
 def test_has_credential(_check_output, side_effect, result):
