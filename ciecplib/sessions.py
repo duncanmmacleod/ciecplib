@@ -84,5 +84,6 @@ class Session(ECPSession):
             init_logging(level="DEBUG")
 
     def close(self):
-        reset_logging()
+        if self.debug:
+            reset_logging()
         return super().close()
