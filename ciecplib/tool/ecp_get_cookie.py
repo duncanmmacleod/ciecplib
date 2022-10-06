@@ -182,6 +182,10 @@ def main(args=None):
 
     # load the cert from file to print information
     if args.verbose:
+        # reload cookies from the jar,
+        # see https://github.com/duncanmmacleod/ciecplib/issues/109
+        cookiejar = load_cookiejar(args.cookiefile, strict=True)
+        # print information on each cookie
         info = [(cookie.domain, cookie.path, cookie.secure, cookie.name) for
                 cookie in cookiejar]
         fmt = "%-{0}s %-5s %-7s %s".format(max(len(i[0]) for i in info))
