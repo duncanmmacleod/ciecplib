@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright (C) Cardiff University (2019-2022)
+# Copyright (C) Cardiff University (2022)
 #
 # This file is part of ciecplib.
 #
@@ -16,25 +16,17 @@
 # You should have received a copy of the GNU General Public License
 # along with ciecplib.  If not, see <http://www.gnu.org/licenses/>.
 
-"""A python client for SAML ECP authentication
+"""Tests for :mod:`ciecplib.requests`
 """
 
-# request the contents of a URL
-from .requests import (
-    get,
-    head,
-    post,
-)
+from .. import requests as ciecplib_requests
 
-# generate session handling
-from .sessions import Session
+__author__ = 'Duncan Macleod <duncan.macleod@ligo.org>'
 
-# user interfaces
-from .ui import (
-    get_cert,
-    get_cookie,
-)
 
-__author__ = "Duncan Macleod <duncan.macleod@ligo.org>"
-__credits__ = "Scott Koranda, Dave Dykstra"
-__version__ = "0.5.1"
+def test_get(requests_mock):
+    requests_mock.get("https://test.example.com", content=b"HELLO")
+    assert ciecplib_requests.get(
+        "https://test.example.com",
+        endpoint="https://test.example.com/SOAP/ECP",
+    ).text == "HELLO"
