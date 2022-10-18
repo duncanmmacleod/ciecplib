@@ -30,6 +30,10 @@ from .. import x509 as ciecplib_x509
 __author__ = "Duncan Macleod <duncan.macleod@ligo.org>"
 
 X509_HASH = 967391982
+X509_SUBJECT = (
+    "/CN=albert einstein/C=UK/ST=Wales/L=Cardiff/"
+    "O=Cardiff University/OU=Gravity"
+)
 
 
 def test_load_cert(x509_path):
@@ -93,27 +97,16 @@ def test_print_cert_info(mock_time_left, timeleft, x509, capsys):
         stream=sys.stdout,
     )
     out = capsys.readouterr().out.strip()
-    assert out.startswith(
-        "subject  : /CN=albert einstein/C=UK/ST=Wales/L=Cardiff"
-        "/O=Cardiff University/OU=Gravity"
-    )
+    assert out.startswith(f"subject  : {X509_SUBJECT}")
     assert "path     : test" in out
     assert ("[EXPIRED]" in out) is (timeleft == 0)
     assert out.endswith("-----END CERTIFICATE-----")
 
 
 @pytest.mark.parametrize(("display", "result"), [
-    (("subject",), """
-/CN=albert einstein/C=UK/ST=Wales/L=Cardiff/O=Cardiff University/OU=Gravity
-"""),
-    (("path", "issuer"), """
-test
-/CN=albert einstein/C=UK/ST=Wales/L=Cardiff/O=Cardiff University/OU=Gravity
-"""),
-    (("issuer", "path"), """
-/CN=albert einstein/C=UK/ST=Wales/L=Cardiff/O=Cardiff University/OU=Gravity
-test
-"""),
+    (("subject",), X509_SUBJECT),
+    (("path", "issuer"), f"test\n{X509_SUBJECT}"),
+    (("issuer", "path"), f"{X509_SUBJECT}\ntest"),
 ])
 def test_print_cert_info_display(x509, display, result):
     stream = StringIO()
