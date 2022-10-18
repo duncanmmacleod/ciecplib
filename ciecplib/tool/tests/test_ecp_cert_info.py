@@ -24,12 +24,15 @@ from unittest import mock
 import pytest
 
 from .. import ecp_cert_info
+from ...x509 import _x509_name_str as x509_name_str
+
+MOD_PATH = ecp_cert_info.__name__
 
 
-@mock.patch("ciecplib.tool.ecp_cert_info.load_cert", mock.Mock())
-@mock.patch("ciecplib.tool.ecp_cert_info.print_cert_info", mock.Mock())
+@mock.patch(f"{ecp_cert_info.__name__}.load_cert", mock.Mock())
+@mock.patch(f"{ecp_cert_info.__name__}.print_cert_info", mock.Mock())
 @mock.patch(
-    "ciecplib.tool.ecp_cert_info.time_left",
+    f"{ecp_cert_info.__name__}.time_left",
     mock.Mock(side_effect=(3700., 3500.)),
 )
 def test_valid():
@@ -38,3 +41,32 @@ def test_valid():
     ecp_cert_info.main(["--valid", "1:0"])
     with pytest.raises(AssertionError):
         ecp_cert_info.main(["--valid", "1:0"])
+
+
+@mock.patch(f"{ecp_cert_info.__name__}.load_cert")
+def test_main(load_cert, capsys, x509):
+    load_cert.return_value = x509
+    ecp_cert_info.main([])
+    out = capsys.readouterr().out
+    assert out.startswith("subject  : /CN=albert einstein/C=UK")
+
+
+@mock.patch(f"{ecp_cert_info.__name__}.load_cert", mock.Mock())
+@mock.patch(f"{ecp_cert_info.__name__}.time_left")
+@pytest.mark.parametrize(("remaining", "code"), [
+    (3700, 0),
+    (3500, 1),
+])
+def test_exists(time_left, remaining, code):
+    time_left.return_value = remaining
+    assert ecp_cert_info.main(["--exists", "--valid", "1:0"]) == code
+
+
+@mock.patch(f"{ecp_cert_info.__name__}.load_cert")
+def test_display(load_cert, x509, capsys):
+    """Check that the display option works
+    """
+    load_cert.return_value = x509
+    ecp_cert_info.main(["-subject"])
+    out = capsys.readouterr().out
+    assert out.strip() == x509_name_str(x509.get_subject())

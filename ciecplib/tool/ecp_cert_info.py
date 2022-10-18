@@ -23,6 +23,8 @@ including owner information, certificate type, and time remaining
 until expiry.
 """
 
+import argparse
+import sys
 from datetime import timedelta
 
 from ..x509 import (
@@ -90,6 +92,7 @@ def create_parser():
     )
     parser.add_argument(
         "-v",
+        "-valid",
         "--valid",
         type=_hours_minutes,
         help="time requirement for proxy to be valid",
@@ -100,6 +103,66 @@ def create_parser():
         default=False,
         help="print full text of certificate",
     )
+    parser.add_argument(
+        "-e",
+        "-exists",
+        "--exists",
+        action="store_true",
+        default=False,
+        help="return 0 if valid proxy exists, 1 otherwise",
+    )
+
+    dispargs = parser.add_argument_group("Display arguments")
+    dispargs.add_argument(
+        "-s",
+        "-subject",
+        "--subject",
+        action="append_const",
+        const="subject",
+        dest="display",
+        default=argparse.SUPPRESS,
+        help="distinguished name (DN) of subject",
+    )
+    dispargs.add_argument(
+        "-i",
+        "-issuer",
+        "--issuer",
+        action="append_const",
+        const="issuer",
+        dest="display",
+        default=argparse.SUPPRESS,
+        help="DN of issuer (certificate signer)",
+    )
+    dispargs.add_argument(
+        "-type",
+        "--type",
+        action="append_const",
+        const="type",
+        dest="display",
+        default=argparse.SUPPRESS,
+        help="type of certificate",
+    )
+    dispargs.add_argument(
+        "-t",
+        "-timeleft",
+        "--timeleft",
+        action="append_const",
+        const="timeleft",
+        dest="display",
+        default=argparse.SUPPRESS,
+        help="time left until certificate expires",
+    )
+
+    dispargs.add_argument(
+        "-path",
+        "--path",
+        action="append_const",
+        const="path",
+        dest="display",
+        default=argparse.SUPPRESS,
+        help="time left until certificate expires",
+    )
+
     return parser
 
 
@@ -120,21 +183,31 @@ def main(args=None):
     # load certificate
     cert = load_cert(args.file)
 
+    # determine time left (if we need it)
+    if args.valid or args.exists:
+        valid = timedelta(seconds=args.valid or 0)
+        remaining = timedelta(seconds=time_left(cert))
+        isvalid = remaining >= valid
+
+    if args.exists:
+        # if proxy exists and is valid, return 0, otherwise 1
+        return int(not isvalid)
+
     # print certificate information
     print_cert_info(
         cert,
         path=args.file,
+        display=getattr(args, "display", None),
         verbose=args.verbose,
+        stream=sys.stdout,
     )
 
     # assert --valid if given
     if args.valid:
-        assert time_left(cert) >= args.valid, (
-            "timeleft is less than required {}".format(
-                timedelta(seconds=args.valid),
-            )
+        assert isvalid, (
+            f"timeleft ({remaining}) is less than required ({valid})"
         )
 
 
 if __name__ == "__main__":
-    main()
+    sys.exit(main())
