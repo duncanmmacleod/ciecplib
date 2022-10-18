@@ -173,7 +173,13 @@ def _get_cert_policy_language(x509):
     raise ValueError("no policy language found in cert")
 
 
-def print_cert_info(x509, path=None, verbose=True, stream=sys.stdout):
+def print_cert_info(
+    x509,
+    path=None,
+    display=None,
+    verbose=True,
+    stream=sys.stdout,
+):
     """Print info about an X.509 certificate
 
     Parameters
@@ -184,33 +190,48 @@ def print_cert_info(x509, path=None, verbose=True, stream=sys.stdout):
     path : `str`, optional
         the path of the certificate file on disk
 
+    display : `list`, optional
+        list of certificate parameters to display; if given each is displayed
+        in order in plaintext
+
     verbose : `bool`, optional
         if `True` (default) print the full text of the certificate
 
     stream : `file`, optional
         the file object to print to, defaults to `sys.stdout`
     """
-    if verbose:
-        certstr = crypto.dump_certificate(
+    if display is None:
+        display = []
+    # parse parameters of certificate
+    pkey = x509.get_pubkey()
+    remaining = time_left(x509)
+    if "timeleft" in display:  # if plaintext, print seconds
+        timeleft = str(max(-1, int(remaining)))
+    elif remaining:  # otherwise format nicely
+        timeleft = str(datetime.timedelta(seconds=remaining))
+    else:
+        timeleft = "0:00:00 [EXPIRED]"
+    params = {
+        "subject": _x509_name_str(x509.get_subject()),
+        "issuer": _x509_name_str(x509.get_issuer()),
+        "type": _cert_type(x509),
+        "strength": f"{pkey.bits()} bits",
+        "path": path,
+        "timeleft": timeleft,
+    }
+    if verbose or "text" in display:
+        params["text"] = "\n" + crypto.dump_certificate(
             crypto.FILETYPE_PEM,
             x509,
-        )
-        print(certstr.decode("utf-8"), file=stream, end="")
-    pkey = x509.get_pubkey()
-    print("subject  : " + _x509_name_str(x509.get_subject()), file=stream)
-    print("issuer   : " + _x509_name_str(x509.get_issuer()), file=stream)
-    print("type     : " + _cert_type(x509), file=stream)
-    print("strength : {0} bits".format(pkey.bits()), file=stream)
-    if path:
-        print("path     : " + str(path), file=stream)
-    remaining = time_left(x509)
-    if remaining:
-        print(
-            "timeleft : " + str(datetime.timedelta(seconds=remaining)),
-            file=stream,
-        )
+        ).decode("utf-8").strip()
+
+    # use chose specific attributes, so just print them in plain text
+    if display:
+        for attr in display:
+            print(params[attr].strip(), file=stream)
     else:
-        print("timeleft : 0:00:00 [EXPIRED]", file=stream)
+        for attr in params:
+            print(f"{attr:9s}: {params[attr]}", file=stream)
 
 
 def write_cert(path, pkcs12, use_proxy=False, minhours=168):

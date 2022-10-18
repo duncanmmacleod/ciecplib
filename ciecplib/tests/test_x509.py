@@ -20,6 +20,7 @@
 """
 
 import sys
+from io import StringIO
 from unittest import mock
 
 import pytest
@@ -91,14 +92,40 @@ def test_print_cert_info(mock_time_left, timeleft, x509, capsys):
         verbose=True,
         stream=sys.stdout,
     )
-    out = capsys.readouterr().out
-    assert out.startswith("-----BEGIN CERTIFICATE-----")
-    assert (
+    out = capsys.readouterr().out.strip()
+    assert out.startswith(
         "subject  : /CN=albert einstein/C=UK/ST=Wales/L=Cardiff"
         "/O=Cardiff University/OU=Gravity"
-    ) in out
+    )
     assert "path     : test" in out
     assert ("[EXPIRED]" in out) is (timeleft == 0)
+    assert out.endswith("-----END CERTIFICATE-----")
+
+
+@pytest.mark.parametrize(("display", "result"), [
+    (("subject",), """
+/CN=albert einstein/C=UK/ST=Wales/L=Cardiff/O=Cardiff University/OU=Gravity
+"""),
+    (("path", "issuer"), """
+test
+/CN=albert einstein/C=UK/ST=Wales/L=Cardiff/O=Cardiff University/OU=Gravity
+"""),
+    (("issuer", "path"), """
+/CN=albert einstein/C=UK/ST=Wales/L=Cardiff/O=Cardiff University/OU=Gravity
+test
+"""),
+])
+def test_print_cert_info_display(x509, display, result):
+    stream = StringIO()
+    ciecplib_x509.print_cert_info(
+        x509,
+        path="test",
+        display=display,
+        stream=stream,
+    )
+    stream.seek(0)
+    out = stream.read()
+    assert out.strip() == result.strip()
 
 
 @pytest.mark.parametrize('proxy', (False, True))
