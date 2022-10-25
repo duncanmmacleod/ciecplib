@@ -1,8 +1,7 @@
 # -----------------------
 #
 # Run a full build-and-test from the git repo
-# using a combination of conda and pip to install
-# all optional dependencies.
+# using pip to install all optional dependencies.
 #
 # This is the 'full' test suite.
 #
@@ -36,8 +35,6 @@ jobs:
           - Ubuntu
           - Windows
         python-version:
-          - "3.6"
-          - "3.7"
           - "3.8"
           - "3.9"
           - "3.10"
@@ -81,7 +78,7 @@ jobs:
       run: |
         # parse requirements to install as much as possible with conda
         mamba install --name base pip2conda
-        ${CONDA_PYTHON_EXE} -m pip2conda \
+        mamba run --name base python -m pip2conda \
             --all \
             --output environment.txt \
             --python-version ${{ matrix.python-version }}
@@ -97,7 +94,7 @@ jobs:
             --file environment.txt
 
     - name: Install ciecplib
-      run: python -m pip install .[tests] --no-build-isolation -vv
+      run: python -m pip install .[tests] -v
 
     - name: Package list
       run: mamba list --name test
@@ -117,5 +114,5 @@ jobs:
       if: always()
       uses: actions/upload-artifact@v2
       with:
-        name: pytest-conda-${{ matrix.os }}-${{ matrix.python-version }}
+        name: pytest-${{ matrix.os }}-${{ matrix.python-version }}
         path: pytest.xml
