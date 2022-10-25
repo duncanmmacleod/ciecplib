@@ -29,25 +29,48 @@ from .. import x509 as ciecplib_x509
 
 __author__ = "Duncan Macleod <duncan.macleod@ligo.org>"
 
-X509_HASH = 967391982
 X509_SUBJECT = (
     "/CN=albert einstein/C=UK/ST=Wales/L=Cardiff/"
     "O=Cardiff University/OU=Gravity"
 )
 
 
-def test_load_cert(x509_path):
-    x509 = ciecplib_x509.load_cert(x509_path)
-    assert x509.get_subject().hash() == X509_HASH
+def test_load_cert(x509, x509_path):
+    cert = ciecplib_x509.load_cert(x509_path)
+    assert cert == x509
 
 
-@pytest.mark.parametrize("lib", ("openssl", "m2crypto"))
-def test_time_left(x509, x509_m2, lib):
-    cert = {
-        "openssl": x509,
-        "m2crypto": x509_m2,
-    }[lib]
-    assert ciecplib_x509.time_left(cert) <= 86400
+def test_load_pkcs12(x509, private_key):
+    """Test that `ciecplib.x509.load_pkcs12` returns equivalent certs and keys.
+    """
+    from cryptography.hazmat.primitives.serialization import (
+        BestAvailableEncryption,
+    )
+    try:
+        from cryptography.hazmat.primitives.serialization.pkcs12 import (
+            serialize_key_and_certificates,
+        )
+    except ImportError:
+        from OpenSSL import crypto
+        p12obj = crypto.PKCS12()
+        p12obj.set_certificate(crypto.X509.from_cryptography(x509))
+        p12obj.set_privatekey(crypto.PKey.from_cryptography_key(private_key))
+        p12 = p12obj.export(b"password")
+    else:
+        p12 = serialize_key_and_certificates(
+            b"test",
+            private_key,
+            x509,
+            None,
+            BestAvailableEncryption(b"password"),
+        )
+    cert, key = ciecplib_x509.load_pkcs12(p12, b"password")
+    assert cert == x509
+    assert key.private_numbers() == private_key.private_numbers()
+
+
+def test_time_left(x509):
+    assert ciecplib_x509.time_left(x509) <= 86400
 
 
 @mock.patch("ciecplib.x509.time_left", mock.MagicMock(return_value=4000))
@@ -122,24 +145,33 @@ def test_print_cert_info_display(x509, display, result):
 
 
 @pytest.mark.parametrize('proxy', (False, True))
-def test_write_cert(tmp_path, pkcs12, proxy):
+def test_write_cert(tmp_path, private_key, x509, proxy):
     path = tmp_path / "509.pem"
     # write the p12 cert to a file
-    ciecplib_x509.write_cert(path, pkcs12, use_proxy=proxy)
+    ciecplib_x509.write_cert(path, x509, private_key, use_proxy=proxy)
     # check that we can read it
-    assert (
-        ciecplib_x509.load_cert(path).get_issuer().hash()
-    ) == X509_HASH
+    new = ciecplib_x509.load_cert(path)
+    # check that we get the same cert back
+    if proxy:
+        assert new.issuer == x509.subject
+        assert ciecplib_x509._x509_name_str(new.subject).startswith(
+            ciecplib_x509._x509_name_str(x509.subject),
+        )
+        assert new.not_valid_after <= x509.not_valid_after
+        assert new.not_valid_before >= x509.not_valid_before
+        assert new.extensions
+    else:
+        assert new == x509
 
 
 @pytest.mark.parametrize("limited, ctype", [
     (False, "RFC 3820 compliant impersonation proxy"),
     (True, "RFC 3820 compliant limited proxy"),
 ])
-def test_generate_proxy(pkey_m2, x509_m2, limited, ctype):
+def test_generate_proxy(x509, private_key, limited, ctype):
     proxy, pkey = ciecplib_x509.generate_proxy(
-        x509_m2,
-        pkey_m2.get_rsa(),
+        x509,
+        private_key,
         limited=limited,
     )
     assert ciecplib_x509._cert_type(proxy) == ctype

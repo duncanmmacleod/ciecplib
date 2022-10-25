@@ -24,11 +24,20 @@ import sys
 import tempfile
 import time
 
-from OpenSSL import crypto
-
-from M2Crypto import (X509, RSA, EVP, ASN1, m2)
+from cryptography import x509 as crypto_x509
+from cryptography.hazmat.backends import default_backend
+from cryptography.hazmat.primitives import hashes
+from cryptography.hazmat.primitives.asymmetric.rsa import generate_private_key
+from cryptography.hazmat.primitives.serialization import (
+    Encoding,
+    NoEncryption,
+    PrivateFormat,
+    PublicFormat,
+)
 
 __author__ = "Duncan Macleod <duncan.macleod@ligo.org>"
+
+PROXY_CERT_INFO_EXT_OID = crypto_x509.ObjectIdentifier("1.3.6.1.5.5.7.1.14")
 
 
 def _parse_unix_time(asn1time):
@@ -37,50 +46,63 @@ def _parse_unix_time(asn1time):
     return calendar.timegm(asn1time.get_datetime().timetuple())
 
 
-def load_cert(path, format=crypto.FILETYPE_PEM):
-    """Load certificate from file
+def load_cert(path):
+    """Load an X.509 certificate from file containing PEM-encoded data.
 
     Parameters
     ----------
     path : `str`, `pathlib.Path`
         the file path from which to read
 
-    format : `int`, optional
-        the format to read
-
     Returns
     -------
-    cert : `OpenSSL.crypto.X509`
+    cert : `cryptography.x509.Certificate`
         the parsed certificate
     """
-    with open(str(path), "r") as fobj:
-        return crypto.load_certificate(
-            format,
-            fobj.read(),
+    with open(str(path), "rb") as fobj:
+        return crypto_x509.load_pem_x509_certificate(fobj.read())
+
+
+def load_pkcs12(raw, password):
+    """Load an X.509 certificate and key from a PKCS12 blob.
+    """
+    try:
+        from cryptography.hazmat.primitives.serialization.pkcs12 import (
+            load_pkcs12 as _load_pkcs12,
         )
+    except ImportError:  # cryptography < 36.0
+        from OpenSSL.crypto import load_pkcs12 as _load_pkcs12
+        p12 = _load_pkcs12(raw, password)
+        return (
+            p12.get_certificate().to_cryptography(),
+            p12.get_privatekey().to_cryptography_key(),
+        )
+
+    p12 = _load_pkcs12(raw, password)
+    return (
+        p12.cert.certificate,
+        p12.key,
+    )
 
 
 def time_left(cert):
     """Returns the number of seconds left on this certificate
 
     If the certificate has expired, ``0`` is returned.
+
+    Parameters
+    ----------
+    cert : `cryptography.x509.Certificate`
+        The certificate to inspect.
     """
-    try:  # M2Crypto
-        expiry = cert.get_not_after().get_datetime().timetuple()
-    except AttributeError:  # OpenSSL
-        expiry = time.strptime(
-            cert.get_notAfter().decode("utf-8"),
-            "%Y%m%d%H%M%SZ",
-        )
+    expiry = cert.not_valid_after.timetuple()
     return max(0, int(calendar.timegm(expiry) - time.time()))
 
 
 def _x509_name_str(obj):
     """Return the name of the x509 object as a string
     """
-    return "/" + "/".join([
-        b"=".join(x).decode("utf-8") for x in obj.get_components()
-    ])
+    return "/" + "/".join([x.rfc4514_string() for x in obj.rdns])
 
 
 def check_cert(cert, hours=1, proxy=None, rfc3820=True):
@@ -88,7 +110,7 @@ def check_cert(cert, hours=1, proxy=None, rfc3820=True):
 
     Parameters
     ----------
-    cert : `OpenSSL.crypto.X509`
+    cert : `cryptography.x509.Certificate`
         the certificate object to check
 
     hours : `float`, optional
@@ -123,15 +145,8 @@ def check_cert(cert, hours=1, proxy=None, rfc3820=True):
 def _cert_type(x509):
     """Returns the type of the given x509 certificate object
     """
-    # convert openssl to m2crypto for convenience
-    if isinstance(x509, crypto.X509):
-        x509 = X509.load_cert_string(crypto.dump_certificate(
-            crypto.FILETYPE_PEM,
-            x509,
-        ))
     # parse name entry as common name
-    sub = x509.get_subject()
-    ntype, name = str(sub).split("/")[-1].split('=', 1)
+    ntype, name = x509.subject.rdns[-1].rfc4514_string().split('=', 1)
 
     # if name entry is not 'common name' then EEC
     if ntype != "CN":
@@ -145,9 +160,9 @@ def _cert_type(x509):
     # get policy language
     try:
         policy = _get_cert_policy_language(x509)
-    except ValueError:  # no proxyCertInfo
+    except crypto_x509.ExtensionNotFound:
         return "end entity credential"
-    except KeyError:  # no policy language
+    except ValueError:  # no policy language
         return "unidentified proxy"
     else:
         if policy == "1.3.6.1.4.1.3536.1.1.1.9":
@@ -158,18 +173,18 @@ def _cert_type(x509):
 
 
 def _get_cert_policy_language(x509):
-    for i in range(x509.get_ext_count()):
-        ext = x509.get_ext_at(i)
-        name = ext.get_name()
-        if (
-            name == "proxyCertInfo"
-            and ext.get_critical()
-        ):
-            pcidata = dict(
-                map(str.strip, line.split(':', 1)) for
-                line in ext.get_value().rstrip().split('\n')
-            )
-            return pcidata["Policy Language"]
+    """Parse the policy language from the proxyCertInfo extension.
+
+    This is a terrible hack because pyca/cryptography doesn't actually support
+    the proxyCertInfo extension.
+    """
+    ext = x509.extensions.get_extension_for_oid(PROXY_CERT_INFO_EXT_OID)
+    for line in ext.value.value.split():
+        print(line)
+        if line.endswith(b"+\x06\x01\x05\x05\x07\x15\x01"):
+            return "Inherit all"
+        if line.endswith(b"+\x06\x01\x04\x01\x9bP\x01\x01\x01"):
+            return "1.3.6.1.4.1.3536.1.1.1.9"
     raise ValueError("no policy language found in cert")
 
 
@@ -184,7 +199,7 @@ def print_cert_info(
 
     Parameters
     ----------
-    x509 : `OpenSSL.crypto.X509`
+    x509 : `cryptography.x509.Certificate`
         the certificate to parse
 
     path : `str`, optional
@@ -203,7 +218,7 @@ def print_cert_info(
     if display is None:
         display = []
     # parse parameters of certificate
-    pkey = x509.get_pubkey()
+    pkey = x509.public_key()
     remaining = time_left(x509)
     if "timeleft" in display:  # if plaintext, print seconds
         timeleft = str(max(-1, int(remaining)))
@@ -212,17 +227,16 @@ def print_cert_info(
     else:
         timeleft = "0:00:00 [EXPIRED]"
     params = {
-        "subject": _x509_name_str(x509.get_subject()),
-        "issuer": _x509_name_str(x509.get_issuer()),
+        "subject": _x509_name_str(x509.subject),
+        "issuer": _x509_name_str(x509.issuer),
         "type": _cert_type(x509),
-        "strength": f"{pkey.bits()} bits",
+        "strength": f"{pkey.key_size} bits",
         "path": path,
         "timeleft": timeleft,
     }
     if verbose or "text" in display:
-        params["text"] = "\n" + crypto.dump_certificate(
-            crypto.FILETYPE_PEM,
-            x509,
+        params["text"] = "\n" + x509.public_bytes(
+            encoding=Encoding.PEM,
         ).decode("utf-8").strip()
 
     # use chose specific attributes, so just print them in plain text
@@ -234,7 +248,7 @@ def print_cert_info(
             print(f"{attr:9s}: {params[attr]}", file=stream)
 
 
-def write_cert(path, pkcs12, use_proxy=False, minhours=168):
+def write_cert(path, cert, key, use_proxy=False, minhours=168):
     """Write a PKCS12 certificate archive to file in X509 format
 
     Parameters
@@ -253,21 +267,29 @@ def write_cert(path, pkcs12, use_proxy=False, minhours=168):
         the minimum duration of the proxy certificate, only used if
         `proxy=True` is given
     """
-    certstr = crypto.dump_certificate(
-        crypto.FILETYPE_PEM,
-        pkcs12.get_certificate(),
-    )
-    keystr = crypto.dump_privatekey(
-        crypto.FILETYPE_PEM,
-        pkcs12.get_privatekey(),
-    )
     if use_proxy:
-        cert = X509.load_cert_string(certstr)
-        key = EVP.load_key_string(keystr).get_rsa()
+        # generate proxy
         proxy, proxykey = generate_proxy(cert, key, minhours=minhours)
-        blocks = [proxy.as_pem(), proxykey.as_pem(cipher=None), certstr]
+        # write the proxy cert, key pair _and_ the original cert
+        blocks = [
+            proxy.public_bytes(encoding=Encoding.PEM),
+            proxykey.private_bytes(
+                encoding=Encoding.PEM,
+                format=PrivateFormat.PKCS8,
+                encryption_algorithm=NoEncryption(),
+            ),
+            cert.public_bytes(encoding=Encoding.PEM),
+        ]
     else:
-        blocks = [certstr, keystr]
+        # write the cert, key pair
+        blocks = [
+            cert.public_bytes(encoding=Encoding.PEM),
+            key.private_bytes(
+                encoding=Encoding.PEM,
+                format=PrivateFormat.PKCS8,
+                encryption_algorithm=NoEncryption(),
+            ),
+        ]
 
     with tempfile.NamedTemporaryFile(delete=False) as tmp:
         # write cert and key to temporary location
@@ -280,79 +302,110 @@ def write_cert(path, pkcs12, use_proxy=False, minhours=168):
 
 
 def generate_proxy(cert, key, minhours=168, limited=False, bits=2048):
-    """Generate a proxy certificate based on a certificate
-
-    Based on code from the gridproxy library
-    https://github.com/abbot/gridproxy/blob/master/gridproxy/__init__.py
-    which is Copyright Lev Shamardin and covered under the GNU GPLv3 license.
+    """Generate a proxy certificate based on a certificate.
 
     Parameters
     ----------
-    cert : `M2Crypto.X509.X509`
-        the certificate object
+    cert : `cryptography.X509.Certificate`
+        The certificate object.
 
-    key : `M2Crypto.RSA.RSA_pub`
-        the RSA key object
+    key : `cryptography.hazmat.primitives.asymmetric.rsa.RSAPrivateKey`
+        The RSA key object used to sign the original certificate.
+
+    minhours : `float`
+        The minimum lifetime of the proxy certificate. This is bounded by
+        the lifetime of the original certificate.
+
+    limited : `bool`
+        If `True`, generate a limited proxy.
+
+    bits : `int`
+        The number of bits (size) to use for the private key used to sign
+        the proxy certificate.
 
     Returns
     -------
-    proxycert : `M2Crypto.X509.X509`
-        the proxy certificate
+    proxycert : `cryptography.X509.Certificate`
+        The proxy certificate.
 
-    proxykey : `M2Crypto.EVP.PKey`
-        the proxy private key
+    proxykey : `cryptography.hazmat.primitives.asymmetric.rsa.RSAPrivateKey`
+        The RSA private key used to sign the proxy certificate.
     """
-    # according to
-    #   https://en.wikipedia.org/wiki/RSA_%28cryptosystem%29#Key_generation
-    # the exponent 65537 (2^16+1) is most efficient
-    proxyrsa = RSA.gen_key(bits, 65537, lambda x: None)
-    proxykey = EVP.PKey()
-    proxykey.assign_rsa(proxyrsa)
+    # generate a new key pair with which to sign the proxy
+    proxy_private_key = generate_private_key(
+        public_exponent=65537,
+        key_size=bits,
+        backend=default_backend(),
+    )
+    proxy_public_key = proxy_private_key.public_key()
 
-    proxy = X509.X509()
-    proxy.set_pubkey(proxykey)
-    proxy.set_version(2)
+    # create a serial number for the proxy
+    digest = hashes.Hash(hashes.SHA256())
+    digest.update(proxy_public_key.public_bytes(
+        encoding=Encoding.DER,
+        format=PublicFormat.PKCS1,
+    ))
+    serial = int(
+        struct.unpack("<L", digest.finalize()[:4])[0]
+        & 0x7fffffff
+    )
 
-    not_before = ASN1.ASN1_UTCTIME()
-    not_before.set_time(_parse_unix_time(cert.get_not_before()))
-    proxy.set_not_before(not_before)
-    now = int(time.time())
-    not_after = ASN1.ASN1_UTCTIME()
-    not_after_time = now + int(minhours * 60 * 60)
-    # make sure proxy doesn't expire later than the underlying cert
-    cert_not_after_time = _parse_unix_time(cert.get_not_after())
-    not_after.set_time(min(not_after_time, cert_not_after_time))
-    proxy.set_not_after(not_after)
+    # generate a new subject by appending the serial number to
+    # the subject of the original certificate
+    proxy_subject = crypto_x509.Name(cert.subject.rdns + [
+        crypto_x509.RelativeDistinguishedName([
+            crypto_x509.NameAttribute(
+                crypto_x509.NameOID.COMMON_NAME,
+                str(serial),
+            ),
+        ]),
+    ])
 
-    proxy.set_issuer_name(cert.get_subject())
-    digest = EVP.MessageDigest('sha256')
-    digest.update(proxykey.as_der())
-    serial = struct.unpack("<L", digest.final()[:4])[0]
-    proxy.set_serial_number(int(serial & 0x7fffffff))
-
-    # It is not completely clear what happens with memory allocation
-    # within the next calls, so after building the whole thing we are
-    # going to reload it through der encoding/decoding.
-    proxy_subject = X509.X509_Name()
-    subject = cert.get_subject()
-    for idx in range(subject.entry_count()):
-        entry = subject[idx].x509_name_entry
-        m2.x509_name_add_entry(proxy_subject._ptr(), entry, -1, 0)
-    proxy_subject.add_entry_by_txt('CN', ASN1.MBSTRING_ASC,
-                                   str(serial), -1, -1, 0)
-    proxy.set_subject(proxy_subject)
-    proxy.add_ext(X509.new_extension(
-        "keyUsage", "Digital Signature, Key Encipherment, Data Encipherment",
-        1))
+    # add extensions
+    extensions = [crypto_x509.Extension(
+        crypto_x509.KeyUsage.oid,
+        True,
+        crypto_x509.KeyUsage(
+            digital_signature=True,
+            content_commitment=False,
+            key_encipherment=True,
+            data_encipherment=True,
+            key_agreement=False,
+            key_cert_sign=False,
+            crl_sign=False,
+            encipher_only=False,
+            decipher_only=False,
+        )
+    )]
     if limited:
-        proxy.add_ext(X509.new_extension(
-            "proxyCertInfo", "critical, language:1.3.6.1.4.1.3536.1.1.1.9", 1))
+        proxyinfoext = crypto_x509.UnrecognizedExtension(
+            PROXY_CERT_INFO_EXT_OID,
+            # language:1.3.6.1.4.1.3536.1.1.1.9
+            b"0\x0f0\r\x06\x0b+\x06\x01\x04\x01\x9bP\x01\x01\x01\t",
+        )
     else:
-        proxy.add_ext(X509.new_extension(
-            "proxyCertInfo", "critical, language:Inherit all", 1))
+        proxyinfoext = crypto_x509.UnrecognizedExtension(
+            PROXY_CERT_INFO_EXT_OID,
+            # language:Inherit all
+            b"0\x0c0\n\x06\x08+\x06\x01\x05\x05\x07\x15\x01",
+        )
 
-    sign_pkey = EVP.PKey()
-    sign_pkey.assign_rsa(key, 0)
-    proxy.sign(sign_pkey, 'sha256')
+    # build self-signed proxy certificate
+    builder = crypto_x509.CertificateBuilder(
+        issuer_name=cert.subject,
+        subject_name=proxy_subject,
+        public_key=proxy_public_key,
+        serial_number=serial,
+        not_valid_before=cert.not_valid_before,
+        not_valid_after=min(
+            datetime.datetime.utcnow() + datetime.timedelta(hours=minhours),
+            cert.not_valid_after,
+        ),
+        extensions=extensions,
+    ).add_extension(proxyinfoext, critical=True)
+    proxy = builder.sign(
+        private_key=proxy_private_key,
+        algorithm=hashes.SHA256(),
+    )
 
-    return proxy, proxykey
+    return proxy, proxy_private_key

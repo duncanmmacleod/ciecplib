@@ -1,0 +1,14 @@
+diff --git a/setup.cfg b/setup.cfg
+index c3b52b7..180f2d7 100644
+--- a/setup.cfg
++++ b/setup.cfg
+@@ -34,7 +34,8 @@ python_version = >=3.6
+ setup_requires = 
+ 	setuptools >= 30.3.0
+ install_requires = 
+-	cryptography >=36.0.0
++	cryptography
++	pyOpenSSL >= 17.1.0
+ 	requests
+ 	requests-ecp
+ 

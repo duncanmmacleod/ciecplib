@@ -202,7 +202,7 @@ def main(args=None):
     # get new certificate
     if not args.reuse:
         vprint("Fetching certificate...")
-        cert = get_cert(
+        cert, key = get_cert(
             endpoint=args.identity_provider,
             username=getattr(args, "username", None),
             kerberos=args.kerberos,
@@ -215,6 +215,7 @@ def main(args=None):
         write_cert(
             args.file,
             cert,
+            key,
             use_proxy=args.proxy,
             minhours=args.hours,
         )

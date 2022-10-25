@@ -1,21 +1,23 @@
-%define name ciecplib
+%define srcname ciecplib
 %define version 0.6.0
 %define release 1
 
 # -- metadata ---------------
 
-BuildArch: noarch
-Group:     Development/Libraries
-License:   GPL-3.0-or-later
-Name:      %{name}
-Packager:  Duncan Macleod <duncan.macleod@ligo.org>
-Prefix:    %{_prefix}
-Release:   %{release}%{?dist}
-Source0:   %pypi_source
-Summary:   A python client for SAML ECP authentication
-Url:       https://github.com/duncanmmacleod/ciecplib
-Vendor:    Duncan Macleod <duncan.macleod@ligo.org>
+Name:      %{srcname}
 Version:   %{version}
+Release:   %{release}%{?dist}
+Summary:   A python client for SAML ECP authentication
+
+Source0:   %pypi_source
+License:   GPL-3.0-or-later
+Url:       https://github.com/duncanmmacleod/ciecplib
+
+Packager:  Duncan Macleod <duncan.macleod@ligo.org>
+Vendor:    Duncan Macleod <duncan.macleod@ligo.org>
+
+BuildArch: noarch
+Prefix:    %{_prefix}
 
 # -- build requirements -----
 
@@ -26,13 +28,18 @@ BuildRequires: python3-rpm-macros
 # build
 BuildRequires: python3 >= 3.5.0
 BuildRequires: python%{python3_pkgversion}-setuptools >= 30.3.0
+BuildRequires: python%{python3_pkgversion}-wheel
 
 # man pages
 %if 0%{?fedora} >= 26 || 0%{?rhel} >= 8
 BuildRequires: python%{python3_pkgversion}-argparse-manpage
 %endif
-BuildRequires: python%{python3_pkgversion}-m2crypto
-BuildRequires: python%{python3_pkgversion}-pyOpenSSL
+%if 0%{?fedora} >= 36 || 0%{?rhel} >= 9
+BuildRequires: python%{python3_pkgversion}-cryptography >= 36.0.0
+%else
+BuildRequires: python%{python3_pkgversion}-cryptography
+BuildRequires: python%{python3_pkgversion}-pyOpenSSL >= 17.1.0
+%endif
 BuildRequires: python%{python3_pkgversion}-requests
 BuildRequires: python%{python3_pkgversion}-requests-ecp
 
@@ -47,20 +54,24 @@ BuildRequires: python%{python3_pkgversion}-pytest >= 3.9.0
 %description
 The Python client for SAML ECP authentication.
 
-%package -n python%{python3_pkgversion}-%{name}
+%package -n python%{python3_pkgversion}-%{srcname}
 Summary: %{summary}
-Requires: python%{python3_pkgversion}-m2crypto
-Requires: python%{python3_pkgversion}-pyOpenSSL
+%if 0%{?fedora} >= 36 || 0%{?rhel} >= 9
+Requires: python%{python3_pkgversion}-cryptography >= 36.0.0
+%else
+Requires: python%{python3_pkgversion}-cryptography
+Requires: python%{python3_pkgversion}-pyOpenSSL >= 17.1.0
+%endif
 Requires: python%{python3_pkgversion}-requests
 Requires: python%{python3_pkgversion}-requests-ecp
 Conflicts: ciecp-utils < 0.4.3-1
-%{?python_provide:%python_provide python%{python3_pkgversion}-%{name}}
-%description -n python%{python3_pkgversion}-%{name}
+%{?python_provide:%python_provide python%{python3_pkgversion}-%{srcname}}
+%description -n python%{python3_pkgversion}-%{srcname}
 The Python %{python3_version} client for SAML ECP authentication.
 
 %package -n ciecp-utils
 Summary: Command line utilities for SAML ECP authentication
-Requires: python%{python3_pkgversion}-%{name} = %{version}-%{release}
+Requires: python%{python3_pkgversion}-%{srcname} = %{version}-%{release}
 %description -n ciecp-utils
 Command line utilities for SAML ECP authentication, including
 ecp-cert-info, ecp-get-cookie, ecp-get-cert, and ecp-curl
@@ -69,13 +80,18 @@ ecp-cert-info, ecp-get-cookie, ecp-get-cert, and ecp-curl
 # -- build ------------------
 
 %prep
-%autosetup -n %{name}-%{version}
+%autosetup -n %{srcname}-%{version}
+
+# add pyOpenSSL to python metadata
+%if 0%{?fedora} >= 36 || 0%{?rhel} >= 9
+sed -i '/\tcryptography >=/c\\tcryptography\n\tpyOpenSSL >= 17.1.0' setup.cfg
+%endif
 
 %build
-%py3_build
+%py3_build_wheel
 
 %install
-%py3_install
+%py3_install_wheel %{srcname}-%{version}-*.whl
 
 %check
 export PYTHONPATH="%{buildroot}%{python3_sitelib}"
@@ -93,7 +109,7 @@ rm -rf $RPM_BUILD_ROOT
 
 # -- files ------------------
 
-%files -n python%{python3_pkgversion}-%{name}
+%files -n python%{python3_pkgversion}-%{srcname}
 %doc README.md
 %license LICENSE
 %{python3_sitelib}/*

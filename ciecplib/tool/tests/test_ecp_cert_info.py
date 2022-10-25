@@ -69,4 +69,4 @@ def test_display(load_cert, x509, capsys):
     load_cert.return_value = x509
     ecp_cert_info.main(["-subject"])
     out = capsys.readouterr().out
-    assert out.strip() == x509_name_str(x509.get_subject())
+    assert out.strip() == x509_name_str(x509.subject)
