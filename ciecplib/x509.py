@@ -39,6 +39,19 @@ __author__ = "Duncan Macleod <duncan.macleod@ligo.org>"
 
 PROXY_CERT_INFO_EXT_OID = crypto_x509.ObjectIdentifier("1.3.6.1.5.5.7.1.14")
 
+# backport short names for cryptography < 2.5
+_NAMEOID_TO_NAME = {
+    crypto_x509.NameOID.COMMON_NAME: "CN",
+    crypto_x509.NameOID.COUNTRY_NAME: "C",
+    crypto_x509.NameOID.DOMAIN_COMPONENT: "DC",
+    crypto_x509.NameOID.LOCALITY_NAME: "L",
+    crypto_x509.NameOID.ORGANIZATION_NAME: "O",
+    crypto_x509.NameOID.ORGANIZATIONAL_UNIT_NAME: "OU",
+    crypto_x509.NameOID.STATE_OR_PROVINCE_NAME: "ST",
+    crypto_x509.NameOID.STREET_ADDRESS: "STREET",
+    crypto_x509.NameOID.USER_ID: "UID",
+}
+
 
 def _parse_unix_time(asn1time):
     """Parse an ASN1 unix time into a python `time` tuple
@@ -60,7 +73,10 @@ def load_cert(path):
         the parsed certificate
     """
     with open(str(path), "rb") as fobj:
-        return crypto_x509.load_pem_x509_certificate(fobj.read())
+        return crypto_x509.load_pem_x509_certificate(
+            fobj.read(),
+            backend=default_backend(),
+        )
 
 
 def load_pkcs12(raw, password):
@@ -102,7 +118,15 @@ def time_left(cert):
 def _x509_name_str(obj):
     """Return the name of the x509 object as a string
     """
-    return "/" + "/".join([x.rfc4514_string() for x in obj.rdns])
+    try:
+        parts = [x.rfc4514_string() for x in obj.rdns]
+    except AttributeError:  # cryptography < 2.5
+        parts = [
+            f"{_NAMEOID_TO_NAME[attr.oid]}={attr.value}"
+            for rdn in obj.rdns
+            for attr in rdn
+        ]
+    return f"/{'/'.join(parts)}"
 
 
 def check_cert(cert, hours=1, proxy=None, rfc3820=True):
@@ -146,7 +170,8 @@ def _cert_type(x509):
     """Returns the type of the given x509 certificate object
     """
     # parse name entry as common name
-    ntype, name = x509.subject.rdns[-1].rfc4514_string().split('=', 1)
+    subject = _x509_name_str(x509.subject)
+    ntype, name = subject.rsplit("/", 1)[-1].split("=", 1)
 
     # if name entry is not 'common name' then EEC
     if ntype != "CN":
@@ -340,7 +365,7 @@ def generate_proxy(cert, key, minhours=168, limited=False, bits=2048):
     proxy_public_key = proxy_private_key.public_key()
 
     # create a serial number for the proxy
-    digest = hashes.Hash(hashes.SHA256())
+    digest = hashes.Hash(hashes.SHA256(), backend=default_backend())
     digest.update(proxy_public_key.public_bytes(
         encoding=Encoding.DER,
         format=PublicFormat.PKCS1,
@@ -406,6 +431,7 @@ def generate_proxy(cert, key, minhours=168, limited=False, bits=2048):
     proxy = builder.sign(
         private_key=proxy_private_key,
         algorithm=hashes.SHA256(),
+        backend=default_backend(),
     )
 
     return proxy, proxy_private_key

@@ -50,7 +50,7 @@ def test_load_pkcs12(x509, private_key):
         from cryptography.hazmat.primitives.serialization.pkcs12 import (
             serialize_key_and_certificates,
         )
-    except ImportError:
+    except ImportError:  # cryptography < 3.0
         from OpenSSL import crypto
         p12obj = crypto.PKCS12()
         p12obj.set_certificate(crypto.X509.from_cryptography(x509))
