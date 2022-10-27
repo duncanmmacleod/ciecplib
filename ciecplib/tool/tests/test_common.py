@@ -28,7 +28,7 @@ import pytest
 
 try:
     import importlib.metadata as importlib_metadata
-except ModuleNotFoundError:  # python < 3.7
+except ModuleNotFoundError:  # python < 3.8
     importlib_metadata = pytest.importorskip("importlib_metadata")
 
 from ... import (__version__, __name__)
