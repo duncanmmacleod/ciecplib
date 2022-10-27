@@ -3,8 +3,6 @@
 include /usr/share/dpkg/pkg-info.mk
 
 export PYBUILD_OPTION = --test-pytest
-export PYBUILD_DISABLE_python3.5 = test
-export PYBUILD_TEST_ARGS = --verbose -r s
 
 %:
 	dh $@ \

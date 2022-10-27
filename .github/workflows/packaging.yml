@@ -183,9 +183,9 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - debian: buster
+          - debian: Buster
             container: debian:buster-backports
-          - debian: bullseye
+          - debian: Bullseye
             container: debian:bullseye
     runs-on: ubuntu-latest
     container: ${{ matrix.container }}
@@ -232,10 +232,12 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - debian: buster
-            container: igwn/base:buster
-          - debian: bullseye
-            container: igwn/base:bullseye
+          - debian: Buster
+            container: igwn/builder:buster
+            python-version: 3.7
+          - debian: Bullseye
+            container: igwn/builder:bullseye
+            python-version: 3.9
     runs-on: ubuntu-latest
     container: ${{ matrix.container }}
     env:
@@ -269,11 +271,16 @@ jobs:
               --install \
               --remove \
           ;
+          # also install pytest-cov
+          apt-get -y -q -q install python3-pytest-cov
 
       - name: Build binary packages
         run: |
-          cd src
+          # set pytest environment
+          export COVERAGE_FILE="$(pwd)/.coverage"
+          export PYBUILD_TEST_ARGS="-ra --verbose --cov ciecplib --pyargs ciecplib --junitxml='$(pwd)/pytest.xml'"
           # build debian packages
+          cd src
           dpkg-buildpackage -us -uc -b
 
       - name: Print package info
@@ -292,6 +299,34 @@ jobs:
               dpkg --install *.deb;
           }
 
+      - name: Get source code to assist codecov
+        uses: actions/checkout@v2
+        with:
+          path: src
+
+      - name: Coverage report
+        run: |
+          cd src
+          # use 'combine' to implement sources map
+          python3 -m coverage combine ../.coverage
+          # print report
+          python3 -m coverage report --show-missing
+          # convert to xml for codecov
+          python3 -m coverage xml
+
+      - name: Publish coverage to Codecov
+        uses: codecov/codecov-action@v3
+        with:
+          files: coverage.xml
+          root_dir: src
+          flags: Linux,Debian,${{ matrix.debian }},python${{ matrix.python-version }}
+
+      - name: Upload test results
+        uses: actions/upload-artifact@v2
+        with:
+          name: pytest-${{ matrix.debian }}
+          path: pytest.xml
+
       - uses: actions/upload-artifact@v2
         with:
           name: deb-${{ matrix.debian }}
@@ -309,9 +344,9 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - debian: buster
+          - debian: Buster
             container: igwn/base:buster
-          - debian: bullseye
+          - debian: Bullseye
             container: igwn/base:bullseye
     runs-on: ubuntu-latest
     container: ${{ matrix.container }}
@@ -342,7 +377,7 @@ jobs:
       - name: Download debian package
         uses: actions/download-artifact@v2
         with:
-          name: deb-bullseye
+          name: deb-Bullseye
 
       - name: Install lintian
         run: |
@@ -357,17 +392,21 @@ jobs:
   # -- RHEL -----------------
 
   rhel-source:
-    name: LSCSoft ${{ matrix.el }} source package
+    name: LSCSoft (${{ matrix.dist }}) ${{ matrix.version }} source package
     needs:
       - tarball
     strategy:
       fail-fast: false
       matrix:
-        el:
-          - el7
-          - el8
+        include:
+          - dist: Scientific Linux
+            version: 7
+            python-version: 3.6
+          - dist: Rocky Linux
+            version: 8
+            python-version: 3.6
     runs-on: ubuntu-latest
-    container: igwn/base:${{ matrix.el }}-testing
+    container: igwn/builder:el${{ matrix.version }}-testing
     env:
       TARBALL: "ciecplib-*.tar.*"
     steps:
@@ -377,7 +416,7 @@ jobs:
           name: tarball
 
       - name: Configure yum/dnf
-        if: matrix.el == 'el7'
+        if: matrix.version < 8
         run: ln -s /usr/bin/yum /usr/bin/dnf
 
       - name: Configure rpmbuild
@@ -397,32 +436,36 @@ jobs:
 
       - uses: actions/upload-artifact@v2
         with:
-          name: srpm-${{ matrix.el }}
+          name: srpm-${{ matrix.version }}
           path: "*.src.rpm"
           if-no-files-found: error
 
   rhel-binary:
-    name: LSCSoft ${{ matrix.el }} binary package
+    name: LSCSoft (${{ matrix.dist }}) ${{ matrix.version }} binary package
     needs:
       - rhel-source
     strategy:
       fail-fast: false
       matrix:
-        el:
-          - el7
-          - el8
+        include:
+          - dist: Scientific Linux
+            version: 7
+            python-version: 3.6
+          - dist: Rocky Linux
+            version: 8
+            python-version: 3.6
     runs-on: ubuntu-latest
-    container: igwn/base:${{ matrix.el }}-testing
+    container: igwn/builder:el${{ matrix.version }}-testing
     env:
       SRPM: "ciecplib-*.src.rpm"
     steps:
       - name: Download SRPM
         uses: actions/download-artifact@v2
         with:
-          name: srpm-${{ matrix.el }}
+          name: srpm-${{ matrix.version }}
 
       - name: Configure yum/dnf
-        if: matrix.el == 'el7'
+        if: matrix.version < 8
         run: ln -s /usr/bin/yum /usr/bin/dnf
 
       - name: Configure EPEL
@@ -431,7 +474,7 @@ jobs:
           dnf -y install epel-rpm-macros
 
       - name: Install build tools (el7)
-        if: matrix.el == 'el7'
+        if: matrix.version < 8
         run: |
           yum -y install \
               rpm-build \
@@ -439,7 +482,7 @@ jobs:
           ;
 
       - name: Install build tools (el8+)
-        if: matrix.el != 'el7'
+        if: matrix.version >= 8
         run: |
           dnf -y install \
               rpm-build \
@@ -447,15 +490,18 @@ jobs:
           ;
 
       - name: Install build dependencies (el7)
-        if: matrix.el == 'el7'
+        if: matrix.version < 8
         run: yum-builddep -y ${SRPM}
 
       - name: Install build dependencies (el8+)
-        if: matrix.el != 'el7'
+        if: matrix.version >= 8
         run: dnf builddep -y ${SRPM}
 
       - name: Build binary packages
         run: |
+          # set pytest environment (EL>=9)
+          export PYTEST_ADDOPTS="-ra --verbose --cov ciecplib --pyargs ciecplib --cov-report='xml:$(pwd)/coverage.xml' --junitxml='$(pwd)/pytest.xml'"
+          # build binary packages
           rpmbuild --rebuild --define "_rpmdir $(pwd)" ${SRPM}
           rm -f ${SRPM}
           mv */*.rpm .
@@ -477,32 +523,69 @@ jobs:
       - name: Install new packages
         run: dnf -y install *.rpm
 
+      - name: Get source code to assist codecov
+        if: matrix.version >= 9
+        uses: actions/checkout@v2
+        with:
+          path: src
+
+      - name: Coverage report
+        if: matrix.version >= 9
+        run: |
+          cd src
+          # use 'combine' to implement sources map
+          python3 -m coverage combine ../.coverage
+          # print report
+          python3 -m coverage report --show-missing
+          # convert to xml for codecov
+          python3 -m coverage xml
+
+
+      - name: Publish coverage to Codecov
+        if: matrix.version >= 9
+        uses: codecov/codecov-action@v2
+        with:
+          files: ./coverage.xml
+          root_dir: src
+          flags: Linux,EL,EL${{ matrix.version }},python${{ matrix.python-version }}
+
+      - name: Upload test results
+        if: matrix.version >= 9
+        uses: actions/upload-artifact@v2
+        with:
+          name: pytest-el${{ matrix.version }}
+          path: pytest.xml
+
       - uses: actions/upload-artifact@v2
         with:
-          name: rpm-${{ matrix.el }}
+          name: rpm-${{ matrix.version }}
           path: "*.rpm"
           if-no-files-found: error
 
   rhel-install:
-    name: LSCSoft ${{ matrix.el }} install test
+    name: LSCSoft (${{ matrix.dist }}) ${{ matrix.version }} install test
     needs:
       - rhel-binary
     strategy:
       fail-fast: false
       matrix:
-        el:
-          - el7
-          - el8
+        include:
+          - dist: Scientific Linux
+            version: 7
+            python-version: 3.6
+          - dist: Rocky Linux
+            version: 8
+            python-version: 3.6
     runs-on: ubuntu-latest
-    container: igwn/base:${{ matrix.el }}-testing
+    container: igwn/base:el${{ matrix.version }}-testing
     steps:
       - name: Download RPMs
         uses: actions/download-artifact@v2
         with:
-          name: rpm-${{ matrix.el }}
+          name: rpm-${{ matrix.version }}
 
       - name: Configure YUM
-        if: matrix.el == 'el7'
+        if: matrix.version < 8
         run: ln -s /usr/bin/yum /usr/bin/dnf
 
       - name: Configure EPEL
@@ -510,6 +593,50 @@ jobs:
 
       - name: Install RPMs
         run: dnf -y install *.rpm
+
+      - name: Install test requirements
+        if: matrix.version < 9
+        run: |
+          dnf -y install python3-pip
+          python3 -m pip install \
+              pytest \
+              pytest-cov \
+              requests-mock \
+          ;
+
+      - name: Run test suite
+        if: matrix.version < 9
+        run: |
+          python3 -m pytest -ra --verbose --cov ciecplib --pyargs ciecplib --junitxml=pytest.xml
+
+      - name: Get source code to assist codecov
+        if: matrix.version < 9
+        uses: actions/checkout@v2
+        with:
+          path: src
+
+      - name: Coverage report
+        if: matrix.version < 9
+        run: |
+          cd src
+          python3 -m coverage combine ../.coverage
+          python3 -m coverage report --show-missing
+          python3 -m coverage xml
+
+      - name: Publish coverage to Codecov
+        if: matrix.version < 9
+        uses: codecov/codecov-action@v3
+        with:
+          files: coverage.xml
+          root_dir: src
+          flags: Linux,EL,EL${{ matrix.version }},python${{ matrix.python-version }}
+
+      - name: Upload test results
+        if: matrix.version < 9
+        uses: actions/upload-artifact@v2
+        with:
+          name: pytest-el${{ matrix.version }}
+          path: pytest.xml
 
   lint-rhel:
     name: Lint CentOS packages
@@ -521,7 +648,7 @@ jobs:
       - name: Download RPM
         uses: actions/download-artifact@v2
         with:
-          name: rpm-el8
+          name: rpm-8
 
       - name: Install rpmlint
         run: |

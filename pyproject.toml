@@ -7,11 +7,5 @@ build-backend = "setuptools.build_meta:__legacy__"
 
 # -- tools
 
-[tool.coverage.report]
-precision = 1
-
-[tool.coverage.run]
-source = [ "ciecplib" ]
-
 [tool.pytest.ini_options]
 addopts = "-r s"
