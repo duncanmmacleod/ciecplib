@@ -1,5 +1,5 @@
 %define srcname ciecplib
-%define version 0.6.0
+%define version 0.7.0
 %define release 1
 
 # -- metadata ---------------
@@ -26,7 +26,7 @@ BuildRequires: python-rpm-macros
 BuildRequires: python3-rpm-macros
 
 # build
-BuildRequires: python3 >= 3.5.0
+BuildRequires: python3 >= 3.6.0
 BuildRequires: python%{python3_pkgversion}-setuptools >= 30.3.0
 BuildRequires: python%{python3_pkgversion}-wheel
 
@@ -125,6 +125,11 @@ rm -rf $RPM_BUILD_ROOT
 # -- changelog --------------
 
 %changelog
+* Thu Oct 27 2022 Duncan Macleod <duncan.macleod@ligo.org> - 0.7.0-1
+- update for 0.7.0
+- replace python3-m2cypro with python3-cryprography/python3-openssl
+- update conditionals for requirements and testing
+
 * Wed Oct 19 2022 Duncan Macleod <duncan.macleod@ligo.org> - 0.6.0-1
 - update for 0.6.0
 
