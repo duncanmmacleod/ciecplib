@@ -57,11 +57,28 @@ def has_credential(*args, klist=KLIST_EXE):
     >>> has_credential("mykrb5cc", klist="/opt/special/bin/klist")
     True
 
+    Notes
+    -----
+    This function will always return `False` if the requests-gssapi
+    Kerberos Auth plugin required by requests-ecp is not found.
+
     See also
     --------
     klist(1)
         for details of options accepted by ``klist``
     """
+    try:
+        from requests_ecp.auth import _import_kerberos_auth
+    except ImportError:
+        # probably requests-ecp < 0.3.0, which always supports kerberos
+        pass
+    else:
+        try:
+            _import_kerberos_auth()
+        except ImportError:
+            # requests-ecp doesn't support Kerberos, so we can't
+            return False
+
     # run klist to check credentials
     try:
         subprocess.check_output([klist, "-s"] + list(args))

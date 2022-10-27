@@ -40,6 +40,7 @@ Valid starting       Expires              Service principal
     (FileNotFoundError("no klist"), False),  # klist not found
 ])
 @mock.patch("subprocess.check_output")
+@mock.patch.dict("sys.modules", {"requests_ecp.auth": None})
 def test_has_credential(_check_output, side_effect, result):
     _check_output.side_effect = side_effect
     assert ciecplib_kerberos.has_credential("krb5ccname") is result
