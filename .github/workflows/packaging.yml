@@ -183,9 +183,9 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - debian: buster
+          - debian: Buster
             container: debian:buster-backports
-          - debian: bullseye
+          - debian: Bullseye
             container: debian:bullseye
     runs-on: ubuntu-latest
     container: ${{ matrix.container }}
@@ -232,10 +232,12 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - debian: buster
-            container: igwn/base:buster
-          - debian: bullseye
-            container: igwn/base:bullseye
+          - debian: Buster
+            container: igwn/builder:buster
+            python-version: 3.7
+          - debian: Bullseye
+            container: igwn/builder:bullseye
+            python-version: 3.9
     runs-on: ubuntu-latest
     container: ${{ matrix.container }}
     env:
@@ -269,11 +271,16 @@ jobs:
               --install \
               --remove \
           ;
+          # also install pytest-cov
+          apt-get -y -q -q install python3-pytest-cov
 
       - name: Build binary packages
         run: |
-          cd src
+          # set pytest environment
+          export COVERAGE_FILE="$(pwd)/.coverage"
+          export PYBUILD_TEST_ARGS="-ra --verbose --cov ciecplib --pyargs ciecplib --junitxml='$(pwd)/pytest.xml'"
           # build debian packages
+          cd src
           dpkg-buildpackage -us -uc -b
 
       - name: Print package info
@@ -292,6 +299,34 @@ jobs:
               dpkg --install *.deb;
           }
 
+      - name: Get source code to assist codecov
+        uses: actions/checkout@v2
+        with:
+          path: src
+
+      - name: Coverage report
+        run: |
+          cd src
+          # use 'combine' to implement sources map
+          python3 -m coverage combine ../.coverage
+          # print report
+          python3 -m coverage report --show-missing
+          # convert to xml for codecov
+          python3 -m coverage xml
+
+      - name: Publish coverage to Codecov
+        uses: codecov/codecov-action@v3
+        with:
+          files: coverage.xml
+          root_dir: src
+          flags: Linux,Debian,${{ matrix.debian }},python${{ matrix.python-version }}
+
+      - name: Upload test results
+        uses: actions/upload-artifact@v2
+        with:
+          name: pytest-${{ matrix.debian }}
+          path: pytest.xml
+
       - uses: actions/upload-artifact@v2
         with:
           name: deb-${{ matrix.debian }}
@@ -309,9 +344,9 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - debian: buster
+          - debian: Buster
             container: igwn/base:buster
-          - debian: bullseye
+          - debian: Bullseye
             container: igwn/base:bullseye
     runs-on: ubuntu-latest
     container: ${{ matrix.container }}
@@ -342,7 +377,7 @@ jobs:
       - name: Download debian package
         uses: actions/download-artifact@v2
         with:
-          name: deb-bullseye
+          name: deb-Bullseye
 
       - name: Install lintian
         run: |
