@@ -1,13 +1,4 @@
-# -----------------------
-#
-# Run a full build-and-test from the git repo
-# using pip to install all optional dependencies.
-#
-# This is the 'full' test suite.
-#
-# -----------------------
-
-name: Build and test
+name: Conda test
 
 on:
   push:
@@ -25,7 +16,7 @@ concurrency:
 
 jobs:
   conda:
-    name: Python ${{ matrix.python-version }} (${{ matrix.os }})
+    name: Conda Python ${{ matrix.python-version }} (${{ matrix.os }})
 
     strategy:
       fail-fast: false
@@ -108,11 +99,11 @@ jobs:
     - name: Publish coverage to Codecov
       uses: codecov/codecov-action@v2
       with:
-        flags: ${{ runner.os }},python${{ matrix.python-version }}
+        flags: ${{ runner.os }},Conda,python${{ matrix.python-version }}
 
     - name: Upload test results
       if: always()
       uses: actions/upload-artifact@v2
       with:
-        name: pytest-${{ matrix.os }}-${{ matrix.python-version }}
+        name: pytest-conda-${{ matrix.os }}-${{ matrix.python-version }}
         path: pytest.xml
