@@ -1,0 +1,14 @@
+; vim: set ft=dosini :
+
+[paths]
+sources =
+	ciecplib/
+	/usr/lib/python*/*-packages/ciecplib/
+	/usr/local/lib/python*/*-packages/ciecplib/
+	*.pybuild/*python*_*/build/ciecplib/
+
+[report]
+precision = 1
+
+[run]
+source = ciecplib
