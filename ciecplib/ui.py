@@ -23,8 +23,6 @@ import math
 import string
 from urllib import parse as urllib_parse
 
-from OpenSSL import crypto
-
 from requests import HTTPError
 
 from .env import DEFAULT_IDP
@@ -34,6 +32,7 @@ from .utils import (
     DEFAULT_SP_URL,
     random_string,
 )
+from .x509 import load_pkcs12
 
 __author__ = "Duncan Macleod <duncan.macleod@ligo.org>"
 
@@ -129,8 +128,11 @@ def get_cert(
 
     Returns
     -------
-    cookie : `http.cookiejar.Cookie`
-        the newly-minted session cookie
+    cert : `cryptography.x509.Certificate`
+        The newly minted certificate.
+
+    key : `cryptography.hazmat.primitives.asymmetric.rsa.RSAPrivateKey`
+        The RSA key object used to sign the certificate.
     """
     # decorator guarantees a populated session
     with session as sess:
@@ -170,7 +172,7 @@ def get_cert(
 
         if debug:
             print("Certificate received.")
-        return crypto.load_pkcs12(
+        return load_pkcs12(
             resp.content,
             p12password.encode('utf-8'),
         )

@@ -1,0 +1,71 @@
+name: Python test
+
+on:
+  push:
+    branches:
+      - main
+      - release/**
+  pull_request:
+    branches:
+      - main
+      - release/**
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  python:
+    name: Python ${{ matrix.python-version }} (${{ matrix.os }})
+
+    strategy:
+      fail-fast: false
+      matrix:
+        os:
+          - macOS
+          - Ubuntu
+          - Windows
+        python-version:
+          - "3.8"
+          - "3.9"
+          - "3.10"
+          - "3.11"
+        exclude:
+          # lxml wheels for Windows/Py3.11 not ready yet
+          - os: Windows
+            python-version: "3.11"
+    runs-on: ${{ matrix.os }}-latest
+
+    steps:
+      - name: Get source code
+        uses: actions/checkout@v2
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install ciecplib
+        run: python -m pip install .[tests]
+
+      - name: Package list
+        run: python -m pip list installed
+
+      - name: Run test suite
+        run: python -m pytest -ra --color yes --cov requests_ecp --pyargs requests_ecp --cov-report=xml --junitxml=pytest.xml
+
+      - name: Coverage report
+        run: python -m coverage report --show-missing
+
+      - name: Publish coverage to Codecov
+        uses: codecov/codecov-action@v1.2.1
+        with:
+          files: coverage.xml
+          flags: ${{ runner.os }},python${{ matrix.python-version }}
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v2
+        with:
+          name: pytest-${{ matrix.os }}-${{ matrix.python-version }}
+          path: pytest.xml

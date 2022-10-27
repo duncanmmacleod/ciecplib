@@ -1,4 +1,3 @@
 include LICENSE README.md MANIFEST.in
-include requirements.txt
 include *.spec
 recursive-include debian *

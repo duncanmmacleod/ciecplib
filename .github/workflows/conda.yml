@@ -1,14 +1,4 @@
-# -----------------------
-#
-# Run a full build-and-test from the git repo
-# using a combination of conda and pip to install
-# all optional dependencies.
-#
-# This is the 'full' test suite.
-#
-# -----------------------
-
-name: Build and test
+name: Conda test
 
 on:
   push:
@@ -26,7 +16,7 @@ concurrency:
 
 jobs:
   conda:
-    name: Python ${{ matrix.python-version }} (${{ matrix.os }})
+    name: Conda Python ${{ matrix.python-version }} (${{ matrix.os }})
 
     strategy:
       fail-fast: false
@@ -36,8 +26,6 @@ jobs:
           - Ubuntu
           - Windows
         python-version:
-          - "3.6"
-          - "3.7"
           - "3.8"
           - "3.9"
           - "3.10"
@@ -81,7 +69,7 @@ jobs:
       run: |
         # parse requirements to install as much as possible with conda
         mamba install --name base pip2conda
-        ${CONDA_PYTHON_EXE} -m pip2conda \
+        mamba run --name base python -m pip2conda \
             --all \
             --output environment.txt \
             --python-version ${{ matrix.python-version }}
@@ -97,7 +85,7 @@ jobs:
             --file environment.txt
 
     - name: Install ciecplib
-      run: python -m pip install .[tests] --no-build-isolation -vv
+      run: python -m pip install .[tests] -v
 
     - name: Package list
       run: mamba list --name test
@@ -111,7 +99,7 @@ jobs:
     - name: Publish coverage to Codecov
       uses: codecov/codecov-action@v2
       with:
-        flags: ${{ runner.os }},python${{ matrix.python-version }}
+        flags: ${{ runner.os }},Conda,python${{ matrix.python-version }}
 
     - name: Upload test results
       if: always()

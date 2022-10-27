@@ -19,66 +19,60 @@
 """Common fixtures for ciecplib tests
 """
 
-from OpenSSL import crypto
-from M2Crypto import (
-    X509 as m2X509,
-    EVP as m2EVP,
+from datetime import (
+    datetime,
+    timedelta,
 )
+
+from cryptography import x509 as crypto_x509
+from cryptography.hazmat.backends import default_backend
+from cryptography.hazmat.primitives import hashes
+from cryptography.hazmat.primitives.asymmetric.rsa import generate_private_key
+from cryptography.hazmat.primitives.serialization import Encoding
 
 import pytest
 
 
-@pytest.fixture
-def pkey():
-    key = crypto.PKey()
-    key.generate_key(crypto.TYPE_RSA, 1024)
-    return key
+@pytest.fixture(scope="session")  # one per suite is fine
+def private_key():
+    return generate_private_key(
+        public_exponent=65537,
+        key_size=2048,
+        backend=default_backend(),
+    )
+
+
+@pytest.fixture(scope="session")
+def public_key(private_key):
+    return private_key.public_key()
 
 
 @pytest.fixture
-def x509(pkey):
-    cert = crypto.X509()
-    sub = cert.get_subject()
-    sub.CN = "albert einstein"
-    sub.C = "UK"
-    sub.ST = "Wales"
-    sub.L = "Cardiff"
-    sub.O = "Cardiff University"  # noqa: E741
-    sub.OU = "Gravity"
-    cert.set_serial_number(1000)
-    cert.gmtime_adj_notBefore(0)
-    cert.gmtime_adj_notAfter(86400)
-    cert.set_issuer(cert.get_subject())
-    cert.set_pubkey(pkey)
-    cert.sign(pkey, "sha256")
-    return cert
+def x509(public_key, private_key):
+    name = crypto_x509.Name([
+        crypto_x509.NameAttribute(typ, value) for (typ, value) in (
+            (crypto_x509.NameOID.COMMON_NAME, "albert einstein"),
+            (crypto_x509.NameOID.COUNTRY_NAME, "UK"),
+            (crypto_x509.NameOID.STATE_OR_PROVINCE_NAME, "Wales"),
+            (crypto_x509.NameOID.LOCALITY_NAME, "Cardiff"),
+            (crypto_x509.NameOID.ORGANIZATION_NAME, "Cardiff University"),
+            (crypto_x509.NameOID.ORGANIZATIONAL_UNIT_NAME, "Gravity"),
+        )
+    ])
+    now = datetime.utcnow()
+    return crypto_x509.CertificateBuilder(
+        issuer_name=name,
+        subject_name=name,
+        public_key=public_key,
+        serial_number=1000,
+        not_valid_before=now,
+        not_valid_after=now + timedelta(seconds=86400),
+    ).sign(private_key, hashes.SHA256(), backend=default_backend())
 
 
 @pytest.fixture
 def x509_path(tmp_path, x509):
     path = tmp_path / "tmpx509.pem"
     with path.open("wb") as tmp:
-        tmp.write(crypto.dump_certificate(crypto.FILETYPE_PEM, x509))
+        tmp.write(x509.public_bytes(Encoding.PEM))
     return path
-
-
-@pytest.fixture
-def x509_m2(x509):
-    return m2X509.load_cert_string(
-        crypto.dump_certificate(crypto.FILETYPE_PEM, x509),
-    )
-
-
-@pytest.fixture
-def pkey_m2(pkey):
-    return m2EVP.load_key_string(
-        crypto.dump_privatekey(crypto.FILETYPE_PEM, pkey),
-    )
-
-
-@pytest.fixture
-def pkcs12(pkey, x509):
-    p12 = crypto.PKCS12()
-    p12.set_privatekey(pkey)
-    p12.set_certificate(x509)
-    return p12
