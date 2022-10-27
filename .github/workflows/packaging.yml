@@ -96,7 +96,7 @@ jobs:
   # -- Conda ----------------
 
   conda-install:
-    name: Conda build (fake)
+    name: Conda build
     needs:
       - tarball
     runs-on: ubuntu-latest
@@ -116,15 +116,15 @@ jobs:
           CACHE_NUMBER: 0
         with:
           path: ~/conda_pkgs_dir
-          key: conda-build-fake-${{ env.CACHE_NUMBER }}
-          restore-keys: conda-build-fake-
+          key: conda-build-${{ env.CACHE_NUMBER }}
+          restore-keys: conda-build-
 
       - name: Configure conda
         uses: conda-incubator/setup-miniconda@v2
         with:
-          activate-environment: test
+          activate-environment: build
           miniforge-variant: Mambaforge
-          python-version: 3
+          python-version: "3.10"
           use-mamba: true
           # this is needed for caching to work properly:
           use-only-tar-bz2: true
@@ -132,42 +132,46 @@ jobs:
       - name: Conda info
         run: conda info --all
 
-      - name: Unpack tarball
+      - name: Install conda build tooling
         run: |
-          mkdir src
-          tar -xf ciecplib-*.tar.* --strip-components=1
-
-      - name: Install dependencies
-        shell: bash -el {0}
-        run: |
-          mamba install --name base pip2conda
-          ${CONDA_PYTHON_EXE} -m pip2conda \
-              --output environment.txt \
-          ;
-          echo "-----------------"
-          cat environment.txt
-          echo "-----------------"
-          mamba install --quiet --yes --name test \
-              pip \
-              wheel \
-              --file environment.txt \
+          mamba install --name base \
+              boa \
+              conda-build \
+              conda-forge-pinning \
+              conda-verify \
           ;
 
-      - name: Install ciecplib
-        env:
-          # make out build look like a conda-build build
-          PIP_NO_BUILD_ISOLATION: "False"
-          PIP_NO_DEPENDENCIES: "True"
-          PIP_IGNORE_INSTALLED: "True"
-          PIP_CACHE_DIR: "${{ github.workspace }}/pip_cache"
-          PIP_NO_INDEX: "True"
-        run: python -m pip install . -vv
+      - name: Install grayskull
+        run: |
+          mamba install --name build \
+              grayskull \
+          ;
 
-      - name: Package list
-        run: mamba list --name test
+      - name: Generate conda recipe
+        run: |
+          grayskull pypi ciecplib-*.tar.* \
+              --extras-require-test tests \
+              --maintainers ${{ github.actor }} \
+          ;
 
-      - name: Check the pip install
-        run: python -m pip check
+      - name: Display conda recipe
+        run: |
+          echo "-----------------"
+          cat ciecplib/meta.yaml
+          echo "-----------------"
+
+      - name: Build the recipe
+        run: conda mambabuild ciecplib/ -m $(conda info --base)/conda_build_config.yaml
+
+      - name: Install the conda package
+        run: mamba install --name build --use-local ciecplib
+
+      - name: Sanity check entry points
+        run: |
+          ecp-cert-info --help
+          ecp-curl --help
+          ecp-get-cert --help
+          ecp-get-cookie --help
 
   # -- Debian ---------------
 
