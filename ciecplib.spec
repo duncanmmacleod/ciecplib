@@ -1,6 +1,6 @@
 %define srcname ciecplib
 %define version 0.7.0
-%define release 1
+%define release 2
 
 # -- metadata ---------------
 
@@ -84,6 +84,7 @@ ecp-cert-info, ecp-get-cookie, ecp-get-cert, and ecp-curl
 
 # add pyOpenSSL to python metadata
 %if 0%{?fedora} >= 36 || 0%{?rhel} >= 9
+%else
 sed -i '/\tcryptography >=/c\\tcryptography\n\tpyOpenSSL >= 17.1.0' setup.cfg
 %endif
 
@@ -125,6 +126,9 @@ rm -rf $RPM_BUILD_ROOT
 # -- changelog --------------
 
 %changelog
+* Wed Nov 02 2022 Duncan Macleod <duncan.macleod@ligo.org> - 0.7.0-2
+- fix metadata sed hack for RHEL<9
+
 * Thu Oct 27 2022 Duncan Macleod <duncan.macleod@ligo.org> - 0.7.0-1
 - update for 0.7.0
 - replace python3-m2cypro with python3-cryprography/python3-openssl
