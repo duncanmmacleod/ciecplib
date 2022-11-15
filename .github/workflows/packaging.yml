@@ -83,7 +83,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v2
         with:
-          python-version: '3.x'
+          python-version: ${{ matrix.python-version }}
 
       - name: Install system requirements (Linux)
         if: matrix.os == 'Ubuntu'
@@ -91,6 +91,9 @@ jobs:
           sudo apt-get install -y -q -q \
               libkrb5-dev \
           ;
+
+      - name: List installed packages
+        run: python -m pip list installed
 
       - name: Install from wheel
         shell: bash -e {0}
@@ -155,6 +158,7 @@ jobs:
         run: |
           mamba install --name build \
               grayskull \
+              packaging \
           ;
 
       - name: Generate conda recipe
