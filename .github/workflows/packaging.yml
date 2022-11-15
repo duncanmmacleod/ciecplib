@@ -83,7 +83,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v2
         with:
-          python-version: '3.x'
+          python-version: ${{ matrix.python-version }}
 
       - name: Install system requirements (Linux)
         if: matrix.os == 'Ubuntu'
