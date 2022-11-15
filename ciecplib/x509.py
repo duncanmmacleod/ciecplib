@@ -205,7 +205,6 @@ def _get_cert_policy_language(x509):
     """
     ext = x509.extensions.get_extension_for_oid(PROXY_CERT_INFO_EXT_OID)
     for line in ext.value.value.split():
-        print(line)
         if line.endswith(b"+\x06\x01\x05\x05\x07\x15\x01"):
             return "Inherit all"
         if line.endswith(b"+\x06\x01\x04\x01\x9bP\x01\x01\x01"):
