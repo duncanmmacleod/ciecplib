@@ -19,7 +19,6 @@
 import calendar
 import datetime
 import shutil
-import struct
 import sys
 import tempfile
 import time
@@ -32,7 +31,6 @@ from cryptography.hazmat.primitives.serialization import (
     Encoding,
     NoEncryption,
     PrivateFormat,
-    PublicFormat,
 )
 
 __author__ = "Duncan Macleod <duncan.macleod@ligo.org>"
@@ -360,15 +358,7 @@ def generate_proxy(cert, key, minhours=168, limited=False, bits=2048):
     proxy_public_key = proxy_private_key.public_key()
 
     # create a serial number for the proxy
-    digest = hashes.Hash(hashes.SHA256(), backend=default_backend())
-    digest.update(proxy_public_key.public_bytes(
-        encoding=Encoding.DER,
-        format=PublicFormat.PKCS1,
-    ))
-    serial = int(
-        struct.unpack("<L", digest.finalize()[:4])[0]
-        & 0x7fffffff
-    )
+    serial = crypto_x509.random_serial_number()
 
     # generate a new subject by appending the serial number to
     # the subject of the original certificate
