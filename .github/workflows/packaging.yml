@@ -158,6 +158,7 @@ jobs:
         run: |
           mamba install --name build \
               grayskull \
+              packaging \
           ;
 
       - name: Generate conda recipe
