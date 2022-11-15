@@ -373,14 +373,14 @@ def generate_proxy(cert, key, minhours=168, limited=False, bits=2048):
 
     # generate a new subject by appending the serial number to
     # the subject of the original certificate
-    proxy_subject = crypto_x509.Name(cert.subject.rdns + [
-        crypto_x509.RelativeDistinguishedName([
+    proxy_subject = crypto_x509.Name(
+        list(cert.subject) + [
             crypto_x509.NameAttribute(
                 crypto_x509.NameOID.COMMON_NAME,
                 str(serial),
             ),
-        ]),
-    ])
+        ]
+    )
 
     # add extensions
     extensions = [crypto_x509.Extension(
