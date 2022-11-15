@@ -1,6 +1,6 @@
 %define srcname ciecplib
-%define version 0.7.0
-%define release 2
+%define version 0.7.1
+%define release 1
 
 # -- metadata ---------------
 
@@ -126,6 +126,9 @@ rm -rf $RPM_BUILD_ROOT
 # -- changelog --------------
 
 %changelog
+* Tue Nov 15 2022 Duncan Macleod <duncan.macleod@ligo.org> - 0.7.1-1
+- update for 0.7.1
+
 * Wed Nov 02 2022 Duncan Macleod <duncan.macleod@ligo.org> - 0.7.0-2
 - fix metadata sed hack for RHEL<9
 
