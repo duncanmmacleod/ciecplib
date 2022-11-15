@@ -387,21 +387,31 @@ def generate_proxy(cert, key, minhours=168, limited=False, bits=2048):
     ])
 
     # add extensions
-    extensions = [crypto_x509.Extension(
-        crypto_x509.KeyUsage.oid,
-        True,
-        crypto_x509.KeyUsage(
-            digital_signature=True,
-            content_commitment=False,
-            key_encipherment=True,
-            data_encipherment=True,
-            key_agreement=False,
-            key_cert_sign=False,
-            crl_sign=False,
-            encipher_only=False,
-            decipher_only=False,
-        )
-    )]
+    extensions = [
+        crypto_x509.Extension(
+            crypto_x509.KeyUsage.oid,
+            True,
+            crypto_x509.KeyUsage(
+                digital_signature=True,
+                content_commitment=False,
+                key_encipherment=True,
+                data_encipherment=True,
+                key_agreement=False,
+                key_cert_sign=False,
+                crl_sign=False,
+                encipher_only=False,
+                decipher_only=False,
+            )
+        ),
+        crypto_x509.Extension(
+            crypto_x509.ExtendedKeyUsage.oid,
+            False,
+            crypto_x509.ExtendedKeyUsage((
+                crypto_x509.ExtendedKeyUsageOID.CLIENT_AUTH,
+                crypto_x509.ExtendedKeyUsageOID.EMAIL_PROTECTION,
+            )),
+        ),
+    ]
     if limited:
         proxyinfoext = crypto_x509.UnrecognizedExtension(
             PROXY_CERT_INFO_EXT_OID,
