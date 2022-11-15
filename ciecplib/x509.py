@@ -293,28 +293,24 @@ def write_cert(path, cert, key, use_proxy=False, minhours=168):
         `proxy=True` is given
     """
     if use_proxy:
-        # generate proxy
-        proxy, proxykey = generate_proxy(cert, key, minhours=minhours)
-        # write the proxy cert, key pair _and_ the original cert
-        blocks = [
-            proxy.public_bytes(encoding=Encoding.PEM),
-            proxykey.private_bytes(
-                encoding=Encoding.PEM,
-                format=PrivateFormat.PKCS8,
-                encryption_algorithm=NoEncryption(),
-            ),
-            cert.public_bytes(encoding=Encoding.PEM),
-        ]
+        # we will store the original certificate as part of the signing chain
+        chain = [cert.public_bytes(encoding=Encoding.PEM)]
+        # generate a self-signed proxy
+        cert, key = generate_proxy(cert, key, minhours=minhours)
     else:
-        # write the cert, key pair
-        blocks = [
-            cert.public_bytes(encoding=Encoding.PEM),
-            key.private_bytes(
-                encoding=Encoding.PEM,
-                format=PrivateFormat.PKCS8,
-                encryption_algorithm=NoEncryption(),
-            ),
-        ]
+        chain = []
+
+    # write the cert, key pair, and the signing chain (if any)
+    blocks = [
+        # the cert
+        cert.public_bytes(encoding=Encoding.PEM),
+        # the private key associated with the cert's public key
+        key.private_bytes(
+            encoding=Encoding.PEM,
+            format=PrivateFormat.PKCS8,
+            encryption_algorithm=NoEncryption(),
+        ),
+    ] + chain
 
     with tempfile.NamedTemporaryFile(delete=False) as tmp:
         # write cert and key to temporary location
