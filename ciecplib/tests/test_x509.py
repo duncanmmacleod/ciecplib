@@ -23,6 +23,9 @@ import sys
 from io import StringIO
 from unittest import mock
 
+from cryptography.hazmat.primitives import hashes
+from cryptography.hazmat.primitives.asymmetric import padding
+
 import pytest
 
 from .. import x509 as ciecplib_x509
@@ -169,9 +172,22 @@ def test_write_cert(tmp_path, private_key, x509, proxy):
     (True, "RFC 3820 compliant limited proxy"),
 ])
 def test_generate_proxy(x509, private_key, limited, ctype):
+    """Test that :func:`ciecplib.x509.generate_proxy` generates a good proxy.
+    """
+    # generate a proxy certificate
     proxy, pkey = ciecplib_x509.generate_proxy(
         x509,
         private_key,
         limited=limited,
     )
+
+    # check that the (correct) private_key was used to sign the proxy
+    private_key.public_key().verify(
+        proxy.signature,
+        proxy.tbs_certificate_bytes,
+        padding.PKCS1v15(),
+        algorithm=hashes.SHA256(),
+    )
+
+    # check that the cerificate type matches
     assert ciecplib_x509._cert_type(proxy) == ctype

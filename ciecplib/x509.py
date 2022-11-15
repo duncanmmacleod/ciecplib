@@ -429,7 +429,7 @@ def generate_proxy(cert, key, minhours=168, limited=False, bits=2048):
         extensions=extensions,
     ).add_extension(proxyinfoext, critical=True)
     proxy = builder.sign(
-        private_key=proxy_private_key,
+        private_key=key,
         algorithm=hashes.SHA256(),
         backend=default_backend(),
     )
