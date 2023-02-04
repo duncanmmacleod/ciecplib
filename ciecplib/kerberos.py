@@ -26,7 +26,7 @@ __author__ = "Duncan Macleod <duncan.macleod@ligo.org>"
 
 KLIST_EXE = "klist"
 KLIST_PRINCIPAL_RE = re.compile(
-    r"\nDefault principal: ([\w\.@]+)",
+    r"\nDefault principal: ([\w\\./@]+)",
     re.M,
 )
 
