@@ -15,7 +15,7 @@ Build-Depends:
  python3-cryptography,
  python3-gssapi,
  python3-openssl (>=17.1.0),
- python3-importlib-metadata | python3-minimal (<< 3.9.0),
+ python3-importlib-metadata | python3-minimal (>= 3.8.0),
  python3-pytest,
  python3-requests,
  python3-requests-ecp,
