@@ -14,7 +14,7 @@ SAML/ECP-authenticated content over HTTP with
 
 ## Development status
 
-[![Build status](https://github.com/duncanmmacleod/ciecplib/actions/workflows/build.yml/badge.svg?branch=main)](https://github.com/duncanmmacleod/ciecplib/actions/workflows/build.yml)
+[![Build status](https://github.com/duncanmmacleod/ciecplib/actions/workflows/python.yml/badge.svg?branch=main)](https://github.com/duncanmmacleod/ciecplib/actions/workflows/python.yml)
 [![Codecov](https://img.shields.io/codecov/c/gh/duncanmmacleod/ciecplib?logo=codecov)](https://codecov.io/gh/duncanmmacleod/ciecplib)
 [![Maintainability](https://api.codeclimate.com/v1/badges/9e777f5fe160d1e3e7b6/maintainability)](https://codeclimate.com/github/duncanmmacleod/ciecplib/maintainability)
 [![Documentation](https://readthedocs.org/projects/ciecplib/badge/?version=latest)](https://ciecplib.readthedocs.io/en/latest/?badge=latest)
