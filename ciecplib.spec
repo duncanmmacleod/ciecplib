@@ -66,6 +66,10 @@ Requires: python%{python3_pkgversion}-pyOpenSSL >= 17.1.0
 Requires: python%{python3_pkgversion}-requests
 Requires: python%{python3_pkgversion}-requests-ecp
 Conflicts: ciecp-utils < 0.4.3-1
+%if 0%{?fedora} >= 36 || 0%{?rhel} >= 8
+Recommends: python%{python3_pkgversion}-gssapi
+Recommends: python%{python3_pkgversion}-requests-gssapi
+%endif
 %{?python_provide:%python_provide python%{python3_pkgversion}-%{srcname}}
 %description -n python%{python3_pkgversion}-%{srcname}
 The Python %{python3_version} client for SAML ECP authentication.

@@ -19,42 +19,49 @@
 """Kerberos utilities for ciecplib
 """
 
-import re
-import subprocess
-
 __author__ = "Duncan Macleod <duncan.macleod@ligo.org>"
 
-KLIST_EXE = "klist"
-KLIST_PRINCIPAL_RE = re.compile(
-    r"\nDefault principal: ([\w\\./@]+)",
-    re.M,
-)
+
+def _get_creds(usage="initiate", **kwargs):
+    """Return the active GSSAPI credentials, if any.
+    """
+    try:
+        import gssapi
+    except ImportError:
+        return None
+    try:
+        return gssapi.Credentials(usage=usage, **kwargs)
+    except gssapi.exceptions.GSSError:
+        return None
 
 
-def has_credential(*args, klist=KLIST_EXE):
-    """Run ``klist`` to determine whether a kerberos credential is available.
+def has_credential(**store_kw):
+    """Return `True` if an active Kerberos (GSSAPI) credential is available.
 
     Parameters
     ----------
-    *args : `str`, optional
-        extra arguments to pass to ``klist``, note that the ``-s`` option
-        is always passed to ``klist``
-
-    klist : `str`, optional
-        path to the ``klist`` executable
+    store_kw
+        Keyword arguments to pass to the credentials store extension of
+        the underlying GSSAPI implementation.
+        See https://pythongssapi.github.io/python-gssapi/credstore.html
+        for more details.
 
     Returns
     -------
     True
-        if ``klist -s`` indicates a valid credential
+        If a valid Kerberos credential is found with a lifetime of
+        more than 1 second.
     False
-        otherwise (including klist failures)
+        Otherwise.
 
     Examples
     --------
     >>> has_credential()
     False
-    >>> has_credential("mykrb5cc", klist="/opt/special/bin/klist")
+    >>> has_credential(
+    ...     ccache="mykrb5cc",
+    ...     client_keytab="/home/user/.kerberos/me.keytab",
+    ... )
     True
 
     Notes
@@ -64,8 +71,9 @@ def has_credential(*args, klist=KLIST_EXE):
 
     See also
     --------
-    klist(1)
-        for details of options accepted by ``klist``
+    gssapi.Credentials
+        For more details on how credentials are accessed using
+        Python-GSSAPI.
     """
     try:
         from requests_ecp.auth import _import_kerberos_auth
@@ -79,30 +87,30 @@ def has_credential(*args, klist=KLIST_EXE):
             # requests-ecp doesn't support Kerberos, so we can't
             return False
 
-    # run klist to check credentials
-    try:
-        subprocess.check_output([klist, "-s"] + list(args))
-    except (
-        subprocess.CalledProcessError,   # klist failed
-        FileNotFoundError,  # klist not available
-    ):
-        return False
-    return True
+    # get credentials and inspect to see if they have a valid liftime
+    creds = _get_creds()
+    return creds is not None and (creds.lifetime or 0) >= 1
 
 
-def find_principal(*args, klist=KLIST_EXE):
-    """Determine the default principal for an active kerberos credential
+def find_principal():
+    """Determine the principal for an active kerberos credential.
 
-    Parameters
-    ----------
-    klist : `str`, optional
-        path to the ``klist`` executable, defaults to searching ``$PATH``
+    Returns
+    -------
+    name: `str`
+        The `str` representation of the Kerberos principal.
+
+    Raises
+    ------
+    RuntimeError
+        If no credential is found.
     """
-    out = subprocess.check_output([klist] + list(args)).decode("utf-8")
-    try:
-        return KLIST_PRINCIPAL_RE.search(out).groups()[0]
-    except (AttributeError, IndexError):  # failed to parse principal
-        raise RuntimeError("failed to parse principal from `klist` output")
+    creds = _get_creds()
+    if creds is None:
+        raise RuntimeError(
+            "failed to find active GSSAPI (Kerberos) credential",
+        )
+    return str(creds.name)
 
 
 def realm(principal):
@@ -118,16 +126,15 @@ def realm(principal):
     realm : `str`
         the realm name
 
+    Raises
+    ------
+    IndexError
+        If the input principal cannot be parsed properly
+        (normally if it doesn't contain an ``@`` character).
+
     Examples
     --------
     >>> realm('marie.curie@EXAMPLE.ORG')
     'EXAMPLE.ORG'
     """
-    try:
-        user, realm = principal.rsplit("@", 1)
-    except ValueError as exc:  # no "@" character
-        exc.args = (
-            f"invalid kerberos principal '{principal}'",
-        )
-        raise
-    return realm
+    return principal.rsplit("@", 1)[1]

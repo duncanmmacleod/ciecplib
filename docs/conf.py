@@ -77,6 +77,7 @@ default_role = 'obj'
 # Intersphinx directory
 intersphinx_mapping = {
     'cryptography': ('https://cryptography.io/en/stable', None),
+    'gssapi': ('https://pythongssapi.github.io/python-gssapi/', None),
     'python': ('https://docs.python.org/3/', None),
     'requests': ('https://requests.readthedocs.io/en/stable/', None),
     'requests_ecp': ('https://requests-ecp.readthedocs.io/en/stable/', None),

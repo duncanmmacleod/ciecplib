@@ -16,7 +16,6 @@
 # You should have received a copy of the GNU General Public License
 # along with ciecplib.  If not, see <http://www.gnu.org/licenses/>.
 
-from subprocess import CalledProcessError
 from unittest import mock
 
 import pytest
@@ -25,46 +24,73 @@ from .. import kerberos as ciecplib_kerberos
 
 __author__ = "Duncan Macleod <duncan.macleod@ligo.org>"
 
-KLIST_OUTPUT = b"""
-Ticket cache: API:krb5cc
-Default principal: test.user@REALM.ORG
 
-Valid starting       Expires              Service principal
-01/01/2021 00:00:01  02/01/2021 00:00:01  krbtgt/REALM.ORG@REALM.ORG
-""".strip()
-
-
-@pytest.mark.parametrize("side_effect, result", [
-    (None, True),
-    (CalledProcessError(1, "klist"), False),  # klist failed
-    (FileNotFoundError("no klist"), False),  # klist not found
+@pytest.mark.parametrize(("lifetime", "result"), [
+    (None, False),
+    (0, False),
+    (1, True),
 ])
-@mock.patch("subprocess.check_output")
-@mock.patch.dict("sys.modules", {"requests_ecp.auth": None})
-def test_has_credential(_check_output, side_effect, result):
-    _check_output.side_effect = side_effect
-    assert ciecplib_kerberos.has_credential("krb5ccname") is result
-    _check_output.assert_called_once_with(["klist", "-s", "krb5ccname"])
+@mock.patch("gssapi.Credentials")
+def test_has_credential(creds, lifetime, result):
+    # check we can import things
+    gssapi = pytest.importorskip("gssapi")
+    pytest.importorskip("requests_gssapi")
+
+    # mock the credential
+    creds.return_value.name = gssapi.Name(
+        "marie.curie@LIGO.ORG",
+        name_type=gssapi.NameType.kerberos_principal,
+    )
+    creds.return_value.lifetime = lifetime
+
+    # assert the result
+    assert ciecplib_kerberos.has_credential() is result
 
 
-@mock.patch("subprocess.check_output", return_value=KLIST_OUTPUT)
-def test_find_principal(_):
-    assert ciecplib_kerberos.find_principal() == "test.user@REALM.ORG"
+@mock.patch.dict("sys.modules", {"gssapi": None})
+def test_has_credential_no_gssapi():
+    assert not ciecplib_kerberos.has_credential()
 
 
-@mock.patch("subprocess.check_output", return_value=b"")
-def test_find_principal_error(_check_output):
-    with pytest.raises(RuntimeError) as exc:
-        ciecplib_kerberos.find_principal("krb5ccname")
-    _check_output.assert_called_once_with(["klist", "krb5ccname"])
-    assert str(exc.value) == "failed to parse principal from `klist` output"
+@mock.patch("requests_ecp.auth._import_kerberos_auth", side_effect=ImportError)
+def test_has_credential_no_kerberos_auth(_):
+    assert not ciecplib_kerberos.has_credential()
+
+
+@mock.patch("gssapi.Credentials")
+def test_find_principal(creds):
+    gssapi = pytest.importorskip("gssapi")
+    # mock the credential
+    creds.return_value.name = gssapi.Name(
+        "marie.curie@LIGO.ORG",
+        name_type=gssapi.NameType.kerberos_principal,
+    )
+    assert ciecplib_kerberos.find_principal() == "marie.curie@LIGO.ORG"
+
+
+@mock.patch.dict("sys.modules", {"gssapi": None})
+def test_find_principal_no_gssapi():
+    with pytest.raises(RuntimeError):
+        assert ciecplib_kerberos.find_principal()
+
+
+@mock.patch("gssapi.Credentials")
+def test_find_principal_no_creds(creds):
+    gssapi = pytest.importorskip("gssapi")
+    creds.side_effect = gssapi.exceptions.GSSError(0, 0)
+    with pytest.raises(RuntimeError):
+        assert ciecplib_kerberos.find_principal()
 
 
 def test_realm():
     assert ciecplib_kerberos.realm("marie.curie@EXAMPLE.ORG") == "EXAMPLE.ORG"
 
 
-def test_realm_error():
-    with pytest.raises(ValueError) as exc:
-        ciecplib_kerberos.realm("marie.curie")
-    assert str(exc.value) == "invalid kerberos principal 'marie.curie'"
+@pytest.mark.parametrize("principal", [
+    "marie.curie",
+    "test/robot",
+    "",
+])
+def test_realm_error(principal):
+    with pytest.raises(IndexError):
+        ciecplib_kerberos.realm(principal)
