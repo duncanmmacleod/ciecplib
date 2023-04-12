@@ -160,7 +160,7 @@ def create_parser():
         const="path",
         dest="display",
         default=argparse.SUPPRESS,
-        help="time left until certificate expires",
+        help="path to certificate file",
     )
 
     return parser
