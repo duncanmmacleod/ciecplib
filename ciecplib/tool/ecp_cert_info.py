@@ -57,9 +57,9 @@ The default path for the credential file """,
 
 
 def _hours_minutes(argstring):
-    """Parse the --valid argument as hours:minutes
+    """Parse the --valid argument as hours:minutes.
 
-    Returns the argument as a float in seconds
+    Returns the argument as a float in seconds.
     """
     try:
         hrs, minutes = argstring.split(":")
@@ -94,6 +94,7 @@ def create_parser():
         "-v",
         "-valid",
         "--valid",
+        metavar="HH:MM",
         type=_hours_minutes,
         help="time requirement for proxy to be valid",
     )
