@@ -689,11 +689,15 @@ jobs:
         with:
           name: rpm-9
 
+      - name: Configure EPEL
+        run: dnf -y install epel-release
+
       - name: Install rpmlint
         run: |
           dnf -y install \
               rpmlint \
+              *.rpm \
           ;
 
       - name: Lint
-        run: rpmlint --info *.rpm
+        run: rpmlint --info "*ciecp*" *.rpm
