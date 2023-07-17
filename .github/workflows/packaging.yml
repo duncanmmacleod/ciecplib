@@ -425,8 +425,12 @@ jobs:
           - dist: Rocky Linux
             version: 8
             python-version: 3.6
+          - dist: Rocky Linux
+            version: 9
+            python-version: 3.9
+            image: igwn/base
     runs-on: ubuntu-latest
-    container: igwn/builder:el${{ matrix.version }}-testing
+    container: ${{ matrix.image || 'igwn/builder' }}:el${{ matrix.version }}-testing
     env:
       TARBALL: "ciecplib-*.tar.*"
     steps:
@@ -474,8 +478,12 @@ jobs:
           - dist: Rocky Linux
             version: 8
             python-version: 3.6
+          - dist: Rocky Linux
+            version: 9
+            python-version: 3.9
+            image: igwn/base
     runs-on: ubuntu-latest
-    container: igwn/builder:el${{ matrix.version }}-testing
+    container: ${{ matrix.image || 'igwn/builder' }}:el${{ matrix.version }}-testing
     env:
       SRPM: "ciecplib-*.src.rpm"
     steps:
@@ -596,8 +604,12 @@ jobs:
           - dist: Rocky Linux
             version: 8
             python-version: 3.6
+          - dist: Rocky Linux
+            version: 9
+            python-version: 3.9
+            image: igwn/base
     runs-on: ubuntu-latest
-    container: igwn/base:el${{ matrix.version }}-testing
+    container: ${{ matrix.image || 'igwn/base' }}:el${{ matrix.version }}-testing
     steps:
       - name: Download RPMs
         uses: actions/download-artifact@v2
@@ -675,7 +687,7 @@ jobs:
       - name: Download RPM
         uses: actions/download-artifact@v2
         with:
-          name: rpm-8
+          name: rpm-9
 
       - name: Install rpmlint
         run: |
