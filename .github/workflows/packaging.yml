@@ -525,11 +525,20 @@ jobs:
         if: matrix.version >= 8
         run: dnf builddep -y ${SRPM}
 
+      - name: Configure test coverage (el9+)
+        if: matrix.version >= 9
+        run: |
+          # install pytest-cov
+          dnf -y install \
+            python3-pytest-cov \
+          ;
+
       - name: Build binary packages
         run: |
-          # set pytest environment (EL>=9)
-          export PYTEST_ADDOPTS="-ra --verbose --cov ciecplib --pyargs ciecplib --cov-report='xml:$(pwd)/coverage.xml' --junitxml='$(pwd)/pytest.xml'"
-          # build binary packages
+          # configure coverage reporting during rpmbuild
+          export COVERAGE_FILE="$(pwd)/.coverage"
+          export PYTEST_ADDOPTS="--cov ciecplib --junitxml='$(pwd)/pytest.xml'"
+          # build RPMs
           rpmbuild --rebuild --define "_rpmdir $(pwd)" ${SRPM}
           rm -f ${SRPM}
           mv */*.rpm .
@@ -562,12 +571,14 @@ jobs:
         run: |
           cd src
           # use 'combine' to implement sources map
-          python3 -m coverage combine ../.coverage
+          python3 -m coverage combine \
+              --debug=config \
+              --rcfile=pyproject.toml \
+              ../.coverage
           # print report
           python3 -m coverage report --show-missing
           # convert to xml for codecov
           python3 -m coverage xml
-
 
       - name: Publish coverage to Codecov
         if: matrix.version >= 9
