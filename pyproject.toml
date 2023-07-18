@@ -7,5 +7,22 @@ build-backend = "setuptools.build_meta:__legacy__"
 
 # -- tools
 
+[tool.coverage.paths]
+# map standard install paths back to the source to
+# enable merging coverage of installed module from
+# multiple platforms
+source = [
+    # source path, must come first
+    "ciecplib/",
+    # rpmbuild in github actions
+    "*/rpmbuild/BUILD/ciecplib-*/ciecplib/",
+    # installed packages
+    "*/*-packages/ciecplib/",
+]
+
+[tool.coverage.report]
+# print report with one decimal point
+precision = 1
+
 [tool.pytest.ini_options]
 addopts = "-r s"

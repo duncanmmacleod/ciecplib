@@ -46,6 +46,7 @@ BuildRequires: python%{python3_pkgversion}-requests-ecp
 # tests
 %if 0%{?fedora} >= 30 || 0%{?rhel} >= 9
 BuildRequires: python%{python3_pkgversion}-pytest >= 3.9.0
+BuildRequires: python%{python3_pkgversion}-requests-mock
 %endif
 
 # -- packages ---------------
@@ -102,7 +103,7 @@ ecp-curl --help
 ecp-get-cert --help
 ecp-get-cookie --help
 %if 0%{?fedora} >= 30 || 0%{?rhel} >= 9
-%{__python3} -m pytest %{?_pytest_options}%{?!_pytest_options:--verbose -ra --pyargs requests_ecp}
+%{__python3} -m pytest --verbose -ra --pyargs ciecplib
 %endif
 
 %clean

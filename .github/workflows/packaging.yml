@@ -425,8 +425,12 @@ jobs:
           - dist: Rocky Linux
             version: 8
             python-version: 3.6
+          - dist: Rocky Linux
+            version: 9
+            python-version: 3.9
+            image: igwn/base
     runs-on: ubuntu-latest
-    container: igwn/builder:el${{ matrix.version }}-testing
+    container: ${{ matrix.image || 'igwn/builder' }}:el${{ matrix.version }}-testing
     env:
       TARBALL: "ciecplib-*.tar.*"
     steps:
@@ -474,8 +478,12 @@ jobs:
           - dist: Rocky Linux
             version: 8
             python-version: 3.6
+          - dist: Rocky Linux
+            version: 9
+            python-version: 3.9
+            image: igwn/base
     runs-on: ubuntu-latest
-    container: igwn/builder:el${{ matrix.version }}-testing
+    container: ${{ matrix.image || 'igwn/builder' }}:el${{ matrix.version }}-testing
     env:
       SRPM: "ciecplib-*.src.rpm"
     steps:
@@ -517,11 +525,20 @@ jobs:
         if: matrix.version >= 8
         run: dnf builddep -y ${SRPM}
 
+      - name: Configure test coverage (el9+)
+        if: matrix.version >= 9
+        run: |
+          # install pytest-cov
+          dnf -y install \
+            python3-pytest-cov \
+          ;
+
       - name: Build binary packages
         run: |
-          # set pytest environment (EL>=9)
-          export PYTEST_ADDOPTS="-ra --verbose --cov ciecplib --pyargs ciecplib --cov-report='xml:$(pwd)/coverage.xml' --junitxml='$(pwd)/pytest.xml'"
-          # build binary packages
+          # configure coverage reporting during rpmbuild
+          export COVERAGE_FILE="$(pwd)/.coverage"
+          export PYTEST_ADDOPTS="--cov ciecplib --junitxml='$(pwd)/pytest.xml'"
+          # build RPMs
           rpmbuild --rebuild --define "_rpmdir $(pwd)" ${SRPM}
           rm -f ${SRPM}
           mv */*.rpm .
@@ -554,12 +571,14 @@ jobs:
         run: |
           cd src
           # use 'combine' to implement sources map
-          python3 -m coverage combine ../.coverage
+          python3 -m coverage combine \
+              --debug=config \
+              --rcfile=pyproject.toml \
+              ../.coverage
           # print report
           python3 -m coverage report --show-missing
           # convert to xml for codecov
           python3 -m coverage xml
-
 
       - name: Publish coverage to Codecov
         if: matrix.version >= 9
@@ -596,8 +615,12 @@ jobs:
           - dist: Rocky Linux
             version: 8
             python-version: 3.6
+          - dist: Rocky Linux
+            version: 9
+            python-version: 3.9
+            image: igwn/base
     runs-on: ubuntu-latest
-    container: igwn/base:el${{ matrix.version }}-testing
+    container: ${{ matrix.image || 'igwn/base' }}:el${{ matrix.version }}-testing
     steps:
       - name: Download RPMs
         uses: actions/download-artifact@v2
@@ -668,20 +691,24 @@ jobs:
   lint-rhel:
     name: Lint CentOS packages
     runs-on: ubuntu-latest
-    container: rockylinux:8
+    container: igwn/base:el9-testing
     needs:
       - rhel-binary
     steps:
       - name: Download RPM
         uses: actions/download-artifact@v2
         with:
-          name: rpm-8
+          name: rpm-9
+
+      - name: Configure EPEL
+        run: dnf -y install epel-release
 
       - name: Install rpmlint
         run: |
           dnf -y install \
               rpmlint \
+              *.rpm \
           ;
 
       - name: Lint
-        run: rpmlint --info *.rpm
+        run: rpmlint --info "*ciecp*" *.rpm
