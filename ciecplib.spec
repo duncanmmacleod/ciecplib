@@ -26,7 +26,7 @@ BuildRequires: python-rpm-macros
 BuildRequires: python3-rpm-macros
 
 # build
-BuildRequires: python3 >= 3.6.0
+BuildRequires: python3-devel >= 3.6.0
 BuildRequires: python%{python3_pkgversion}-setuptools >= 30.3.0
 BuildRequires: python%{python3_pkgversion}-wheel
 
