@@ -691,7 +691,7 @@ jobs:
   lint-rhel:
     name: Lint CentOS packages
     runs-on: ubuntu-latest
-    container: rockylinux:8
+    container: igwn/base:el9-testing
     needs:
       - rhel-binary
     steps:
