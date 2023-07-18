@@ -531,12 +531,12 @@ jobs:
           # print contents of packages
           for rpmf in *.rpm; do
               echo "===== ${rpmf}"
-              rpm -qlp "${rpmf}"
-              echo "Files:"
-              rpm -qip "${rpmf}"
-              echo "Provides:"
+              rpm -qp --info "${rpmf}"
+              echo "-- Files:"
+              rpm -qp --list "${rpmf}"
+              echo "-- Provides:"
               rpm -qp --provides "${rpmf}"
-              echo "Requires:"
+              echo "-- Requires:"
               rpm -qp --requires "${rpmf}"
           done
 
