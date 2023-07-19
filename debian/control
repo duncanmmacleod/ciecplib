@@ -13,11 +13,13 @@ Build-Depends:
  python3-all,
  python3-argparse-manpage,
  python3-cryptography,
+ python3-gssapi,
  python3-openssl (>=17.1.0),
- python3-importlib-metadata | python3-minimal (<< 3.9.0),
+ python3-importlib-metadata | python3-minimal (>= 3.8.0),
  python3-pytest,
  python3-requests,
  python3-requests-ecp,
+ python3-requests-kerberos,
  python3-requests-mock,
  python3-setuptools (>= 30.3.0),
 
@@ -33,6 +35,9 @@ Depends:
  python3-openssl (>=17.1.0),
  python3-requests,
  python3-requests-ecp,
+Recommends:
+ python3-gssapi,
+ python3-requests-kerberos,
 Description: Python client for SAML/ECP authentication and HTTP requests
  CIECPLib provides Python-based utilities for SAML/ECP authentication
  and HTTP requests.

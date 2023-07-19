@@ -261,6 +261,11 @@ jobs:
         with:
           name: dsc-${{ matrix.debian }}
 
+      - name: Enable backports
+        if: matrix.debian == 'Buster'
+        run: |
+          echo 'deb http://deb.debian.org/debian buster-backports main' > /etc/apt/sources.list.d/backports.list
+
       - name: Configure apt
         run: |
           apt-get -y -q -q update
