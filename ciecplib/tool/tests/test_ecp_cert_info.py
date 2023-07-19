@@ -39,7 +39,7 @@ def test_valid():
     """Check that the --valid option for ecp-cert-info works
     """
     ecp_cert_info.main(["--valid", "1:0"])
-    with pytest.raises(AssertionError):
+    with pytest.raises(ValueError):
         ecp_cert_info.main(["--valid", "1:0"])
 
 
