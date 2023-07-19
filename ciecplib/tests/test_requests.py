@@ -29,4 +29,5 @@ def test_get(requests_mock):
     assert ciecplib_requests.get(
         "https://test.example.com",
         endpoint="https://test.example.com/SOAP/ECP",
+        kerberos=False,
     ).text == "HELLO"
