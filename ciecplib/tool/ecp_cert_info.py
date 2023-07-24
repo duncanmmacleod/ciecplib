@@ -203,9 +203,9 @@ def main(args=None):
         stream=sys.stdout,
     )
 
-    # assert --valid if given
-    if args.valid:
-        assert isvalid, (
+    # check credential validity if given
+    if args.valid and not isvalid:
+        raise ValueError(
             f"timeleft ({remaining}) is less than required ({valid})"
         )
 
