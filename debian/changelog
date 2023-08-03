@@ -1,3 +1,10 @@
+ciecplib (0.8.0-1) unstable; urgency=low
+
+  * Update for 0.8.0
+  * Add python3-gssapi requirement
+
+ -- Duncan Macleod <duncan.macleod@ligo.org>  Thu, 03 Aug 2023 18:11:00 +0100
+
 ciecplib (0.7.2-1) unstable; urgency=low
 
   * Update for 0.7.2

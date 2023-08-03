@@ -1,5 +1,5 @@
 %define srcname ciecplib
-%define version 0.7.2
+%define version 0.8.0
 %define release 1
 
 # -- metadata ---------------
@@ -131,6 +131,12 @@ rm -rf $RPM_BUILD_ROOT
 # -- changelog --------------
 
 %changelog
+* Thu Aug 03 2023 Duncan Macleod <duncan.macleod@ligo.org> - 0.8.0-1
+- update for 0.8.0
+- add python3-devel build requirement
+- add python3-gssapi requirement
+- add python3-requests-mock build requirement for testing
+
 * Thu Apr 20 2023 Duncan Macleod <duncan.macleod@ligo.org> - 0.7.2-1
 - update for 0.7.2
 
