@@ -1,6 +1,6 @@
 %define srcname ciecplib
 %define version 0.8.0
-%define release 1
+%define release 2
 
 # -- metadata ---------------
 
@@ -27,6 +27,7 @@ BuildRequires: python3-rpm-macros
 
 # build
 BuildRequires: python3-devel >= 3.6.0
+BuildRequires: python%{python3_pkgversion}-pip
 BuildRequires: python%{python3_pkgversion}-setuptools >= 30.3.0
 BuildRequires: python%{python3_pkgversion}-wheel
 
@@ -131,6 +132,9 @@ rm -rf $RPM_BUILD_ROOT
 # -- changelog --------------
 
 %changelog
+* Mon Aug 07 2023 Duncan Macleod <duncan.macleod@ligo.org> - 0.8.0-2
+- add python3-pip build requirement (explicit on rhel9)
+
 * Thu Aug 03 2023 Duncan Macleod <duncan.macleod@ligo.org> - 0.8.0-1
 - update for 0.8.0
 - add python3-devel build requirement
