@@ -9,6 +9,8 @@ checks:
       threshold: 1000
 
 plugins:
+  bandit:
+    enabled: true
   duplication:
     enabled: true
     config:
