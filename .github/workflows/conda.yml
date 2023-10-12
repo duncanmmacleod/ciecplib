@@ -61,8 +61,6 @@ jobs:
         miniforge-variant: Mambaforge
         python-version: ${{ matrix.python-version }}
         use-mamba: true
-        # this is needed for caching to work properly:
-        use-only-tar-bz2: true
 
     - name: Conda info
       run: mamba info --all
@@ -70,8 +68,8 @@ jobs:
     - name: Install dependencies with conda
       run: |
         # parse requirements to install as much as possible with conda
-        mamba install --name base pip2conda
-        mamba run --name base python -m pip2conda \
+        mamba create --name pip2conda pip2conda
+        mamba run --name pip2conda python -m pip2conda \
             --all \
             --output environment.txt \
             --python-version ${{ matrix.python-version }}
