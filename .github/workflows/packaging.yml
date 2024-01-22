@@ -668,7 +668,8 @@ jobs:
 
       - name: Get source code to assist codecov
         if: matrix.version < 9
-        uses: actions/checkout@v4
+        # need v3 to support EL7
+        uses: actions/checkout@v3
         with:
           path: src
 
