@@ -29,6 +29,8 @@ jobs:
           - "3.8"
           - "3.9"
           - "3.10"
+          - "3.11"
+          - "3.12"
     runs-on: ${{ matrix.os }}-latest
 
     # this is needed for conda environments to activate automatically
@@ -38,12 +40,12 @@ jobs:
 
     steps:
     - name: Get source code
-      uses: actions/checkout@v2
+      uses: actions/checkout@v4
       with:
         fetch-depth: 0
 
     - name: Cache conda packages
-      uses: actions/cache@v2
+      uses: actions/cache@v3
       env:
         # increment to reset cache
         CACHE_NUMBER: 0
@@ -59,8 +61,6 @@ jobs:
         miniforge-variant: Mambaforge
         python-version: ${{ matrix.python-version }}
         use-mamba: true
-        # this is needed for caching to work properly:
-        use-only-tar-bz2: true
 
     - name: Conda info
       run: mamba info --all
@@ -68,8 +68,8 @@ jobs:
     - name: Install dependencies with conda
       run: |
         # parse requirements to install as much as possible with conda
-        mamba install --name base pip2conda
-        mamba run --name base python -m pip2conda \
+        mamba create --name pip2conda pip2conda
+        mamba run --name pip2conda python -m pip2conda \
             --all \
             --output environment.txt \
             --python-version ${{ matrix.python-version }}
@@ -97,13 +97,13 @@ jobs:
       run: python -m coverage report --show-missing
 
     - name: Publish coverage to Codecov
-      uses: codecov/codecov-action@v2
+      uses: codecov/codecov-action@v3
       with:
         flags: ${{ runner.os }},Conda,python${{ matrix.python-version }}
 
     - name: Upload test results
       if: always()
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3
       with:
         name: pytest-conda-${{ matrix.os }}-${{ matrix.python-version }}
         path: pytest.xml
