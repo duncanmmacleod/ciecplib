@@ -401,16 +401,15 @@ def generate_proxy(cert, key, minhours=168, limited=False, bits=2048):
         )
 
     # build self-signed proxy certificate
+    expiry = cert.not_valid_after.astimezone(datetime.timezone.utc)
+    now = datetime.datetime.now(datetime.timezone.utc)
     builder = crypto_x509.CertificateBuilder(
         issuer_name=cert.subject,
         subject_name=proxy_subject,
         public_key=proxy_public_key,
         serial_number=serial,
         not_valid_before=cert.not_valid_before,
-        not_valid_after=min(
-            datetime.datetime.utcnow() + datetime.timedelta(hours=minhours),
-            cert.not_valid_after,
-        ),
+        not_valid_after=min(now + datetime.timedelta(hours=minhours), expiry),
         extensions=extensions,
     ).add_extension(proxyinfoext, critical=True)
     proxy = builder.sign(
