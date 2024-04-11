@@ -19,10 +19,7 @@
 """Common fixtures for ciecplib tests
 """
 
-from datetime import (
-    datetime,
-    timedelta,
-)
+import datetime
 
 from cryptography import x509 as crypto_x509
 from cryptography.hazmat.backends import default_backend
@@ -59,14 +56,14 @@ def x509(public_key, private_key):
             (crypto_x509.NameOID.ORGANIZATIONAL_UNIT_NAME, "Gravity"),
         )
     ])
-    now = datetime.utcnow()
+    now = datetime.datetime.now(datetime.timezone.utc)
     return crypto_x509.CertificateBuilder(
         issuer_name=name,
         subject_name=name,
         public_key=public_key,
         serial_number=1000,
         not_valid_before=now,
-        not_valid_after=now + timedelta(seconds=86400),
+        not_valid_after=now + datetime.timedelta(seconds=86400),
     ).sign(private_key, hashes.SHA256(), backend=default_backend())
 
 
