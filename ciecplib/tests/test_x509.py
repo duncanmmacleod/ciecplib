@@ -160,8 +160,10 @@ def test_write_cert(tmp_path, private_key, x509, proxy):
         assert ciecplib_x509._x509_name_str(new.subject).startswith(
             ciecplib_x509._x509_name_str(x509.subject),
         )
-        assert new.not_valid_after <= x509.not_valid_after
-        assert new.not_valid_before >= x509.not_valid_before
+        assert ciecplib_x509._not_valid_after(new) \
+               <= ciecplib_x509._not_valid_after(x509)
+        assert ciecplib_x509._not_valid_before(new) \
+               >= ciecplib_x509._not_valid_before(x509)
         assert new.extensions
     else:
         assert new == x509

@@ -99,6 +99,34 @@ def load_pkcs12(raw, password):
     )
 
 
+def _not_valid_before(cert, naive=False):
+    """Return the `not_valid_before_utc` attribute of the given cert.
+
+    Falling back to a timezone-aware conversion of the `not_valid_before`
+    attribute for cryptography < 42.0.0.
+    """
+    try:
+        return cert.not_valid_before_utc
+    except AttributeError:  # cryptography < 42.0.0
+        if naive:
+            return cert.not_valid_before
+        return cert.not_valid_before.astimezone(datetime.timezone.utc)
+
+
+def _not_valid_after(cert, naive=False):
+    """Return the `not_valid_after_utc` attribute of the given cert.
+
+    Falling back to a timezone-aware conversion of the `not_valid_after`
+    attribute for cryptography < 42.0.0.
+    """
+    try:
+        return cert.not_valid_after_utc
+    except AttributeError:  # cryptography < 42.0.0
+        if naive:
+            return cert.not_valid_after
+        return cert.not_valid_after.astimezone(datetime.timezone.utc)
+
+
 def time_left(cert):
     """Returns the number of seconds left on this certificate
 
@@ -109,7 +137,7 @@ def time_left(cert):
     cert : `cryptography.x509.Certificate`
         The certificate to inspect.
     """
-    expiry = cert.not_valid_after.timetuple()
+    expiry = _not_valid_after(cert).timetuple()
     return max(0, int(calendar.timegm(expiry) - time.time()))
 
 
@@ -401,14 +429,14 @@ def generate_proxy(cert, key, minhours=168, limited=False, bits=2048):
         )
 
     # build self-signed proxy certificate
-    expiry = cert.not_valid_after.astimezone(datetime.timezone.utc)
+    expiry = _not_valid_after(cert)
     now = datetime.datetime.now(datetime.timezone.utc)
     builder = crypto_x509.CertificateBuilder(
         issuer_name=cert.subject,
         subject_name=proxy_subject,
         public_key=proxy_public_key,
         serial_number=serial,
-        not_valid_before=cert.not_valid_before,
+        not_valid_before=_not_valid_before(cert, naive=True),
         not_valid_after=min(now + datetime.timedelta(hours=minhours), expiry),
         extensions=extensions,
     ).add_extension(proxyinfoext, critical=True)
