@@ -29,10 +29,10 @@ jobs:
 
     steps:
       - name: Get source code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
 
       - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v4
         with:
           python-version: '3.x'
 
@@ -42,13 +42,13 @@ jobs:
       - name: Create distributions
         run: python -m build . --sdist --wheel --outdir .
 
-      - uses: actions/upload-artifact@v2
+      - uses: actions/upload-artifact@v3
         with:
           name: tarball
           path: ciecplib-*.tar.*
           if-no-files-found: error
 
-      - uses: actions/upload-artifact@v2
+      - uses: actions/upload-artifact@v3
         with:
           name: wheel
           path: ciecplib*.whl
@@ -72,15 +72,17 @@ jobs:
           - "3.8"
           - "3.9"
           - "3.10"
+          - "3.11"
+          - "3.12"
     runs-on: ${{ matrix.os }}-latest
     steps:
       - name: Download tarball
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v3
         with:
           name: wheel
 
       - name: Set up Python
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v4
         with:
           python-version: ${{ matrix.python-version }}
 
@@ -117,12 +119,12 @@ jobs:
         shell: bash -el {0}
     steps:
       - name: Download tarball
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v3
         with:
           name: tarball
 
       - name: Cache conda packages
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         env:
           # increment to reset cache
           CACHE_NUMBER: 0
@@ -206,7 +208,7 @@ jobs:
       TARBALL: "ciecplib-*.tar.*"
     steps:
       - name: Download tarball
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v3
         with:
           name: tarball
 
@@ -228,7 +230,7 @@ jobs:
           # create debian source package files
           dpkg-source --build src
 
-      - uses: actions/upload-artifact@v2
+      - uses: actions/upload-artifact@v3
         with:
           name: dsc-${{ matrix.debian }}
           path: |
@@ -257,7 +259,7 @@ jobs:
       DSC: "ciecplib_*.dsc"
     steps:
       - name: Download source package
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v3
         with:
           name: dsc-${{ matrix.debian }}
 
@@ -318,7 +320,7 @@ jobs:
           }
 
       - name: Get source code to assist codecov
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
         with:
           path: src
 
@@ -340,12 +342,12 @@ jobs:
           flags: Linux,Debian,${{ matrix.debian }},python${{ matrix.python-version }}
 
       - name: Upload test results
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: pytest-${{ matrix.debian }}
           path: pytest.xml
 
-      - uses: actions/upload-artifact@v2
+      - uses: actions/upload-artifact@v3
         with:
           name: deb-${{ matrix.debian }}
           path: |
@@ -370,7 +372,7 @@ jobs:
     container: ${{ matrix.container }}
     steps:
       - name: Download binary packages
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v3
         with:
           name: deb-${{ matrix.debian }}
 
@@ -400,7 +402,7 @@ jobs:
       - debian-binary
     steps:
       - name: Download debian package
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v3
         with:
           name: deb-Bullseye
 
@@ -440,7 +442,7 @@ jobs:
       TARBALL: "ciecplib-*.tar.*"
     steps:
       - name: Download tarball
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v3
         with:
           name: tarball
 
@@ -463,7 +465,7 @@ jobs:
       - name: Create source package
         run: rpmbuild -ts --define "_srcrpmdir $(pwd)" ${TARBALL}
 
-      - uses: actions/upload-artifact@v2
+      - uses: actions/upload-artifact@v3
         with:
           name: srpm-${{ matrix.version }}
           path: "*.src.rpm"
@@ -493,7 +495,7 @@ jobs:
       SRPM: "ciecplib-*.src.rpm"
     steps:
       - name: Download SRPM
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v3
         with:
           name: srpm-${{ matrix.version }}
 
@@ -567,7 +569,7 @@ jobs:
 
       - name: Get source code to assist codecov
         if: matrix.version >= 9
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
         with:
           path: src
 
@@ -587,7 +589,7 @@ jobs:
 
       - name: Publish coverage to Codecov
         if: matrix.version >= 9
-        uses: codecov/codecov-action@v2
+        uses: codecov/codecov-action@v3
         with:
           files: ./coverage.xml
           root_dir: src
@@ -595,12 +597,12 @@ jobs:
 
       - name: Upload test results
         if: matrix.version >= 9
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: pytest-el${{ matrix.version }}
           path: pytest.xml
 
-      - uses: actions/upload-artifact@v2
+      - uses: actions/upload-artifact@v3
         with:
           name: rpm-${{ matrix.version }}
           path: "*.rpm"
@@ -628,7 +630,7 @@ jobs:
     container: ${{ matrix.image || 'igwn/base' }}:el${{ matrix.version }}-testing
     steps:
       - name: Download RPMs
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v3
         with:
           name: rpm-${{ matrix.version }}
 
@@ -666,7 +668,8 @@ jobs:
 
       - name: Get source code to assist codecov
         if: matrix.version < 9
-        uses: actions/checkout@v2
+        # need v3 to support EL7
+        uses: actions/checkout@v3
         with:
           path: src
 
@@ -688,7 +691,7 @@ jobs:
 
       - name: Upload test results
         if: matrix.version < 9
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: pytest-el${{ matrix.version }}
           path: pytest.xml
@@ -701,7 +704,7 @@ jobs:
       - rhel-binary
     steps:
       - name: Download RPM
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v3
         with:
           name: rpm-9
 
