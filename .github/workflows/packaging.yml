@@ -300,13 +300,6 @@ jobs:
               dpkg --contents "${debf}"
           done
 
-      - name: Install new packages
-        run: |
-          dpkg --install *.deb || { \
-              apt-get -y -f install;
-              dpkg --install *.deb;
-          }
-
       - name: Get source code to assist codecov
         uses: actions/checkout@v4
         with:
@@ -367,13 +360,26 @@ jobs:
       - name: Configure apt
         run: apt-get -y -q -q update
 
+      - name: Configure local-apt-repository
+        run: |
+          # setup local apt repository
+          apt-get -y -q -q install local-apt-repository
+          mkdir -pv /srv/local-apt-repository
+          cat > /etc/apt/preferences.d/99local-apt-repository <<- EOF
+          Package: *
+          Pin: origin ""
+          Pin-Priority: 1001
+          EOF
+          # fill our local apt repo and rebuild it
+          mv -v *.deb /srv/local-apt-repository
+          /usr/lib/local-apt-repository/rebuild
+          apt-get -y -qq update
+
       - name: Install packages
         shell: bash -ex {0}
         run: |
-          dpkg --install *.deb || { \
-              apt-get -y -f install;
-              dpkg --install *.deb;
-          }
+          apt-cache policy ciecp-utils
+          apt-get -y install ciecp-utils
 
       - name: Sanity check entry points
         run: |
