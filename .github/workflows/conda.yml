@@ -58,18 +58,17 @@ jobs:
       uses: conda-incubator/setup-miniconda@v2
       with:
         activate-environment: test
-        miniforge-variant: Mambaforge
+        miniforge-variant: Miniforge3
         python-version: ${{ matrix.python-version }}
-        use-mamba: true
 
     - name: Conda info
-      run: mamba info --all
+      run: conda info --all
 
     - name: Install dependencies with conda
       run: |
         # parse requirements to install as much as possible with conda
-        mamba create --name pip2conda pip2conda
-        mamba run --name pip2conda python -m pip2conda \
+        conda create --name pip2conda pip2conda
+        conda run --name pip2conda python -m pip2conda \
             --all \
             --output environment.txt \
             --python-version ${{ matrix.python-version }}
@@ -78,7 +77,7 @@ jobs:
         echo "-----------------"
         # install the requested packages, ensuring that all of the packages
         # we use explicitly are installed as well
-        mamba install --quiet --yes --name test \
+        conda install --quiet --yes --name test \
             pip \
             pytest \
             pytest-cov \
@@ -88,7 +87,7 @@ jobs:
       run: python -m pip install .[tests] -v
 
     - name: Package list
-      run: mamba list --name test
+      run: conda list --name test
 
     - name: Run test suite
       run: python -m pytest -ra --verbose --cov ciecplib --pyargs ciecplib --cov-report=xml --junitxml=pytest.xml
