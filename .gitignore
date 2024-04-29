@@ -29,6 +29,8 @@ var/
 .installed.cfg
 .pybuild/
 MANIFEST
+setup.cfg
+setup.py
 
 # Testing / coverage
 .pytest_cache/

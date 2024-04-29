@@ -14,7 +14,7 @@ include:
     inputs:
       needs: [sdist]
       debian_versions:
-        - bullseye
+        - bullseye-backports
         - bookworm
       test_install: &system_test_install >-
         python3-pip

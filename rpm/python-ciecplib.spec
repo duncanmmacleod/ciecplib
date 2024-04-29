@@ -4,7 +4,7 @@
 
 # -- metadata ---------------
 
-Name:      %{srcname}
+Name:      python-%{srcname}
 Version:   %{version}
 Release:   %{release}%{?dist}
 Summary:   A python client for SAML ECP authentication
@@ -21,33 +21,27 @@ Prefix:    %{_prefix}
 
 # -- build requirements -----
 
-# macros
-BuildRequires: python-rpm-macros
-BuildRequires: python3-rpm-macros
-
 # build
 BuildRequires: python3-devel >= 3.6.0
-BuildRequires: python%{python3_pkgversion}-pip
-BuildRequires: python%{python3_pkgversion}-setuptools >= 30.3.0
-BuildRequires: python%{python3_pkgversion}-wheel
+BuildRequires: python3dist(pip)
+BuildRequires: python3dist(setuptools) >= 30.3.0
+BuildRequires: python3dist(wheel)
 
 # man pages
-%if 0%{?fedora} >= 26 || 0%{?rhel} >= 8
-BuildRequires: python%{python3_pkgversion}-argparse-manpage
-%endif
+BuildRequires: python3dist(argparse-manpage)
 %if 0%{?fedora} >= 36 || 0%{?rhel} >= 9
-BuildRequires: python%{python3_pkgversion}-cryptography >= 36.0.0
+BuildRequires: python3dist(cryptography) >= 36.0.0
 %else
-BuildRequires: python%{python3_pkgversion}-cryptography
-BuildRequires: python%{python3_pkgversion}-pyOpenSSL >= 17.1.0
+BuildRequires: python3dist(cryptography)
+BuildRequires: python3dist(pyopenssl) >= 17.1.0
 %endif
-BuildRequires: python%{python3_pkgversion}-requests
-BuildRequires: python%{python3_pkgversion}-requests-ecp
+BuildRequires: python3dist(requests)
+BuildRequires: python3dist(requests-ecp)
 
 # tests
 %if 0%{?fedora} >= 30 || 0%{?rhel} >= 9
-BuildRequires: python%{python3_pkgversion}-pytest >= 3.9.0
-BuildRequires: python%{python3_pkgversion}-requests-mock
+BuildRequires: python3dist(pytest)
+BuildRequires: python3dist(requests-mock)
 %endif
 
 # -- packages ---------------
@@ -56,49 +50,95 @@ BuildRequires: python%{python3_pkgversion}-requests-mock
 %description
 The Python client for SAML ECP authentication.
 
-%package -n python%{python3_pkgversion}-%{srcname}
+%package -n python3-%{srcname}
 Summary: %{summary}
-%if 0%{?fedora} >= 36 || 0%{?rhel} >= 9
-Requires: python%{python3_pkgversion}-cryptography >= 36.0.0
-%else
-Requires: python%{python3_pkgversion}-cryptography
-Requires: python%{python3_pkgversion}-pyOpenSSL >= 17.1.0
-%endif
-Requires: python%{python3_pkgversion}-requests
-Requires: python%{python3_pkgversion}-requests-ecp
 Conflicts: ciecp-utils < 0.4.3-1
-%if 0%{?fedora} >= 36 || 0%{?rhel} >= 8
-Recommends: python%{python3_pkgversion}-gssapi
-Recommends: python%{python3_pkgversion}-requests-gssapi
-%endif
-%{?python_provide:%python_provide python%{python3_pkgversion}-%{srcname}}
-%description -n python%{python3_pkgversion}-%{srcname}
+Recommends: python3dist(gssapi)
+Recommends: python3dist(requests-gssapi)
+%description -n python3-%{srcname}
 The Python %{python3_version} client for SAML ECP authentication.
+%files -n python3-%{srcname}
+%doc README.md
+%license LICENSE
+%{python3_sitelib}/*
 
 %package -n ciecp-utils
 Summary: Command line utilities for SAML ECP authentication
-Requires: python%{python3_pkgversion}-%{srcname} = %{version}-%{release}
+Requires: python3-%{srcname} = %{version}-%{release}
 %description -n ciecp-utils
 Command line utilities for SAML ECP authentication, including
 ecp-cert-info, ecp-get-cookie, ecp-get-cert, and ecp-curl
 (an ECP-aware curl alternative).
+%files -n ciecp-utils
+%doc README.md
+%license LICENSE
+%{_bindir}/*
+%{_mandir}/man1/*.1*
 
 # -- build ------------------
 
 %prep
 %autosetup -n %{srcname}-%{version}
-
-# add pyOpenSSL to python metadata
-%if 0%{?fedora} >= 36 || 0%{?rhel} >= 9
-%else
-sed -i '/\tcryptography >=/c\\tcryptography\n\tpyOpenSSL >= 17.1.0' setup.cfg
+# for RHEL < 9 hack together setup.{cfg,py} for old setuptools
+%if 0%{?rhel} && 0%{?rhel} < 10
+cat > setup.cfg << SETUP_CFG
+[metadata]
+name = %{srcname}
+version = %{version}
+author-email = %{packager}
+description = %{summary}
+license = %{license}
+license_files = LICENSE
+url = %{url}
+[options]
+packages = find:
+python_requires = >=3.6
+install_requires =
+  cryptography
+  pyOpenSSL >= 17.1.0
+  requests
+  requests-ecp
+[options.entry_points]
+console_scripts =
+  ecp-cert-info = ciecplib.tool.ecp_cert_info:main
+  ecp-curl = ciecplib.tool.ecp_curl:main
+  ecp-get-cert = ciecplib.tool.ecp_get_cert:main
+  ecp-get-cookie = ciecplib.tool.ecp_get_cookie:main
+[build_manpages]
+manpages =
+  man/ecp-cert-info.1:function=create_parser:module=ciecplib.tool.ecp_cert_info
+  man/ecp-curl.1:function=create_parser:module=ciecplib.tool.ecp_curl
+  man/ecp-get-cert.1:function=create_parser:module=ciecplib.tool.ecp_get_cert
+  man/ecp-get-cookie.1:function=create_parser:module=ciecplib.tool.ecp_get_cookie
+SETUP_CFG
+%endif
+%if %{undefined pyproject_wheel}
+cat > setup.py << SETUP_PY
+from setuptools import setup
+setup()
+SETUP_PY
 %endif
 
 %build
+%if %{defined pyproject_wheel}
+%pyproject_wheel
+%else
 %py3_build_wheel
+%endif
+# generate manuals
+%python3 -c "from setuptools import setup; setup()" \
+  --command-packages=build_manpages \
+  build_manpages \
+;
 
 %install
-%py3_install_wheel %{srcname}-%{version}-*.whl
+%if %{defined pyproject_install}
+%pyproject_install
+%else
+%py3_install_wheel *.whl
+%endif
+%__mkdir -p -v %{buildroot}%{_mandir}/man1
+%__install -m 644 -p -v man/*.1* %{buildroot}%{_mandir}/man1/
 
 %check
 export PYTHONPATH="%{buildroot}%{python3_sitelib}"
@@ -108,25 +148,7 @@ ecp-curl --help
 ecp-get-cert --help
 ecp-get-cookie --help
 %if 0%{?fedora} >= 30 || 0%{?rhel} >= 9
-%{__python3} -m pytest --verbose -ra --pyargs ciecplib
-%endif
-
-%clean
-rm -rf $RPM_BUILD_ROOT
-
-# -- files ------------------
-
-%files -n python%{python3_pkgversion}-%{srcname}
-%doc README.md
-%license LICENSE
-%{python3_sitelib}/*
-
-%files -n ciecp-utils
-%doc README.md
-%license LICENSE
-%{_bindir}/*
-%if 0%{?fedora} >= 26 || 0%{?rhel} >= 8
-%{_mandir}/man1/*.1*
+%pytest --verbose -ra --pyargs ciecplib
 %endif
 
 # -- changelog --------------
