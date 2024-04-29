@@ -354,6 +354,8 @@ jobs:
         include:
           - debian: Bullseye
             container: igwn/base:bullseye
+          - debian: Bookworm
+            container: igwn/base:bookworm
     runs-on: ubuntu-latest
     container: ${{ matrix.container }}
     steps:
@@ -390,7 +392,7 @@ jobs:
       - name: Download debian package
         uses: actions/download-artifact@v3
         with:
-          name: deb-Bullseye
+          name: deb-Bookworm
 
       - name: Install lintian
         run: |
@@ -400,7 +402,7 @@ jobs:
           ;
 
       - name: Lintian
-        run: lintian --color=auto --allow-root --pedantic --fail-on warning *.changes
+        run: lintian --color=auto --allow-root --pedantic --fail-on error,warning *.changes
 
   # -- RHEL -----------------
 
