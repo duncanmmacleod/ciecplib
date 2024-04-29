@@ -68,8 +68,6 @@ jobs:
           - Ubuntu
           - Windows
         python-version:
-          - "3.7"
-          - "3.8"
           - "3.9"
           - "3.10"
           - "3.11"
@@ -191,19 +189,11 @@ jobs:
   # -- Debian ---------------
 
   debian-source:
-    name: Debian ${{ matrix.debian }} source package
+    name: Debian source package
     needs:
       - dist
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - debian: Buster
-            container: debian:buster-backports
-          - debian: Bullseye
-            container: debian:bullseye
     runs-on: ubuntu-latest
-    container: ${{ matrix.container }}
+    container: debian:bookworm
     env:
       TARBALL: "ciecplib-*.tar.*"
     steps:
@@ -232,7 +222,7 @@ jobs:
 
       - uses: actions/upload-artifact@v3
         with:
-          name: dsc-${{ matrix.debian }}
+          name: debian-source
           path: |
             *.orig.tar.*
             *.debian.tar.*
@@ -247,12 +237,10 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - debian: Buster
-            container: igwn/builder:buster
-            python-version: 3.7
           - debian: Bullseye
-            container: igwn/builder:bullseye
-            python-version: 3.9
+            container: igwn/builder:bullseye-backports
+          - debian: Bookworm
+            container: igwn/builder:bookworm
     runs-on: ubuntu-latest
     container: ${{ matrix.container }}
     env:
@@ -261,12 +249,7 @@ jobs:
       - name: Download source package
         uses: actions/download-artifact@v3
         with:
-          name: dsc-${{ matrix.debian }}
-
-      - name: Enable backports
-        if: matrix.debian == 'Buster'
-        run: |
-          echo 'deb http://deb.debian.org/debian buster-backports main' > /etc/apt/sources.list.d/backports.list
+          name: debian-source
 
       - name: Configure apt
         run: |
@@ -286,13 +269,21 @@ jobs:
         shell: bash -ex {0}
         run: |
           cd src
+          if [[ "${{ matrix.container }}" == *backports ]]; then
+              . /etc/os-release
+              BACKPORTS="-t ${VERSION_CODENAME}-backports";
+          fi
           mk-build-deps \
-              --tool "apt-get -y -q -o Debug::pkgProblemResolver=yes --no-install-recommends" \
+              --tool "apt-get -y -q ${BACKPORTS:-} -o Debug::pkgProblemResolver=yes --no-install-recommends" \
               --install \
               --remove \
           ;
           # also install pytest-cov
           apt-get -y -q -q install python3-pytest-cov
+
+      - name: Get Python version (for codecov flags)
+        run: |
+          echo PYTHON_VERSION=$(python3 -c "import sys; print(f'{sys.version_info.major}.{sys.version_info.minor}')") >> "$GITHUB_ENV"
 
       - name: Build binary packages
         run: |
@@ -339,7 +330,7 @@ jobs:
         with:
           files: coverage.xml
           root_dir: src
-          flags: Linux,Debian,${{ matrix.debian }},python${{ matrix.python-version }}
+          flags: Linux,Debian,${{ matrix.debian }},python${{ env.PYTHON_VERSION }}
 
       - name: Upload test results
         uses: actions/upload-artifact@v3
@@ -364,8 +355,6 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - debian: Buster
-            container: igwn/base:buster
           - debian: Bullseye
             container: igwn/base:bullseye
     runs-on: ubuntu-latest
@@ -426,15 +415,10 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - dist: Scientific Linux
-            version: 7
-            python-version: 3.6
           - dist: Rocky Linux
             version: 8
-            python-version: 3.6
           - dist: Rocky Linux
             version: 9
-            python-version: 3.9
             image: igwn/base
     runs-on: ubuntu-latest
     container: ${{ matrix.image || 'igwn/builder' }}:el${{ matrix.version }}-testing
@@ -445,10 +429,6 @@ jobs:
         uses: actions/download-artifact@v3
         with:
           name: tarball
-
-      - name: Configure yum/dnf
-        if: matrix.version < 8
-        run: ln -s /usr/bin/yum /usr/bin/dnf
 
       - name: Configure rpmbuild
         run: |
@@ -479,15 +459,10 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - dist: Scientific Linux
-            version: 7
-            python-version: 3.6
           - dist: Rocky Linux
             version: 8
-            python-version: 3.6
           - dist: Rocky Linux
             version: 9
-            python-version: 3.9
             image: igwn/base
     runs-on: ubuntu-latest
     container: ${{ matrix.image || 'igwn/builder' }}:el${{ matrix.version }}-testing
@@ -499,37 +474,19 @@ jobs:
         with:
           name: srpm-${{ matrix.version }}
 
-      - name: Configure yum/dnf
-        if: matrix.version < 8
-        run: ln -s /usr/bin/yum /usr/bin/dnf
-
       - name: Configure EPEL
         run: |
           dnf -y install epel-release
           dnf -y install epel-rpm-macros
 
-      - name: Install build tools (el7)
-        if: matrix.version < 8
-        run: |
-          yum -y install \
-              rpm-build \
-              yum-utils \
-          ;
-
-      - name: Install build tools (el8+)
-        if: matrix.version >= 8
+      - name: Install build tools
         run: |
           dnf -y install \
               rpm-build \
               "dnf-command(builddep)" \
           ;
 
-      - name: Install build dependencies (el7)
-        if: matrix.version < 8
-        run: yum-builddep -y ${SRPM}
-
-      - name: Install build dependencies (el8+)
-        if: matrix.version >= 8
+      - name: Install build dependencies
         run: dnf builddep -y ${SRPM}
 
       - name: Configure test coverage (el9+)
@@ -539,6 +496,11 @@ jobs:
           dnf -y install \
             python3-pytest-cov \
           ;
+
+
+      - name: Get Python version (for codecov flags)
+        run: |
+          echo PYTHON_VERSION=$(/usr/bin/python3 -c "import sys; print(f'{sys.version_info.major}.{sys.version_info.minor}')") >> "$GITHUB_ENV"
 
       - name: Build binary packages
         run: |
@@ -593,7 +555,7 @@ jobs:
         with:
           files: ./coverage.xml
           root_dir: src
-          flags: Linux,EL,EL${{ matrix.version }},python${{ matrix.python-version }}
+          flags: Linux,EL,EL${{ matrix.version }},python${{ env.PYTHON_VERSION }}
 
       - name: Upload test results
         if: matrix.version >= 9
@@ -616,15 +578,10 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - dist: Scientific Linux
-            version: 7
-            python-version: 3.6
           - dist: Rocky Linux
             version: 8
-            python-version: 3.6
           - dist: Rocky Linux
             version: 9
-            python-version: 3.9
             image: igwn/base
     runs-on: ubuntu-latest
     container: ${{ matrix.image || 'igwn/base' }}:el${{ matrix.version }}-testing
@@ -633,10 +590,6 @@ jobs:
         uses: actions/download-artifact@v3
         with:
           name: rpm-${{ matrix.version }}
-
-      - name: Configure YUM
-        if: matrix.version < 8
-        run: ln -s /usr/bin/yum /usr/bin/dnf
 
       - name: Configure EPEL
         run: dnf -y install epel-release
@@ -661,6 +614,10 @@ jobs:
               requests-mock \
           ;
 
+      - name: Get Python version (for codecov flags)
+        run: |
+          echo PYTHON_VERSION=$(python3 -c "import sys; print(f'{sys.version_info.major}.{sys.version_info.minor}')") >> "$GITHUB_ENV"
+
       - name: Run test suite
         if: matrix.version < 9
         run: |
@@ -668,8 +625,7 @@ jobs:
 
       - name: Get source code to assist codecov
         if: matrix.version < 9
-        # need v3 to support EL7
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           path: src
 
@@ -687,7 +643,7 @@ jobs:
         with:
           files: coverage.xml
           root_dir: src
-          flags: Linux,EL,EL${{ matrix.version }},python${{ matrix.python-version }}
+          flags: Linux,EL,EL${{ matrix.version }},python${{ env.PYTHON_VERSION }}
 
       - name: Upload test results
         if: matrix.version < 9
