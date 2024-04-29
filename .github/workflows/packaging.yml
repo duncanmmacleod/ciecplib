@@ -492,7 +492,7 @@ jobs:
     runs-on: ubuntu-latest
     container: ${{ matrix.image || 'igwn/builder' }}:el${{ matrix.version }}-testing
     env:
-      SRPM: "ciecplib-*.src.rpm"
+      SRPM: "*.src.rpm"
     steps:
       - name: Download SRPM
         uses: actions/download-artifact@v3

@@ -1,11 +1,86 @@
 [build-system]
 requires = [
-    "setuptools>=30.3.0",
-    "wheel",
+  "argparse-manpage[setuptools]",
+  "setuptools>=30.3.0",
+  "wheel",
 ]
-build-backend = "setuptools.build_meta:__legacy__"
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "ciecplib"
+description = "A python client for SAML/ECP authentication"
+authors = [
+  { name = "Duncan Macleod", email = "duncan.macleod@ligo.org" },
+]
+license = { text = "GPL-3.0-or-later" }
+readme = "README.md"
+classifiers = [
+  "Development Status :: 4 - Beta",
+  "Intended Audience :: Science/Research",
+  "License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)",
+  "Natural Language :: English",
+  "Operating System :: OS Independent",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.6",
+  "Programming Language :: Python :: 3.7",
+  "Programming Language :: Python :: 3.8",
+  "Programming Language :: Python :: 3.9",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Topic :: Scientific/Engineering",
+]
+requires-python = ">=3.8"
+dependencies = [
+  "cryptography >=36.0.0",
+  "requests",
+  "requests-ecp",
+]
+dynamic = [
+  "version",
+]
+
+[project.optional-dependencies]
+docs = [
+  "sphinx",
+  "sphinx-argparse",
+  "sphinx-automodapi",
+  "sphinx_rtd_theme",
+  "sphinx-tabs",
+]
+kerberos = [
+  "gssapi",
+  "requests-ecp[kerberos]",
+]
+manpages = [
+  "argparse-manpage",
+]
+tests = [
+  "pytest >= 3.9.0",
+  "pytest-cov",
+  "requests-mock",
+]
+
+[project.urls]
+"Bug Tracker" = "https://github.com/duncanmmacleod/ciecplib/issues"
+"Documentation" = "https://ciecplib.readthedocs.io/"
+"Source Code" = "https://github.com/duncanmmacleod/ciecplib/"
+
+[project.scripts]
+ecp-cert-info = "ciecplib.tool.ecp_cert_info:main"
+ecp-curl = "ciecplib.tool.ecp_curl:main"
+ecp-get-cert = "ciecplib.tool.ecp_get_cert:main"
+ecp-get-cookie = "ciecplib.tool.ecp_get_cookie:main"
 
 # -- tools
+
+[tool.build_manpages]
+manpages = [
+  "man/ecp-cert-info.1:function=create_parser:module=ciecplib.tool.ecp_cert_info",
+  "man/ecp-curl.1:function=create_parser:module=ciecplib.tool.ecp_curl",
+  "man/ecp-get-cert.1:function=create_parser:module=ciecplib.tool.ecp_get_cert",
+  "man/ecp-get-cookie.1:function=create_parser:module=ciecplib.tool.ecp_get_cookie",
+]
 
 [tool.coverage.paths]
 # map standard install paths back to the source to
@@ -26,3 +101,14 @@ precision = 1
 
 [tool.pytest.ini_options]
 addopts = "-r s"
+
+[tool.setuptools]
+license-files = [ "LICENSE" ]
+
+[tool.setuptools.dynamic]
+version = { attr = "ciecplib.__version__" }
+
+[tool.setuptools.packages.find]
+include = [
+  "ciecplib*",
+]

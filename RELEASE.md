@@ -19,7 +19,7 @@ with an actual release version.
 -   Bump versions and add changelog entries in OS packaging files:
 
     - `debian/changelog`
-    - `ciecplib.spec`
+    - `rpm/python-ciecplib.spec`
 
     and then commit the changes to the branch.
 

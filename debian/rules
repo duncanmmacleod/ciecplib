@@ -8,3 +8,15 @@ export PYBUILD_OPTION = --test-pytest
 	dh $@ \
 	    --with python3 \
 	    --buildsystem=pybuild
+
+override_dh_installman:
+	# -- hack manpage generation for old argparse-manpage
+	# this hack can be removed when we get to Debian 13 (argparse-manpage 4.5)
+	python3 -c "import toml; meta = toml.load(open('pyproject.toml', 'r')); print(f\"[metadata]\nname = {meta['project']['name']}\nurl = {meta['project']['urls']['Source Code']}\n[build_manpages]\"); print(\"manpages =\n\t\", end=\"\"); print(\"\n\t\".join(meta['tool']['build_manpages']['manpages']))" > setup.cfg
+	# -- generate manpages manually
+	python3 -c "from setuptools import setup; setup()" \
+		--command-packages=build_manpages \
+		build_manpages \
+	;
+	mv -v man/ debian/tmp/
+	dh_installman -O--buildsystem=pybuild

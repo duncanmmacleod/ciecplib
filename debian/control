@@ -10,6 +10,7 @@ Homepage: https://github.com/duncanmmacleod/ciecplib
 Build-Depends:
  debhelper (>= 9),
  dh-python,
+ pybuild-plugin-pyproject,
  python3-all,
  python3-argparse-manpage,
  python3-cryptography,
