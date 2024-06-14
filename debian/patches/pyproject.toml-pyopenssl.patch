@@ -1,0 +1,14 @@
+diff --git a/pyproject.toml b/pyproject.toml
+index d0f0069..0d6b4da 100644
+--- a/pyproject.toml
++++ b/pyproject.toml
+@@ -32,7 +32,8 @@ classifiers = [
+ ]
+ requires-python = ">=3.6"
+ dependencies = [
+-  "cryptography >=36.0.0",
++  "cryptography",
++  "pyOpenSSL >= 17.1.0",
+   "requests",
+   "requests-ecp",
+ ]
