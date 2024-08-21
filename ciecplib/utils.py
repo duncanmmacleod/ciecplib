@@ -97,7 +97,7 @@ EcpIdentityProvider = namedtuple(
 )
 
 
-def get_idps(url=DEFAULT_IDPLIST_URL):
+def get_idps(url=DEFAULT_IDPLIST_URL, timeout=10):
     """Download the list of known ECP IdPs from the given URL
 
     The output is a `list` of `EcpIdentityProvider` objects.
@@ -110,7 +110,11 @@ def get_idps(url=DEFAULT_IDPLIST_URL):
         the URL of the IDP list file
     """
     idps = list()
-    for line in requests.get(url, stream=True).iter_lines():
+    for line in requests.get(
+        url,
+        timeout=timeout,
+        stream=True,
+    ).iter_lines():
         url, inst = line.decode('utf-8').strip().split(' ', 1)
         idps.append(EcpIdentityProvider(
             inst,
