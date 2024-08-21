@@ -1,6 +1,6 @@
 %define srcname ciecplib
-%define version 0.8.0
-%define release 2
+%define version 0.8.1
+%define release 1
 
 # -- metadata ---------------
 
@@ -154,6 +154,10 @@ ecp-get-cookie --help
 # -- changelog --------------
 
 %changelog
+* Wed Aug 21 2024 Duncan Macleod <duncan.macleod@ligo.org> - 0.8.1-1
+- update for 0.8.1
+- update prep/build/install stages to use pyproject.toml
+
 * Mon Aug 07 2023 Duncan Macleod <duncan.macleod@ligo.org> - 0.8.0-2
 - add python3-pip build requirement (explicit on rhel9)
 

@@ -1,3 +1,10 @@
+ciecplib (0.8.1-1) unstable; urgency=low
+
+  * Update for 0.8.1
+  * Use pybuild-plugin-pyproject
+
+ -- Duncan Macleod <duncan.macleod@ligo.org>  Thu, 21 Aug 2024 16:33:00 +0100
+
 ciecplib (0.8.0-1) unstable; urgency=low
 
   * Update for 0.8.0
