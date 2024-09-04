@@ -97,6 +97,10 @@ precision = 1
 
 [tool.pytest.ini_options]
 addopts = "-r a"
+filterwarnings = [
+  # error on any unhandled warnings
+  "error",
+]
 
 [tool.setuptools]
 license-files = [ "LICENSE" ]
