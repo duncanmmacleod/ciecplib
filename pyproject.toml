@@ -97,6 +97,12 @@ precision = 1
 
 [tool.pytest.ini_options]
 addopts = "-r a"
+filterwarnings = [
+  # error on any unhandled warnings
+  "error",
+  # ignore PKCS#12 support warning on Debian 11
+  "ignore:PKCS#12 support in pyOpenSSL is deprecated",
+]
 
 [tool.setuptools]
 license-files = [ "LICENSE" ]
