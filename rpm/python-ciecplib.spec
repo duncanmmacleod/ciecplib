@@ -1,5 +1,5 @@
 %define srcname ciecplib
-%define version 0.8.1
+%define version 0.8.2
 %define release 1
 
 # -- metadata ---------------
@@ -154,6 +154,9 @@ ecp-get-cookie --help
 # -- changelog --------------
 
 %changelog
+* Wed Sep 11 2024 Duncan Macleod <duncan.macleod@ligo.org> - 0.8.2-1
+- update for 0.8.2
+
 * Wed Aug 21 2024 Duncan Macleod <duncan.macleod@ligo.org> - 0.8.1-1
 - update for 0.8.1
 - update prep/build/install stages to use pyproject.toml
