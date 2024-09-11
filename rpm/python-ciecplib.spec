@@ -10,7 +10,7 @@ Release:   %{release}%{?dist}
 Summary:   A python client for SAML ECP authentication
 
 Source0:   %pypi_source
-License:   GPL-3.0-or-later
+License:   GPLv3+
 Url:       https://github.com/duncanmmacleod/ciecplib
 
 Packager:  Duncan Macleod <duncan.macleod@ligo.org>

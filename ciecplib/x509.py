@@ -102,7 +102,7 @@ def load_pkcs12(raw, password):
 def _not_valid_before(cert, naive=False):
     """Return the `not_valid_before_utc` attribute of the given cert.
 
-    Falling back to a timezone-aware conversion of the `not_valid_before`
+    Falling back to a timezone-aware replacement of the `not_valid_before`
     attribute for cryptography < 42.0.0.
     """
     try:
@@ -110,13 +110,13 @@ def _not_valid_before(cert, naive=False):
     except AttributeError:  # cryptography < 42.0.0
         if naive:
             return cert.not_valid_before
-        return cert.not_valid_before.astimezone(datetime.timezone.utc)
+        return cert.not_valid_before.replace(tzinfo=datetime.timezone.utc)
 
 
 def _not_valid_after(cert, naive=False):
     """Return the `not_valid_after_utc` attribute of the given cert.
 
-    Falling back to a timezone-aware conversion of the `not_valid_after`
+    Falling back to a timezone-aware replacement of the `not_valid_after`
     attribute for cryptography < 42.0.0.
     """
     try:
@@ -124,7 +124,7 @@ def _not_valid_after(cert, naive=False):
     except AttributeError:  # cryptography < 42.0.0
         if naive:
             return cert.not_valid_after
-        return cert.not_valid_after.astimezone(datetime.timezone.utc)
+        return cert.not_valid_after.replace(tzinfo=datetime.timezone.utc)
 
 
 def time_left(cert):
