@@ -2,8 +2,12 @@ include:
   # -- Python -------------------------
 
   # https://computing.docs.ligo.org/guide/gitlab/components/python/all/
-  - component: $CI_SERVER_FQDN/computing/gitlab/components/python/all@1
+  - component: $CI_SERVER_FQDN/computing/gitlab/components/python/all@2
     inputs:
+      # Q/A
+      run_advanced_sast: true
+      code_quality_analyzer: "ruff"
+      # tests
       install_extra: "kerberos,tests"
       python: "python3"
 

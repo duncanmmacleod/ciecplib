@@ -92,8 +92,21 @@ source = [
 ]
 
 [tool.coverage.report]
+exclude_lines = [
+  # ignore when asked
+  "pragma: no( |-)cover",
+  # don't complain about typing blocks
+  "if (typing\\.)?TYPE_CHECKING",
+]
 # print report with one decimal point
 precision = 1
+
+[tool.mypy]
+check_untyped_defs = true
+exclude = [
+  "^docs/",
+]
+ignore_missing_imports = true
 
 [tool.pytest.ini_options]
 addopts = "-r a"
@@ -102,6 +115,40 @@ filterwarnings = [
   "error",
   # ignore PKCS#12 support warning on Debian 11
   "ignore:PKCS#12 support in pyOpenSSL is deprecated",
+]
+
+[tool.ruff.lint]
+select = ["ALL"]
+ignore = [
+  "ANN003",  # type annotations for **kwargs
+  "D203",  # blank line before class docstring
+  "D213",  # docstring summary on second line
+  "D413",  # blank line after last section
+  "PLR0913",  # too many arguments
+  "SIM108",  # if-else instead of ternary if
+]
+
+[tool.ruff.lint.isort]
+combine-as-imports = true
+force-wrap-aliases = true
+
+[tool.ruff.lint.per-file-ignores]
+"__init__.py" = [
+  "F401",  # unused-import
+  "F403",  # undefined-local-with-import-star
+]
+"*/tests/*" = [
+  "ANN",  # type annotations
+  "B904",  # raise from
+  "EM101",  # string literal in exception
+  "PLR2004",  # magic value used in comparison
+  "S101",  # assert
+]
+"docs/*" = [
+  "A",  # builtins
+  "ANN",  # type annotations
+  "D",  # docstrings
+  "INP001",  # implicit namespace package
 ]
 
 [tool.setuptools]
