@@ -6,6 +6,7 @@ include:
     inputs:
       # Q/A
       run_advanced_sast: true
+      code_quality_analyzer: "ruff"
       # tests
       install_extra: "kerberos,tests"
       python: "python3"
