@@ -4,7 +4,7 @@ include:
   # https://computing.docs.ligo.org/guide/gitlab/components/python/all/
   - component: $CI_SERVER_FQDN/computing/gitlab/components/python/all@2
     inputs:
-      # Q/A
+      # QA
       run_advanced_sast: true
       code_quality_analyzer: "ruff"
       # tests
@@ -14,39 +14,32 @@ include:
   # -- Debian packaging ---------------
 
   # https://computing.docs.ligo.org/guide/gitlab/components/debian/all/
-  - component: $CI_SERVER_FQDN/computing/gitlab/components/debian/all@1
+  - component: $CI_SERVER_FQDN/computing/gitlab/components/debian/all@2
     inputs:
       needs: [sdist]
       debian_versions:
         - bullseye-backports
         - bookworm
       test_install: &system_test_install >-
+        ciecp-utils
         python3-pip
         python3-pytest
         python3-pytest-cov
         python3-requests-mock
       test_script: &system_test_script
-        # install a newer version of pytest on EL8
-        - if [[ "${CI_JOB_NAME}" == "redhat_test_el8" ]]; then
-          dnf install -y -q python3-pip &&
-          /usr/bin/python3 -m pip install
-            --upgrade-strategy=only-if-needed
-            "pytest==3.9.1"
-            "coverage[toml]>=5"
-          ; fi
-        # run the test suite
         - python3 -m pytest
+            --cov=ciecplib
             --junit-xml=junit.xml
-            --cov=${CI_PROJECT_NAME/-/_}
             --pyargs
-            ${CI_PROJECT_NAME/-/_}
-        # write a cobertura report
+            -ra
+            --verbose
+            ciecplib
         - python3 -m coverage xml -o coverage.xml
 
   # -- Red Hat packaging --------------
 
   # https://computing.docs.ligo.org/guide/gitlab/components/redhat/all/
-  - component: $CI_SERVER_FQDN/computing/gitlab/components/redhat/all@1
+  - component: $CI_SERVER_FQDN/computing/gitlab/components/redhat/all@2
     inputs:
       needs: [sdist]
       redhat_versions:
@@ -64,15 +57,12 @@ include:
 
 # -- customisations
 
-# configure the platform tests to upload the same test/coverage reports
-# as the other Python tests
-
-debian_test:
-  variables:
-    GIT_STRATEGY: none
-  artifacts: !reference [python_test, artifacts]
-
-redhat_test:
-  variables:
-    GIT_STRATEGY: none
-  artifacts: !reference [python_test, artifacts]
+redhat_test_el8:
+  before_script:
+    - !reference [redhat_test, before_script]
+    # install a newer version of pytest on EL8
+    - dnf install -y -q python3-pip &&
+      python3 -m pip install
+        --upgrade-strategy=only-if-needed
+        "coverage[toml]>=5"
+        "pytest==3.9.1"
