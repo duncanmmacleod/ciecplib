@@ -28,7 +28,7 @@ from ... import __version__ as ciecplib_version
 from ...utils import EcpIdentityProvider
 from .. import utils as tools_utils
 
-__author__ = 'Duncan Macleod <duncan.macleod@ligo.org>'
+__author__ = "Duncan Macleod <duncan.macleod@ligo.org>"
 
 
 def test_help_formatter():

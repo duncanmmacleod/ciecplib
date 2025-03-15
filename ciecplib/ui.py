@@ -145,20 +145,20 @@ def get_cert(
         # request PKCS12 certificate from SP
         csrfstr = random_string(10)
         headers = {
-            'Content-Type': 'application/x-www-form-urlencoded',
-            'Cookie': 'CSRF={0}; {1.name}={1.value}'.format(csrfstr, cookie),
+            "Content-Type": "application/x-www-form-urlencoded",
+            "Cookie": "CSRF={0}; {1.name}={1.value}".format(csrfstr, cookie),
         }
         p12password = (
             random_string(16, string.ascii_letters)
             + random_string(2, string.digits)
-            + random_string(2, '!@#$%^&*()')
+            + random_string(2, "!@#$%^&*()")
         )
         certdata = urllib_parse.urlencode({
-            'submit': 'pkcs12',
-            'CSRF': csrfstr,
-            'p12password': p12password,
-            'p12lifetime': math.ceil(hours),
-        }).encode('utf-8')
+            "submit": "pkcs12",
+            "CSRF": csrfstr,
+            "p12password": p12password,
+            "p12lifetime": math.ceil(hours),
+        }).encode("utf-8")
         resp = sess.post(
             spurl,
             data=certdata,
@@ -174,5 +174,5 @@ def get_cert(
             print("Certificate received.")
         return load_pkcs12(
             resp.content,
-            p12password.encode('utf-8'),
+            p12password.encode("utf-8"),
         )

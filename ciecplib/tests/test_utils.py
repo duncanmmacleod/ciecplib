@@ -27,7 +27,7 @@ import pytest
 
 from .. import utils as ciecplib_utils
 
-__author__ = 'Duncan Macleod <duncan.macleod@ligo.org>'
+__author__ = "Duncan Macleod <duncan.macleod@ligo.org>"
 
 EcpIdP = ciecplib_utils.EcpIdentityProvider
 

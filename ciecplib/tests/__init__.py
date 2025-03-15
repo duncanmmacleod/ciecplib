@@ -19,4 +19,4 @@
 """Tests for ciecplib
 """
 
-__author__ = 'Duncan Macleod <duncan.macleod@ligo.org>'
+__author__ = "Duncan Macleod <duncan.macleod@ligo.org>"

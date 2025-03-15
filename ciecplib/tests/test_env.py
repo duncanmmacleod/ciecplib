@@ -31,7 +31,7 @@ __author__ = "Duncan Macleod <duncan.macleod@ligo.org>"
     ({"ECP_IDP": "TEST"}, "TEST"),
     ({"CIGETCERTOPTS": "-i TEST2"}, "TEST2"),
 ])
-@mock.patch.dict('os.environ', clear=True)
+@mock.patch.dict("os.environ", clear=True)
 def test_get_default_idp(env, result):
     os.environ.update(env)
     assert ciecplib_env._get_default_idp() == result

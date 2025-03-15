@@ -33,7 +33,7 @@ from ..env import _get_default_idp
 from ..kerberos import find_principal
 from ..utils import get_idps
 
-__author__ = 'Duncan Macleod <duncan.macleod@ligo.org>'
+__author__ = "Duncan Macleod <duncan.macleod@ligo.org>"
 
 
 def _parse_kerberos_principal():
@@ -219,7 +219,7 @@ class ListIdpsAction(argparse.Action):
         lines = []
         for idp in sorted(idps, key=attrgetter("name")):
             lines.append(fmt.format(idp))
-        formatter.add_text('\n'.join(lines))
+        formatter.add_text("\n".join(lines))
         parser._print_message(formatter.format_help(), sys.stdout)
         parser.exit()
 

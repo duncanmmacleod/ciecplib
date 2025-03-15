@@ -21,7 +21,7 @@
 
 from .. import requests as ciecplib_requests
 
-__author__ = 'Duncan Macleod <duncan.macleod@ligo.org>'
+__author__ = "Duncan Macleod <duncan.macleod@ligo.org>"
 
 
 def test_get(requests_mock):
