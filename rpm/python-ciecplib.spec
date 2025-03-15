@@ -1,6 +1,6 @@
 %define srcname ciecplib
 %define version 0.8.2
-%define release 1
+%define release 2
 
 # -- metadata ---------------
 
@@ -94,8 +94,12 @@ url = %{url}
 packages = find:
 python_requires = >=3.6
 install_requires =
+%if 0%{?fedora} >= 36 || 0%{?rhel} >= 9
+  cryptography >= 36.0.0
+%else
   cryptography
   pyOpenSSL >= 17.1.0
+%endif
   requests
   requests-ecp
 [options.entry_points]
@@ -154,6 +158,9 @@ ecp-get-cookie --help
 # -- changelog --------------
 
 %changelog
+* Wed Sep 11 2024 Duncan Macleod <duncan.macleod@ligo.org> - 0.8.2-2
+- fix setup.cfg for EL9 (removes unnecessary requirement on python3-pyOpenSSL)
+
 * Wed Sep 11 2024 Duncan Macleod <duncan.macleod@ligo.org> - 0.8.2-1
 - update for 0.8.2
 
