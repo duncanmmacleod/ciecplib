@@ -15,7 +15,12 @@
 # You should have received a copy of the GNU General Public License
 # along with ciecplib.  If not, see <http://www.gnu.org/licenses/>.
 
-"""A python client for SAML ECP authentication."""
+"""CIECPLib provides a Python library and command-line utilities
+to make HTTP requests with SAML/ECP authentication.
+
+This allows requesting documents from behind SAML/Shibboleth
+authentication systems.
+"""
 
 # request the contents of a URL
 from .requests import (

@@ -1,86 +1,63 @@
-##########
- ciecplib
-##########
+########
+CIECPLib
+########
 
-The `ciecplib` python client provides a functions and command-line utilities to
-authenticate against SAML/ECP endpoints, and retrieve URLs from behind that
-authentication.
+.. automodule:: ciecplib
+    :no-index:
 
-============
-Installation
-============
+==============
+Project status
+==============
 
-.. tabs::
+.. image:: https://badge.fury.io/py/ciecplib.svg
+    :target: https://badge.fury.io/py/ciecplib
+    :alt: ciecplib PyPI release badge
 
-   .. tab:: Pip
+.. image:: https://img.shields.io/conda/vn/conda-forge/ciecplib.svg
+    :target: https://anaconda.org/conda-forge/ciecplib/
+    :alt: ciecplib conda-forge release badge
 
-      .. code-block:: bash
+.. image:: https://img.shields.io/pypi/l/ciecplib.svg
+    :target: https://choosealicense.com/licenses/gpl-3.0/
+    :alt: ciecplib license
 
-          $ python -m pip install ciecplib
+.. raw:: html
 
-      Supported python versions: 3.5+.
+    <br>
 
-      .. admonition:: Default ``pip install`` doesn't include Kerberos Auth support
+.. image:: https://img.shields.io/gitlab/issues/open/computing%2Fsoftware%2Fciecplib?gitlab_url=https%3A%2F%2Fgit.ligo.org
+    :target: https://git.ligo.org/computing/software/ciecplib/issues/
+    :alt: GitLab Issues
 
-          By default ``pip install ciecplib`` does not bundle
-          Kerberos auth support that is optional as of requests-ecp 0.3.0.
+.. image:: https://img.shields.io/gitlab/merge-requests/open/computing%2Fsoftware%2Fciecplib?gitlab_url=https%3A%2F%2Fgit.ligo.org
+    :target: https://git.ligo.org/computing/software/ciecplib/merge_requests/
+    :alt: GitLab Merge Requests
 
-          The ``ciecplib[kerberos]`` extra can be used to automatically
-          install ``requests-ecp[kerberos]``:
-
-          .. code-block:: shell
-
-              python -m pip install ciecplib[kerberos]
-
-          This does not ensure that a working version of the underlying GSSAPI
-          is installed (e.g, via MIT Kerberos).
-          If you need Kerberos auth, and need to install GSSAPI itself on your
-          system, it is recommended that you
-          **use Conda to install `ciecplib`**.
-
-   .. tab:: Conda
-
-      .. code-block:: bash
-
-          $ conda install -c conda-forge ciecplib
-
-      Supported python versions: 3.6+.
-
-==================
-User documentation
-==================
-
-.. automodapi:: ciecplib
-   :no-inheritance-diagram:
-   :no-main-docstr:
-   :headings: =-
-
-API
-===
+=============
+Documentation
+=============
 
 .. toctree::
+    :maxdepth: 1
 
-   api/ciecplib
+    Installation <install>
 
-|
-
-Command-line scripts
-====================
 
 .. toctree::
-   :maxdepth: 1
+    :maxdepth: 1
+    :caption: Modules
 
-   ecp-cert-info
-   ecp-curl
-   ecp-get-cert
-   ecp-get-cookie
+    api/ciecplib
+    api/ciecplib.cookies
+    api/ciecplib.kerberos
+    api/ciecplib.utils
+    api/ciecplib.x509
 
-|
+.. toctree::
+    :caption: Command-line scripts
+    :maxdepth: 1
 
-==================
-Indices and tables
-==================
-
-* :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`
+    ecp-cert-info
+    ecp-curl
+    ecp-get-cert
+    ecp-get-cookie

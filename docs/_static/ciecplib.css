@@ -1,0 +1,8 @@
+/* CSS customisations for CIECPLib docs
+ * Copyright 2025 Cardiff University
+ */
+
+/* stop furo aligning autosummary tables in the centre */
+table.autosummary {
+  margin: 0px;
+}
