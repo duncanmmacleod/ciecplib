@@ -1,5 +1,4 @@
-# -*- coding: utf-8 -*-
-# Copyright (C) Cardiff University (2020-2022)
+# Copyright (C) 2020-2025 Cardiff University
 #
 # This file is part of ciecplib.
 #
@@ -16,8 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with ciecplib.  If not, see <http://www.gnu.org/licenses/>.
 
-"""Test suite for :mod:`ciecplib.cookies`
-"""
+"""Test suite for :mod:`ciecplib.cookies`."""
 
 from http.cookiejar import Cookie
 try:

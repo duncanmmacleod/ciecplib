@@ -1,5 +1,4 @@
-# -*- coding: utf-8 -*-
-# Copyright (C) Cardiff University (2019-2022)
+# Copyright (C) 2019-2025 Cardiff University
 #
 # This file is part of ciecplib.
 #
@@ -16,8 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with ciecplib.  If not, see <http://www.gnu.org/licenses/>.
 
-"""Cookie handling for SAML ECP authentication
-"""
+"""Cookie handling for SAML ECP authentication."""
 
 from copy import deepcopy
 from functools import wraps
@@ -32,9 +30,8 @@ __author__ = "Duncan Macleod <duncan.macleod@ligo.org>"
 # -- cookie jar ---------------------------------------------------------------
 
 class ECPCookieJar(RequestsCookieJar, MozillaCookieJar):
-    """Custom cookie jar that stores cookies in the cURL format.
+    """Custom cookie jar that stores cookies in the cURL format."""
 
-    """
     @wraps(MozillaCookieJar.save)
     def save(self, *args, **kwargs):
         copy = deepcopy(self)
@@ -56,7 +53,7 @@ class ECPCookieJar(RequestsCookieJar, MozillaCookieJar):
 # -- utilities ----------------------------------------------------------------
 
 def extract_session_cookie(jar, url):
-    """Returns s session cookie for the given URL from the jar
+    """Return a session cookie for the given URL from the jar.
 
     Parameters
     ----------
@@ -90,7 +87,7 @@ def extract_session_cookie(jar, url):
 
 
 def has_session_cookies(jar, url):
-    """Returns `True` if the given cookie jar has a session cookie we can use
+    """Return `True` if the given cookie jar has a session cookie we can use.
 
     Parameters
     ----------
@@ -119,7 +116,7 @@ def load_cookiejar(
         ignore_discard=True,
         ignore_expires=True,
 ):
-    """Load a cookie jar from a file
+    """Load a cookie jar from a file.
 
     Parameters
     ----------

@@ -1,5 +1,4 @@
-# -*- coding: utf-8 -*-
-# Copyright (C) Cardiff University (2020-2022)
+# Copyright (C) 2020-2025 Cardiff University
 #
 # This file is part of ciecplib.
 #
@@ -16,7 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with ciecplib.  If not, see <http://www.gnu.org/licenses/>.
 
-"""Environment defaults for ciecplib
+"""Environment defaults for ciecplib.
 
 This module parses the following environment variables to set default
 settings for CIECP tools:
@@ -35,7 +34,7 @@ __author__ = "Duncan Macleod <duncan.macleod@ligo.org>"
 
 
 def _parse_cigetcertops():
-    """Parse the ``CIGETCERTOPTS`` variable for known options
+    """Parse the ``CIGETCERTOPTS`` variable for known options.
 
     Returns
     -------
@@ -53,8 +52,7 @@ def _parse_cigetcertops():
 
 
 def _get_default_idp():
-    """Returns the default ECP IdP, or `None` if no default is found
-    """
+    """Return the default ECP IdP, or `None` if no default is found."""
     try:
         return os.environ["ECP_IDP"]
     except KeyError:

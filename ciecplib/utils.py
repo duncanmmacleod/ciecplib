@@ -1,5 +1,4 @@
-# -*- coding: utf-8 -*-
-# Copyright (C) Cardiff University (2019-2022)
+# Copyright (C) 2019-2025 Cardiff University
 #
 # This file is part of ciecplib.
 #
@@ -41,7 +40,7 @@ def _tmpfile(prefix):
 
 
 def get_ecpcookie_path():
-    """Returns the default path for the ECP cookie file
+    """Return the default path for the ECP cookie file.
 
     Returns
     -------
@@ -51,7 +50,7 @@ def get_ecpcookie_path():
 
 
 def get_x509_proxy_path():
-    """Returns the default path for the X.509 certificate file
+    """Return the default path for the X.509 certificate file.
 
     Returns
     -------
@@ -98,7 +97,7 @@ EcpIdentityProvider = namedtuple(
 
 
 def get_idps(url=DEFAULT_IDPLIST_URL, timeout=10):
-    """Download the list of known ECP IdPs from the given URL
+    """Download the list of known ECP IdPs from the given URL.
 
     The output is a `list` of `EcpIdentityProvider` objects.
 
@@ -133,7 +132,7 @@ def _match(value, idplist, attr, kerberos=None):
 
 
 def _preferred_match(matches):
-    """Attempt to select a preferred match from a list of many
+    """Attempt to select a preferred match from a list of many.
 
     This only prefers institutions names that don't end with a
     numeric suffix (or end with ' 1'), mainly to distinguish
@@ -192,7 +191,7 @@ def _match_institution(value, institutions, kerberos=None):
 
 
 def get_idp_url(url_or_name, idplist_url=DEFAULT_IDPLIST_URL, kerberos=False):
-    """Return the unique IdP URL for a given institution or URL stub
+    """Return the unique IdP URL for a given institution or URL stub.
 
     Parameters
     ----------

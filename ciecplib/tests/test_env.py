@@ -1,5 +1,4 @@
-# -*- coding: utf-8 -*-
-# Copyright (C) Cardiff University (2020-2022)
+# Copyright (C) 2020-2025 Cardiff University
 #
 # This file is part of ciecplib.
 #

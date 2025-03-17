@@ -1,5 +1,4 @@
-# -*- coding: utf-8 -*-
-# Copyright (C) Cardiff University (2020-2022)
+# Copyright (C) 2020-2025 Cardiff University
 #
 # This file is part of ciecplib.
 #
@@ -16,8 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with ciecplib.  If not, see <http://www.gnu.org/licenses/>.
 
-"""Tests for :mod:`ciecplib.tool.ecp_get_cert`
-"""
+"""Tests for :mod:`ciecplib.tool.ecp_get_cert`."""
 
 from unittest import mock
 
@@ -30,14 +28,12 @@ from .. import ecp_get_cert
 @mock.patch("os.unlink", mock.Mock(side_effect=(None, FileNotFoundError)))
 @pytest.mark.parametrize("dummy", (True, False))
 def test_destroy(dummy):
-    """Check that the --destroy option works whether the file exists or not
-    """
+    """Check that the --destroy option works whether the file exists or not."""
     ecp_get_cert.main(["--destroy"])
 
 
 def test_ecp_get_cert(tmp_path, x509, private_key):
-    """Check that a standard workflow correctly writes the key it received.
-    """
+    """Check that a standard workflow correctly writes the key it received."""
     x509_path = tmp_path / "x509.pem"
     with mock.patch(
         "ciecplib.tool.ecp_get_cert.get_cert",
@@ -52,8 +48,7 @@ def test_ecp_get_cert(tmp_path, x509, private_key):
 
 @mock.patch("ciecplib.tool.ecp_get_cert.get_cert")
 def test_ecp_get_cert_reuse(get_cert, x509_path):
-    """Check that the --reuse option works if the key validates.
-    """
+    """Check that the --reuse option works if the key validates."""
     # reuse an existing certificate file
     ecp_get_cert.main([
         "--file", str(x509_path),
@@ -65,8 +60,7 @@ def test_ecp_get_cert_reuse(get_cert, x509_path):
 
 
 def test_ecp_get_cert_reuse_fail(x509_path, x509, private_key):
-    """Check that the --reuse option works if the key fails to validate.
-    """
+    """Check that the --reuse option works if the key fails to validate."""
     bad = x509_path.with_suffix(".bad")
     with mock.patch(
         "ciecplib.tool.ecp_get_cert.get_cert",

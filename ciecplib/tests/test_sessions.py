@@ -1,5 +1,4 @@
-# -*- coding: utf-8 -*-
-# Copyright (C) Cardiff University (2022)
+# Copyright (C) 2022-2025 Cardiff University
 #
 # This file is part of ciecplib.
 #
@@ -16,8 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with ciecplib.  If not, see <http://www.gnu.org/licenses/>.
 
-"""Test suite for :mod:`cieclib.sessions`
-"""
+"""Test suite for :mod:`cieclib.sessions`."""
 
 import logging
 
@@ -32,17 +30,14 @@ class TestSession():
     TEST_CLASS = ciecplib_sessions.Session
 
     def test_init_error(self):
-        """Check that the right error is raised when a Session is created
-        with no IdP or kerberos credentials
-        """
+        """Test `init` error handling."""
         with pytest.raises(ValueError) as exc:
             self.TEST_CLASS(idp=None, kerberos=False)
         assert str(exc.value).startswith("no Identity Provider")
 
     @pytest.mark.parametrize("debug", (False, True))
     def test_debug(self, debug):
-        """Check that the ``debug`` keyword argument is handled properly
-        """
+        """Check that the ``debug`` keyword argument is handled properly."""
         sess = self.TEST_CLASS(
             idp="https://example.com/idp/profile/SAML2/SOAP/ECP",
             kerberos=False,

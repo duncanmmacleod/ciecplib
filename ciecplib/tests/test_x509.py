@@ -1,5 +1,4 @@
-# -*- coding: utf-8 -*-
-# Copyright (C) Cardiff University (2020-2022)
+# Copyright (C) 2020-2025 Cardiff University
 #
 # This file is part of ciecplib.
 #
@@ -16,8 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with ciecplib.  If not, see <http://www.gnu.org/licenses/>.
 
-"""Test suite for :mod:`cieclib.x509`
-"""
+"""Test suite for :mod:`cieclib.x509`."""
 
 import sys
 from io import StringIO
@@ -44,8 +42,7 @@ def test_load_cert(x509, x509_path):
 
 
 def test_load_pkcs12(x509, private_key):
-    """Test that `ciecplib.x509.load_pkcs12` returns equivalent certs and keys.
-    """
+    """Test that `ciecplib.x509.load_pkcs12` returns equivalent certs and keys."""
     from cryptography.hazmat.primitives.serialization import (
         BestAvailableEncryption,
     )
@@ -174,8 +171,7 @@ def test_write_cert(tmp_path, private_key, x509, proxy):
     (True, "RFC 3820 compliant limited proxy"),
 ])
 def test_generate_proxy(x509, private_key, limited, ctype):
-    """Test that :func:`ciecplib.x509.generate_proxy` generates a good proxy.
-    """
+    """Test that :func:`ciecplib.x509.generate_proxy` generates a good proxy."""
     # generate a proxy certificate
     proxy, pkey = ciecplib_x509.generate_proxy(
         x509,

@@ -1,5 +1,4 @@
-# -*- coding: utf-8 -*-
-# Copyright (C) Cardiff University (2019-2022)
+# Copyright (C) 2019-2025 Cardiff University
 #
 # This file is part of ciecplib.
 #
@@ -16,7 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with ciecplib.  If not, see <http://www.gnu.org/licenses/>.
 
-"""Common testt for ciecplib entry points
+"""Common tests for ciecplib entry points.
 
 Inspired by the test_help module from ligo.skymap.tool.tests,
 thanks Leo!

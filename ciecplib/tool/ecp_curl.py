@@ -1,5 +1,4 @@
-# -*- coding: utf-8 -*-
-# Copyright (C) Cardiff University (2019-2022)
+# Copyright (C) 2019-2025 Cardiff University
 #
 # This file is part of ciecplib.
 #
@@ -40,7 +39,7 @@ __author__ = "Duncan Macleod <duncan.macleod@ligo.org>"
 
 
 def create_parser():
-    """Create a command-line argument parser
+    """Create a command-line argument parser.
 
     Returns
     -------

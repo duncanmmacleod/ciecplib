@@ -1,5 +1,4 @@
-# -*- coding: utf-8 -*-
-# Copyright (C) Cardiff University (2020-2022)
+# Copyright (C) 2020-2025 Cardiff University
 #
 # This file is part of ciecplib.
 #
@@ -16,8 +15,9 @@
 # You should have received a copy of the GNU General Public License
 # along with ciecplib.  If not, see <http://www.gnu.org/licenses/>.
 
-"""ECP-integated requests session
-"""
+"""ECP-integated requests session."""
+
+from functools import wraps
 
 from requests_ecp import Session as ECPSession
 
@@ -40,8 +40,8 @@ __all__ = [
 
 
 class Session(ECPSession):
-    """`requests.Session` with default ECP auth and pre-populated cookies
-    """
+    """`requests.Session` with default ECP auth and pre-populated cookies."""
+
     def __init__(
             self,
             idp=_get_default_idp(),
@@ -83,6 +83,7 @@ class Session(ECPSession):
         if self.debug:
             init_logging(level="DEBUG")
 
+    @wraps(ECPSession.close)
     def close(self):
         if self.debug:
             reset_logging()
