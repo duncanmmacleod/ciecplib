@@ -33,7 +33,7 @@ except ModuleNotFoundError:  # python < 3.8
 
 from ... import (__version__, __name__)
 
-__author__ = 'Duncan Macleod <duncan.macleod@ligo.org>'
+__author__ = "Duncan Macleod <duncan.macleod@ligo.org>"
 
 try:
     ENTRY_POINTS = [
@@ -61,11 +61,11 @@ def _test_entry_point(ep, args):
 
 @PARAMETRIZE_ENTRY_POINTS
 def test_help(ep):
-    return _test_entry_point(ep, ['--help'])
+    return _test_entry_point(ep, ["--help"])
 
 
 @PARAMETRIZE_ENTRY_POINTS
 def test_version(capsys, ep):
-    _test_entry_point(ep, ['--version'])
+    _test_entry_point(ep, ["--version"])
     out, err = capsys.readouterr()
     assert out.strip() == __version__

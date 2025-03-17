@@ -90,9 +90,9 @@ _URL_REGEX = re.compile(r"[^ \t\n\r\f\vA-Z]+")
 EcpIdentityProvider = namedtuple(
     "IdP",
     (
-        'name',
-        'url',
-        'iskerberos',
+        "name",
+        "url",
+        "iskerberos",
     ),
 )
 
@@ -115,7 +115,7 @@ def get_idps(url=DEFAULT_IDPLIST_URL, timeout=10):
         timeout=timeout,
         stream=True,
     ).iter_lines():
-        url, inst = line.decode('utf-8').strip().split(' ', 1)
+        url, inst = line.decode("utf-8").strip().split(" ", 1)
         idps.append(EcpIdentityProvider(
             inst,
             url,
@@ -238,4 +238,4 @@ def get_idp_url(url_or_name, idplist_url=DEFAULT_IDPLIST_URL, kerberos=False):
 def random_string(length, outof=string.ascii_lowercase + string.digits):
     # http://stackoverflow.com/a/23728630/2213647 says SystemRandom()
     # is most secure
-    return ''.join(random.SystemRandom().choice(outof) for _ in range(length))
+    return "".join(random.SystemRandom().choice(outof) for _ in range(length))

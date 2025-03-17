@@ -147,7 +147,7 @@ def test_print_cert_info_display(x509, display, result):
     assert out.strip() == result.strip()
 
 
-@pytest.mark.parametrize('proxy', (False, True))
+@pytest.mark.parametrize("proxy", (False, True))
 def test_write_cert(tmp_path, private_key, x509, proxy):
     path = tmp_path / "509.pem"
     # write the p12 cert to a file

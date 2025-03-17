@@ -26,7 +26,7 @@ from urllib.parse import urlparse
 
 from requests.cookies import RequestsCookieJar
 
-__author__ = 'Duncan Macleod <duncan.macleod@ligo.org>'
+__author__ = "Duncan Macleod <duncan.macleod@ligo.org>"
 
 
 # -- cookie jar ---------------------------------------------------------------

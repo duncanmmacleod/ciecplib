@@ -36,7 +36,7 @@ from .utils import (
     ArgumentParser,
 )
 
-__author__ = 'Duncan Macleod <duncan.macleod@ligo.org>'
+__author__ = "Duncan Macleod <duncan.macleod@ligo.org>"
 
 
 def create_parser():

@@ -72,8 +72,8 @@ ECP_IDP:
 """
 
 MANPAGE = [
-    {'heading': 'environment',
-     'content': """
+    {"heading": "environment",
+     "content": """
 .TP
 .B "X509_USER_PROXY"
 The default path for the credential file """,
