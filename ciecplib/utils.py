@@ -1,4 +1,4 @@
-# Copyright (C) Cardiff University (2019-2022)
+# Copyright (C) 2019-2025 Cardiff University
 #
 # This file is part of ciecplib.
 #
