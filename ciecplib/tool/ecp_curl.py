@@ -27,6 +27,8 @@ Currently only HTTP GET requests are supported (patches welcome!).
 """
 
 import sys
+from email.parser import HeaderParser
+from http.client import HTTPMessage
 
 from ..cookies import load_cookiejar
 from ..sessions import Session
@@ -70,6 +72,13 @@ def create_parser():
         help="write debug output (uses both stderr and stdout)",
     )
     parser.add_argument(
+        "-H",
+        "--header",
+        action="append",
+        default=None,
+        help="HTTP headers to include in the request",
+    )
+    parser.add_argument(
         "-o",
         "--output",
         metavar="FILE",
@@ -83,6 +92,28 @@ def create_parser():
         help="store session cookies in the cookie file"
     )
     return parser
+
+
+def format_headers(headers):
+    """Format headers received on the command line.
+
+    Each header should be formatted according to
+    `RFC5322 <https://datatracker.ietf.org/doc/html/rfc5322.html#section-2.2>`_.
+
+    Parameters
+    ----------
+    headers : `list` of `str`
+        A list of header strings (``"Key: Value"``) to parse.
+
+    Returns
+    -------
+    headerdict : `dict[str, str]`
+        A `dict` of ``(key, value)`` headers ready to pass to `requests.get`.
+    """
+    if not headers:
+        return {}
+    headerstr = "\n".join(headers)
+    return dict(HeaderParser(HTTPMessage).parsestr(headerstr))
 
 
 def write(data, path):
@@ -114,6 +145,8 @@ def main(args=None):
         args.cookiefile,
         strict=False,
     )
+    headers = format_headers(args.header)
+
     with Session(
         cookiejar=cookiejar,
         idp=args.identity_provider,
@@ -121,7 +154,10 @@ def main(args=None):
         kerberos=args.kerberos,
     ) as sess:
         # GET
-        resp = sess.get(args.url)
+        resp = sess.get(
+            args.url,
+            headers=headers,
+        )
         resp.raise_for_status()
         # write
         write(resp.content, args.output)
