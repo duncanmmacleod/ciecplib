@@ -152,6 +152,7 @@ def main(args=None):
         idp=args.identity_provider,
         username=args.username,
         kerberos=args.kerberos,
+        debug=args.debug,
     ) as sess:
         # GET
         resp = sess.get(
