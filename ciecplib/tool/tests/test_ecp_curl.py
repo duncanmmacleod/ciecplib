@@ -15,8 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with ciecplib.  If not, see <http://www.gnu.org/licenses/>.
 
-"""Tests for :mod:`ciecplib.tool.ecp_get_curl`.
-"""
+"""Tests for :mod:`ciecplib.tool.ecp_get_curl`."""
 
 import pytest
 
@@ -27,8 +26,7 @@ from ...cookies import load_cookiejar
 
 
 def test_main_stdout(capsys, requests_mock):
-    """Test ``ecp-curl`` with default options (writes to stdout).
-    """
+    """Test ``ecp-curl`` with default options (writes to stdout)."""
     requests_mock.get(
         "https://test.example.com",
         content=b"hello world",
@@ -44,8 +42,7 @@ def test_main_stdout(capsys, requests_mock):
 
 
 def test_main_file(requests_mock, tmp_path):
-    """Test ``ecp-curl`` writing to file.
-    """
+    """Test ``ecp-curl`` writing to file."""
     outfile = tmp_path / "api.github.com.json"
     requests_mock.get(
         "https://test.example.com",
@@ -62,8 +59,7 @@ def test_main_file(requests_mock, tmp_path):
 
 
 def test_main_error(requests_mock, tmp_path):
-    """Test that ``ecp-curl`` propagates RequestExceptions.
-    """
+    """Test that ``ecp-curl`` propagates RequestExceptions."""
     requests_mock.get(
         "https://test.example.com",
         status_code=404,
@@ -76,8 +72,7 @@ def test_main_error(requests_mock, tmp_path):
 
 
 def test_main_store_cookie_file(capsys, requests_mock, tmp_path):
-    """Test that ``ecp-curl`` can store session cookies (sort of).
-    """
+    """Test that ``ecp-curl`` can store session cookies (sort of)."""
     jar = tmp_path / "cookies"
     requests_mock.get(
         "https://test.example.com",

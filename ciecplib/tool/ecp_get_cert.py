@@ -81,7 +81,7 @@ The default path for the credential file """,
 
 
 def create_parser():
-    """Create a command-line argument parser
+    """Create a command-line argument parser.
 
     Returns
     -------
@@ -152,7 +152,7 @@ def create_parser():
 
 
 def parse_args(parser, args=None):
-    """Parse and validate the command-line arguments
+    """Parse and validate the command-line arguments.
 
     Returns
     -------
@@ -179,8 +179,7 @@ def main(args=None):
     args = parse_args(parser, args=args)
 
     def vprint(*pargs, **kwargs):
-        """Execute `print` only if --verbose was given
-        """
+        """Execute `print` only if --verbose was given."""
         if args.verbose:
             print(*pargs, **kwargs)
 

@@ -15,7 +15,6 @@
 # You should have received a copy of the GNU General Public License
 # along with ciecplib.  If not, see <http://www.gnu.org/licenses/>.
 
-"""Command-line tools for ciecplib
-"""
+"""Command-line tools for ciecplib."""
 
 __author__ = "Duncan Macleod <duncan.macleod@ligo.org>"

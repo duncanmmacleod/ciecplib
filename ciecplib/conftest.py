@@ -15,8 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with ciecplib.  If not, see <http://www.gnu.org/licenses/>.
 
-"""Common fixtures for ciecplib tests
-"""
+"""Common fixtures for ciecplib tests."""
 
 import datetime
 
@@ -31,6 +30,7 @@ import pytest
 
 @pytest.fixture(scope="session")  # one per suite is fine
 def private_key():
+    """Create an RSA private key for testing."""
     return generate_private_key(
         public_exponent=65537,
         key_size=2048,
@@ -40,11 +40,13 @@ def private_key():
 
 @pytest.fixture(scope="session")
 def public_key(private_key):
+    """Return the ``public_key()`` for ``private_key``."""
     return private_key.public_key()
 
 
 @pytest.fixture
 def x509(public_key, private_key):
+    """Create a `cryptography.x509.Certificate` for testing."""
     name = crypto_x509.Name([
         crypto_x509.NameAttribute(typ, value) for (typ, value) in (
             (crypto_x509.NameOID.COMMON_NAME, "albert einstein"),
@@ -68,6 +70,7 @@ def x509(public_key, private_key):
 
 @pytest.fixture
 def x509_path(tmp_path, x509):
+    """Write ``x509`` to a temporary file in PEM format, and return the path."""
     path = tmp_path / "tmpx509.pem"
     with path.open("wb") as tmp:
         tmp.write(x509.public_bytes(Encoding.PEM))

@@ -15,8 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with ciecplib.  If not, see <http://www.gnu.org/licenses/>.
 
-"""Logging utilities for CIECPLib
-"""
+"""Logging utilities for CIECPLib."""
 
 import logging
 from http.client import HTTPConnection
@@ -52,6 +51,5 @@ def init_logging(level=logging.DEBUG):
 
 
 def reset_logging():
-    """Reset the logging levels back to their original values.
-    """
+    """Reset the logging levels back to their original values."""
     return init_logging(level=None)

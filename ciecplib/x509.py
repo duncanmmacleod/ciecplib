@@ -15,6 +15,8 @@
 # You should have received a copy of the GNU General Public License
 # along with ciecplib.  If not, see <http://www.gnu.org/licenses/>.
 
+"""X.509 functions for CIECPLib."""
+
 import calendar
 import datetime
 import shutil
@@ -51,8 +53,7 @@ _NAMEOID_TO_NAME = {
 
 
 def _parse_unix_time(asn1time):
-    """Parse an ASN1 unix time into a python `time` tuple
-    """
+    """Parse an ASN1 unix time into a python `time` tuple."""
     return calendar.timegm(asn1time.get_datetime().timetuple())
 
 
@@ -77,8 +78,7 @@ def load_cert(path):
 
 
 def load_pkcs12(raw, password):
-    """Load an X.509 certificate and key from a PKCS12 blob.
-    """
+    """Load an X.509 certificate and key from a PKCS12 blob."""
     try:
         from cryptography.hazmat.primitives.serialization.pkcs12 import (
             load_pkcs12 as _load_pkcs12,
@@ -127,7 +127,7 @@ def _not_valid_after(cert, naive=False):
 
 
 def time_left(cert):
-    """Returns the number of seconds left on this certificate
+    """Return the number of seconds left on this certificate.
 
     If the certificate has expired, ``0`` is returned.
 
@@ -141,8 +141,7 @@ def time_left(cert):
 
 
 def _x509_name_str(obj):
-    """Return the name of the x509 object as a string
-    """
+    """Return the name of the x509 object as a string."""
     try:
         parts = [x.rfc4514_string() for x in obj.rdns]
     except AttributeError:  # cryptography < 2.5
@@ -155,7 +154,7 @@ def _x509_name_str(obj):
 
 
 def check_cert(cert, hours=1, proxy=None, rfc3820=True):
-    """Validate an X509 certificate
+    """Validate an X509 certificate.
 
     Parameters
     ----------
@@ -192,8 +191,7 @@ def check_cert(cert, hours=1, proxy=None, rfc3820=True):
 
 
 def _cert_type(x509):
-    """Returns the type of the given x509 certificate object
-    """
+    """Return the type of the given x509 certificate object."""
     # parse name entry as common name
     subject = _x509_name_str(x509.subject)
     ntype, name = subject.rsplit("/", 1)[-1].split("=", 1)
@@ -244,7 +242,7 @@ def print_cert_info(
     verbose=True,
     stream=sys.stdout,
 ):
-    """Print info about an X.509 certificate
+    """Print info about an X.509 certificate.
 
     Parameters
     ----------
@@ -298,7 +296,7 @@ def print_cert_info(
 
 
 def write_cert(path, cert, key, use_proxy=False, minhours=168):
-    """Write a PKCS12 certificate archive to file in X509 format
+    """Write a PKCS12 certificate archive to file in X509 format.
 
     Parameters
     ----------

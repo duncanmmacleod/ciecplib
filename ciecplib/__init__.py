@@ -15,8 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with ciecplib.  If not, see <http://www.gnu.org/licenses/>.
 
-"""A python client for SAML ECP authentication
-"""
+"""A python client for SAML ECP authentication."""
 
 # request the contents of a URL
 from .requests import (

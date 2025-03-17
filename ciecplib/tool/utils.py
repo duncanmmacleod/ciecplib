@@ -15,8 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with ciecplib.  If not, see <http://www.gnu.org/licenses/>.
 
-"""Common utilities for tools
-"""
+"""Common utilities for tools."""
 
 import argparse
 import os
@@ -181,8 +180,7 @@ class ArgumentParser(argparse.ArgumentParser):
 
     @staticmethod
     def _set_defaults_from_kerberos_principal(args):
-        """Set defaults for username and IdP based on a kerberos principal
-        """
+        """Set defaults for username and IdP based on a kerberos principal."""
         try:
             username, realm = _parse_kerberos_principal()
         except Exception:
@@ -226,7 +224,7 @@ class ListIdpsAction(argparse.Action):
 # -- miscellaneous ------------------------------
 
 def reuse_cookies(cookiejar, url, verbose=False):
-    """Determine if a cookiejar has session cookies we can reuse
+    """Determine if a cookiejar has session cookies we can reuse.
 
     Parameters
     ----------
@@ -259,8 +257,7 @@ def reuse_cookies(cookiejar, url, verbose=False):
 
 
 def destroy_file(path, desc=None, verbose=False):
-    """Destroy a file (if it exists), with verbose output
-    """
+    """Destroy a file (if it exists), with verbose output."""
     if verbose:
         desc = (desc or "").rstrip(" ") + " "
         print("Removing {}'{!s}'...".format(desc, path), end=" ")

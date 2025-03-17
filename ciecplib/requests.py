@@ -15,10 +15,11 @@
 # You should have received a copy of the GNU General Public License
 # along with ciecplib.  If not, see <http://www.gnu.org/licenses/>.
 
-"""HTTP request method with end-to-end ECP authentication
-"""
+"""HTTP request method with end-to-end ECP authentication."""
 
+import sys
 from functools import wraps
+from textwrap import indent
 try:
     from contextlib import nullcontext
 except ImportError:  # python < 3.7
@@ -73,63 +74,70 @@ def _session_func_factory(method, docstring):
         with kwargs.pop("session") as session:
             meth = getattr(session, method)
             return meth(url, **kwargs)
-    _func.__doc__ = docstring + _request_params_doc.format(method=method)
+
+    # post-process the docstring
+    doc = f"""{docstring}
+
+{_request_params_doc.format(method=method)}
+"""
+    if sys.version_info < (3, 13, 0):
+        # older versions don't have https://github.com/python/cpython/issues/81283
+        doc = indent(doc, "    ").strip()
+    _func.__doc__ = doc
+
     return _func
 
 
 _request_params_doc = """
-    Parameters
-    ----------
-    url : `str`
-        URL path for request.
+Parameters
+----------
+url : `str`
+    URL path for request.
 
-    endpoint : `str`, optional
-        ECP endpoint name or URL for request.
+endpoint : `str`, optional
+    ECP endpoint name or URL for request.
 
-    username : `str`, optional
-        the username with which to authenticate, will be prompted for
-        if not given, and not using ``kerberos``.
+username : `str`, optional
+    the username with which to authenticate, will be prompted for
+    if not given, and not using ``kerberos``.
 
-    password : `str`, optional
-        the password with which to authenticate, will be prompted for
-        if not given, and not using ``kerberos``.
+password : `str`, optional
+    the password with which to authenticate, will be prompted for
+    if not given, and not using ``kerberos``.
 
-    kerberos : `bool`, optional
-        use existing kerberos credential for login, default is to try, but
-        fall back to username/password prompt.
+kerberos : `bool`, optional
+    use existing kerberos credential for login, default is to try, but
+    fall back to username/password prompt.
 
-    cookiejar : `http.cookiejar.CookieJar`, optional
-        a jar of cookies to add to the `requests.Session`.
+cookiejar : `http.cookiejar.CookieJar`, optional
+    a jar of cookies to add to the `requests.Session`.
 
-    kwargs
-        other keyword arguments are passed directly to
-        :meth:`requests.Session.{method}`
+kwargs
+    other keyword arguments are passed directly to
+    :meth:`requests.Session.{method}`
 
-    Returns
-    -------
-    response : `http.client.HTTPResponse`
-        the response from the URL
+Returns
+-------
+response : `http.client.HTTPResponse`
+    the response from the URL
 
-    See Also
-    --------
-    requests.Session.{method}
-        for full details of the request handling
-"""
+See Also
+--------
+requests.Session.{method}
+    for full details of the request handling
+""".strip()
 
 get = _session_func_factory(
     "get",
-    """Send a GET request using ECP authentication.
-    """
+    "Send a GET request using ECP authentication."
 )
 
 head = _session_func_factory(
     "head",
-    """Send a HEAD request using ECP authentication.
-    """
+    "Send a HEAD request using ECP authentication."
 )
 
 post = _session_func_factory(
     "post",
-    """Send a POST request using ECP authentication.
-    """
+    "Send a POST request using ECP authentication."
 )

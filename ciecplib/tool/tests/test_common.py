@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with ciecplib.  If not, see <http://www.gnu.org/licenses/>.
 
-"""Common testt for ciecplib entry points
+"""Common tests for ciecplib entry points.
 
 Inspired by the test_help module from ligo.skymap.tool.tests,
 thanks Leo!

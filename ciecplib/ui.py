@@ -15,8 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with ciecplib.  If not, see <http://www.gnu.org/licenses/>.
 
-"""User-interface functions for SAML ECP authentication
-"""
+"""User-interface functions for SAML ECP authentication."""
 
 import math
 import string
@@ -45,7 +44,7 @@ def get_cookie(
         debug=False,
         session=None,
 ):
-    """Create a SAML/ECP session cookie valid for the given URL
+    """Create a SAML/ECP session cookie valid for the given URL.
 
     Parameters
     ----------

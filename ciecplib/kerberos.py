@@ -15,15 +15,13 @@
 # You should have received a copy of the GNU General Public License
 # along with ciecplib.  If not, see <http://www.gnu.org/licenses/>.
 
-"""Kerberos utilities for ciecplib
-"""
+"""Kerberos utilities for ciecplib."""
 
 __author__ = "Duncan Macleod <duncan.macleod@ligo.org>"
 
 
 def _get_creds(usage="initiate", **kwargs):
-    """Return the active GSSAPI credentials, if any.
-    """
+    """Return the active GSSAPI credentials, if any."""
     try:
         import gssapi
     except ImportError:
@@ -68,7 +66,7 @@ def has_credential(**store_kw):
     This function will always return `False` if the requests-gssapi
     Kerberos Auth plugin required by requests-ecp is not found.
 
-    See also
+    See Also
     --------
     gssapi.Credentials
         For more details on how credentials are accessed using
@@ -113,7 +111,7 @@ def find_principal():
 
 
 def realm(principal):
-    """Return the kerbeos realm name from a principal
+    """Return the kerberos realm name from a principal.
 
     Parameters
     ----------

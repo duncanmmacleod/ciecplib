@@ -15,8 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with ciecplib.  If not, see <http://www.gnu.org/licenses/>.
 
-"""Tests for :mod:`ciecplib.tool.ecp_cert_info`
-"""
+"""Tests for :mod:`ciecplib.tool.ecp_cert_info`."""
 
 from unittest import mock
 
@@ -35,8 +34,7 @@ MOD_PATH = ecp_cert_info.__name__
     mock.Mock(side_effect=(3700., 3500.)),
 )
 def test_valid():
-    """Check that the --valid option for ecp-cert-info works
-    """
+    """Check that the --valid option for ecp-cert-info works."""
     ecp_cert_info.main(["--valid", "1:0"])
     with pytest.raises(ValueError):
         ecp_cert_info.main(["--valid", "1:0"])
@@ -63,8 +61,7 @@ def test_exists(time_left, remaining, code):
 
 @mock.patch(f"{ecp_cert_info.__name__}.load_cert")
 def test_display(load_cert, x509, capsys):
-    """Check that the display option works
-    """
+    """Check that the display option works."""
     load_cert.return_value = x509
     ecp_cert_info.main(["-subject"])
     out = capsys.readouterr().out
