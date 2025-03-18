@@ -87,7 +87,7 @@ _URL_REGEX = re.compile(r"[^ \t\n\r\f\vA-Z]+")
 
 
 EcpIdentityProvider = namedtuple(
-    "IdP",
+    "EcpIdentityProvider",
     (
         "name",
         "url",

@@ -42,11 +42,13 @@ dynamic = [
 
 [project.optional-dependencies]
 docs = [
-  "sphinx",
+  "furo",
+  "Sphinx",
   "sphinx-argparse",
   "sphinx-automodapi",
-  "sphinx_rtd_theme",
-  "sphinx-tabs",
+  "sphinx-copybutton",
+  "sphinx-design",
+  "sphinx-github-style",
 ]
 kerberos = [
   "gssapi",

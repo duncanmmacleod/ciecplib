@@ -53,6 +53,7 @@ include:
   # https://computing.docs.ligo.org/guide/gitlab/components/sphinx/build/
   - component: $CI_SERVER_FQDN/computing/gitlab/components/sphinx/build@1
     inputs:
+      apt_packages: graphviz
       requirements: ".[docs]"
 
 # -- customisations

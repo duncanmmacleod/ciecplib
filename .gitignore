@@ -42,7 +42,12 @@ pip-delete-this-directory.txt
 
 # Sphinx documentation
 _build/
-/docs/api
+/docs/api/*.rst
+!/docs/api/ciecplib.rst
+!/docs/api/ciecplib.cookies.rst
+!/docs/api/ciecplib.kerberos.rst
+!/docs/api/ciecplib.utils.rst
+!/docs/api/ciecplib.x509.rst
 
 # OS/editor files
 *.swp
