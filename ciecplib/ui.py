@@ -19,6 +19,7 @@
 
 import math
 import string
+import warnings
 from urllib import parse as urllib_parse
 
 from requests import HTTPError
@@ -104,6 +105,14 @@ def get_cert(
 ):
     """Create an X.509 credential using SAML/ECP.
 
+    .. warning::
+
+        CILogon has announced the retirement of support for X.509
+        certificates, please see https://ca.cilogon.org/retirement
+        for details; attempts to request a certificate from cilogon.org
+        will result in an error after May 2025, please contact
+        help@cilogon.org for assistance.
+
     Parameters
     ----------
     endpoint : `str`, optional
@@ -132,6 +141,17 @@ def get_cert(
     key : `cryptography.hazmat.primitives.asymmetric.rsa.RSAPrivateKey`
         The RSA key object used to sign the certificate.
     """
+    if spurl == DEFAULT_SP_URL:
+        warnings.warn(
+            "CILogon has announced the retirement of support for X.509 "
+            "certificates, please see https://ca.cilogon.org/retirement "
+            f"for details; attempts to request a certificate from {spurl} "
+            "will result in an error after May 2025, please contact "
+            "help@cilogon.org for assistance.",
+            DeprecationWarning,
+            stacklevel=3,
+        )
+
     # decorator guarantees a populated session
     with session as sess:
         cookie = get_cookie(spurl, session=sess, debug=debug)
