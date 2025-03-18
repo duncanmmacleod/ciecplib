@@ -1,6 +1,6 @@
 %define srcname ciecplib
-%define version 0.8.2
-%define release 2
+%define version 0.9.0
+%define release 1
 
 # -- metadata ---------------
 
@@ -158,6 +158,9 @@ ecp-get-cookie --help
 # -- changelog --------------
 
 %changelog
+* Tue Mar 18 2025 Duncan Macleod <duncan.macleod@ligo.org> - 0.9.0-1
+- update for 0.9.0
+
 * Wed Sep 11 2024 Duncan Macleod <duncan.macleod@ligo.org> - 0.8.2-2
 - fix setup.cfg for EL9 (removes unnecessary requirement on python3-pyOpenSSL)
 
