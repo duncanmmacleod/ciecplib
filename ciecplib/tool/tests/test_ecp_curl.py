@@ -95,3 +95,59 @@ def test_main_store_cookie_file(capsys, requests_mock, tmp_path):
     # check that we can read the cookie jar
     # (which probably doesn't have any cookies in it)
     load_cookiejar(jar)
+
+
+def content_callback(request, context):
+    """Return response content based on the request context.
+
+    Just mocks a 401 Unauthorized response if no ``Authorization`` header is
+    included.
+    """
+    if request.headers.get("Authorization"):
+        context.status_code = 200
+    else:
+        context.status_code = 401
+        context.reason = "Unauthorized"
+    return b"hello world"
+
+
+@pytest.mark.parametrize(("headers", "status"), [
+    pytest.param([], 401, id="no-headers"),
+    pytest.param(
+        [
+            "-H", "Custom:something",
+        ],
+        401,
+        id="custom-header",
+    ),
+    pytest.param(
+        [
+            "--header=Custom:something",
+            "-H", "Authorization: Bearer 123",
+        ],
+        200,
+        id="auth-header",
+    ),
+])
+def test_main_headers(capsys, requests_mock, headers, status):
+    """Test ``ecp-curl`` with default options (writes to stdout)."""
+    requests_mock.get(
+        "https://test.example.com",
+        content=content_callback,
+    )
+    args = [
+        "https://test.example.com",
+        "--identity-provider", "https://test.example.com/SOAP/ECP",
+        *headers,
+    ]
+    if status == 200:
+        ecp_curl.main(args)
+        out, err = capsys.readouterr()
+        # check that we got valid JSON back
+        assert out == "hello world"
+        return
+    with pytest.raises(
+        RequestException,
+        match="401 Client Error: Unauthorized",
+    ):
+        ecp_curl.main(args)
